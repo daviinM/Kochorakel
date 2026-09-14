@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kochorakel – Was gibt's heute?</title>
+<style>
+:root {
+  --bg: #F2F2F7;
+  --card-bg: #FFFFFF;
+  --ink: #000000;
+  --ink-secondary: rgba(60,60,67,.6);
+  --ink-tertiary: rgba(60,60,67,.3);
+  --line: rgba(60,60,67,.15);
+  --fill-track: rgba(120,120,128,.16);
+  --blue: #007AFF;
+  --blue-bg: rgba(0,122,255,.12);
+  --green: #34C759;
+  --green-bg: rgba(52,199,89,.14);
+  --orange: #FF9500;
+  --orange-bg: rgba(255,149,0,.14);
+  --red: #FF3B30;
+  --red-bg: rgba(255,59,48,.12);
+  --hero-1: #1C1C1E;
+  --hero-2: #000000;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.04);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 44px 18px 84px;
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font-family: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.app { width: 100%; max-width: 540px; }
+
+.top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.app-icon-tile { width: 26px; height: 26px; border-radius: 7px; background: var(--blue-bg); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--blue); }
+.header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.header-icon-btn { position: relative; width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--fill-track); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.header-icon-btn:hover { background: rgba(120,120,128,.26); }
+.header-badge { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; border-radius: 999px; background: var(--red); color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
+
+h1 { font-weight: 800; letter-spacing: -0.02em; font-size: clamp(30px, 7vw, 40px); line-height: 1.08; margin: 4px 0 6px; color: var(--ink); }
+.subline { color: var(--ink-secondary); font-size: 15.5px; margin: 0 0 20px; max-width: 42ch; line-height: 1.4; }
+
+.tabs { display: flex; background: var(--fill-track); border-radius: 9px; padding: 2px; margin-bottom: 20px; gap: 0; }
+.tab-btn { flex: 1; background: none; border: none; font-size: 12.5px; font-weight: 600; color: var(--ink); opacity: .55; padding: 8px 6px; border-radius: 7px; cursor: pointer; transition: background .15s, opacity .15s, box-shadow .15s; }
+.tab-btn.active { background: #FFFFFF; opacity: 1; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.tab-count { opacity: .75; font-weight: 500; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.card { background: var(--card-bg); border: none; border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px; }
+.card:last-child { margin-bottom: 0; }
+.section-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-secondary); margin: 0 0 10px; display: flex; align-items: baseline; gap: 6px; }
+
+.xp-strip { display: flex; align-items: center; gap: 10px; background: var(--card-bg); box-shadow: var(--shadow); border-radius: 999px; padding: 8px 8px 8px 16px; margin-bottom: 18px; cursor: pointer; }
+.xp-strip-label { font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.xp-strip-track { flex: 1; height: 5px; border-radius: 999px; background: var(--fill-track); overflow: hidden; }
+.xp-strip-fill { height: 100%; width: 0%; background: var(--blue); border-radius: 999px; transition: width .3s ease; }
+.xp-strip-arrow { font-size: 11px; font-weight: 600; color: var(--ink-secondary); background: var(--fill-track); border-radius: 999px; padding: 5px 10px; white-space: nowrap; }
+
+.xp-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 8px; }
+.xp-level { font-weight: 700; font-size: 16px; color: var(--ink); }
+.xp-label { font-size: 12px; font-weight: 500; color: var(--ink-secondary); white-space: nowrap; }
+.xp-track { height: 8px; border-radius: 999px; background: var(--fill-track); overflow: hidden; }
+.xp-fill { height: 100%; width: 0%; background: var(--blue); border-radius: 999px; transition: width .3s ease; }
+
+.filters { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.filter-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-secondary); width: 92px; flex-shrink: 0; }
+.chip { font-size: 13.5px; font-weight: 500; padding: 6px 13px; border-radius: 999px; border: none; background: var(--fill-track); color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
+.chip:hover { background: rgba(120,120,128,.24); }
+.chip.active { background: var(--blue); color: #FFFFFF; font-weight: 600; }
+.chip.active:hover { background: var(--blue); }
+.chip-sm { font-size: 12.5px; padding: 5px 11px; }
+
+details.panel { margin-bottom: 18px; border: none; border-radius: var(--radius); background: var(--card-bg); box-shadow: var(--shadow); overflow: hidden; }
+details.panel > summary { list-style: none; cursor: pointer; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--ink); }
+details.panel > summary::-webkit-details-marker { display: none; }
+details.panel > summary::after { content: '+'; font-size: 17px; font-weight: 400; color: var(--blue); margin-left: 10px; }
+details.panel[open] > summary::after { content: '\2013'; }
+.panel-body { padding: 2px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+.panel-body .subgroup + .subgroup { padding-top: 4px; border-top: 1px solid var(--line); }
+.ing-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.pool-count { font-size: 12.5px; font-weight: 500; color: var(--ink-secondary); margin: 0 0 12px; }
+.pool-count strong { color: var(--blue); font-weight: 700; }
+.pool-extra { color: var(--orange); font-weight: 700; }
+.empty-msg { font-size: 13px; color: var(--red); text-align: center; margin: 0 0 12px; font-weight: 500; }
+
+.reel-wrap { background: var(--fill-track); border-radius: 22px; padding: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,.06); margin-bottom: 18px; }
+.reel-card { perspective: 900px; position: relative; }
+.favorite-btn {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,.14);
+  font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.favorite-btn.active { background: rgba(255,55,95,.25); }
+.favorite-item { display: flex; align-items: center; gap: 11px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+.favorite-item:last-child { border-bottom: none; }
+.favorite-item .fav-emoji { font-size: 22px; }
+.favorite-item .fav-name { flex: 1; font-size: 14.5px; color: var(--ink); }
+.favorite-item .fav-remove { background: none; border: none; color: var(--ink-tertiary); font-size: 15px; cursor: pointer; padding: 4px; }
+.favorite-item .fav-remove:hover { color: var(--red); }
+.reel-inner { background: linear-gradient(160deg, var(--hero-1), var(--hero-2)); border-radius: 18px; padding: 32px 22px; text-align: center; transform: rotateX(0deg); backface-visibility: hidden; box-shadow: 0 12px 28px -10px rgba(0,0,0,.5); }
+.reel-emoji { font-size: 52px; line-height: 1; margin-bottom: 10px; display: block; }
+.reel-name { font-weight: 700; letter-spacing: -0.01em; font-size: clamp(20px, 5vw, 27px); color: #FFFFFF; margin: 0; }
+.reel-tags { display: flex; justify-content: center; gap: 7px; margin-top: 13px; flex-wrap: wrap; }
+.tag { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; padding: 3px 9px; border-radius: 999px; background: rgba(255,255,255,.14); color: #F2F2F7; }
+.tag.veg { background: rgba(52,199,89,.28); color: #7EE092; }
+.tag.premium { background: rgba(255,149,0,.28); color: #FFB454; font-weight: 700; }
+.portion-price { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.7); margin-top: 10px; }
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 12px 28px -10px rgba(0,0,0,.5), 0 0 0 rgba(255,149,0,0); }
+  40% { box-shadow: 0 12px 28px -10px rgba(0,0,0,.5), 0 0 32px 8px rgba(255,149,0,.5); }
+  100% { box-shadow: 0 12px 28px -10px rgba(0,0,0,.5), 0 0 0 6px rgba(255,149,0,.16); }
+}
+.reel-inner.rare { animation: glowPulse 1.1s ease-out forwards; border: 2px solid var(--orange); }
+
+.missing-line { font-size: 12.5px; color: #FF6961; font-weight: 600; margin: 14px 0 0; }
+.missing-line .lbl { opacity: .75; font-weight: 500; color: rgba(255,255,255,.6); }
+.ing-toggle { display: block; margin: 8px auto 0; background: none; border: none; font-size: 11.5px; font-weight: 500; color: rgba(255,255,255,.55); text-decoration: underline; cursor: pointer; }
+.ing-toggle:hover { color: rgba(255,255,255,.85); }
+.ing-full { font-size: 12px; color: rgba(255,255,255,.65); margin-top: 8px; line-height: 1.6; }
+.ing.missing { color: #FF6961; font-weight: 600; opacity: 1; }
+
+.cart-btn { margin-top: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; padding: 8px 16px; border-radius: 999px; border: 1.5px solid #FF6961; background: transparent; color: #FF6961; cursor: pointer; transition: background .15s, color .15s; }
+.cart-btn:hover { background: #FF6961; color: var(--hero-2); }
+.all-have { display: inline-block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #7EE092; background: rgba(52,199,89,.2); padding: 6px 14px; border-radius: 999px; margin-top: 14px; }
+
+@keyframes settle { 0% { transform: scale(1); } 45% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+.actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 22px; }
+.roll-btn { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; padding: 14px 36px; border-radius: 999px; border: none; background: var(--blue); color: #FFFFFF; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease; box-shadow: 0 4px 14px rgba(0,122,255,.4); }
+.roll-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,122,255,.45); }
+.roll-btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,122,255,.35); }
+.roll-btn:disabled { opacity: .4; cursor: default; box-shadow: none; }
+
+.confirm-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.confirm-btn { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; padding: 10px 18px; border-radius: 999px; border: none; background: var(--green-bg); color: var(--green); cursor: pointer; }
+.confirm-btn:disabled { opacity: .5; cursor: default; }
+.confirm-skip { font-size: 11.5px; background: none; border: none; color: var(--ink-secondary); text-decoration: underline; cursor: pointer; padding: 10px 4px; }
+.confirm-skip:disabled { opacity: .4; }
+
+.recipe-link { font-size: 13px; color: var(--blue); text-decoration: none; }
+.recipe-link:hover { text-decoration: underline; }
+.helper { font-size: 12.5px; color: var(--ink-secondary); margin: 0; text-align: center; min-height: 16px; }
+
+.cart-clear-row { display: flex; justify-content: flex-end; }
+.cart-count { font-size: 11px; font-weight: 700; background: var(--red); color: #FFFFFF; border-radius: 999px; min-width: 18px; text-align: center; padding: 2px 6px; }
+.cart-clear { font-size: 11.5px; font-weight: 600; color: var(--ink-secondary); background: none; border: none; cursor: pointer; padding: 4px; }
+.cart-clear:hover { color: var(--ink); }
+.cart-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.cart-item { display: flex; align-items: center; gap: 11px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+.cart-item:last-child { border-bottom: none; }
+.cart-item, .week-row { transform: translateZ(0); }
+.cart-item input[type="checkbox"], .week-check {
+  transform: translateZ(0);
+  appearance: none; -webkit-appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--ink-tertiary); background: #fff;
+  position: relative; cursor: pointer; flex-shrink: 0;
+  transition: background .15s, border-color .15s;
+}
+.cart-item input[type="checkbox"]:checked, .week-check:checked { background: var(--green); border-color: var(--green); }
+.cart-item input[type="checkbox"]:checked::after, .week-check:checked::after {
+  content: ''; position: absolute; left: 7px; top: 3px;
+  width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.week-check:disabled { cursor: default; opacity: .55; }
+.cart-item label { font-size: 14.5px; cursor: pointer; color: var(--ink); }
+.cart-item.checked label { text-decoration: line-through; color: var(--ink-tertiary); }
+.cart-empty { font-size: 13px; color: var(--ink-secondary); margin: 0; }
+
+.dex-stats { font-size: 12px; font-weight: 500; color: var(--ink-secondary); margin: 0 0 10px; }
+.dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 5px; }
+.dex-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 15px; background: var(--fill-track); color: var(--ink-tertiary); }
+.dex-cell.seen { background: #EFEFF2; color: var(--ink); }
+.dex-cell.cooked { background: var(--orange-bg); box-shadow: inset 0 0 0 1.5px var(--orange); }
+.dex-cell.locked { opacity: .45; }
+
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
+.badge-card { position: relative; background: #FAFAFC; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 5px; opacity: .5; }
+.badge-card.unlocked { opacity: 1; background: var(--orange-bg); border-color: transparent; }
+.badge-card.unlocked::after { content: '✓'; position: absolute; top: 10px; right: 10px; color: var(--orange); font-weight: 800; font-size: 13px; }
+.badge-card.premium-locked { opacity: .5; }
+.badge-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; color: #fff; margin-bottom: 2px; }
+.badge-name { font-weight: 700; font-size: 13px; color: var(--ink); }
+.badge-desc { font-size: 11px; color: var(--ink-secondary); }
+.badge-progress-track { height: 4px; border-radius: 999px; background: var(--fill-track); overflow: hidden; margin-top: 1px; }
+.badge-progress-fill { height: 100%; background: var(--blue); border-radius: 999px; }
+.badge-progress-label { font-size: 9.5px; font-weight: 600; color: var(--ink-secondary); }
+
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; }
+.gallery-item { display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: var(--ink-secondary); text-align: center; }
+.gallery-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; display: block; }
+.locked-msg { font-size: 13px; color: var(--ink-secondary); background: var(--fill-track); border-radius: 10px; padding: 14px; text-align: center; margin: 0; line-height: 1.4; }
+
+/* week planner */
+.roll-week-btn { margin-top: 14px; width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--blue); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .15s, transform .1s; }
+.roll-week-btn:hover:not(:disabled) { opacity: .92; }
+.roll-week-btn:active:not(:disabled) { transform: scale(.99); }
+.roll-week-btn:disabled { opacity: .5; cursor: default; }
+
+.week-row { display: flex; align-items: center; gap: 9px; padding: 9px 2px; border-bottom: 1px solid var(--line); }
+.week-row:last-child { border-bottom: none; }
+.week-row.dish-premium { background: var(--orange-bg); border-radius: 10px; padding-left: 8px; padding-right: 8px; margin: 0 -8px; border-bottom-color: transparent; }
+.week-day-label { font-weight: 700; font-size: 12.5px; width: 24px; flex-shrink: 0; color: var(--ink-secondary); }
+.week-dish-info { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; transition: opacity .15s ease; }
+.week-row.spinning .week-dish-info { opacity: .5; }
+.week-dish { font-size: 14px; color: var(--ink); }
+.week-recipe-link { font-size: 14px; color: var(--ink); text-decoration: none; }
+.week-recipe-link:hover { text-decoration: underline; color: var(--blue); }
+.week-row.confirmed .week-dish { text-decoration: line-through; color: var(--ink-tertiary); }
+.week-portion-price { font-size: 11px; color: var(--ink-secondary); }
+.week-row.confirmed .week-portion-price { opacity: .6; }
+.week-roll-btn { background: var(--blue-bg); border: none; color: var(--blue); width: 30px; height: 30px; border-radius: 9px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+.week-roll-btn:hover { background: rgba(0,122,255,.2); }
+.week-clear-btn { background: none; border: none; color: var(--ink-tertiary); font-size: 15px; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.week-clear-btn:hover { color: var(--red); }
+.week-clear-btn.hidden { display: none; }
+.week-photo-btn { background: var(--orange-bg); border: none; color: var(--orange); width: 30px; height: 30px; border-radius: 9px; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+.week-photo-btn:hover { background: rgba(255,149,0,.24); }
+
+.people-row { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.people-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--blue-bg); color: var(--blue); font-size: 20px; font-weight: 700; cursor: pointer; line-height: 1; }
+.people-btn:hover:not(:disabled) { background: rgba(0,122,255,.22); }
+.people-btn:disabled { opacity: .3; cursor: default; }
+.people-count { font-size: 20px; font-weight: 700; min-width: 30px; text-align: center; color: var(--ink); }
+
+.budget-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.budget-euro { font-weight: 700; color: var(--ink-secondary); font-size: 15px; }
+#budgetInput { flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; font-size: 15px; color: var(--ink); background: #FAFAFC; }
+#budgetInput:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-bg); }
+.budget-track { height: 7px; border-radius: 999px; background: var(--fill-track); overflow: hidden; margin-bottom: 6px; }
+.budget-fill { height: 100%; background: var(--green); border-radius: 999px; transition: width .3s ease; }
+.budget-fill.over { background: var(--red); }
+.budget-text { font-size: 13px; color: var(--ink-secondary); margin: 0; }
+.budget-text.over { color: var(--red); font-weight: 700; }
+.budget-hint { font-size: 11px; color: var(--ink-tertiary); margin: 6px 0 0; }
+
+.reset-link { display: block; margin: 6px auto 0; background: none; border: none; color: var(--ink-secondary); font-size: 11.5px; text-decoration: underline; cursor: pointer; }
+.reset-link:hover { color: var(--ink); }
+
+.toast-container { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; flex-direction: column-reverse; gap: 8px; z-index: 50; align-items: center; pointer-events: none; width: calc(100% - 32px); }
+.xp-toast { background: rgba(28,28,30,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: #FFFFFF; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 999px; opacity: 0; transform: translateY(8px); transition: opacity .25s, transform .25s; max-width: 90%; text-align: center; }
+.xp-toast.show { opacity: 1; transform: translateY(0); }
+
+/* generic bottom sheet (settings menu + cart) */
+.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: flex-end; justify-content: center; z-index: 100; }
+@keyframes sheetUp { from { transform: translateY(30px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
+.sheet { background: var(--bg); width: 100%; max-width: 540px; border-radius: 20px 20px 0 0; max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 18px 26px; animation: sheetUp .25s ease-out; }
+.sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 2px 14px; position: sticky; top: 0; background: var(--bg); }
+.sheet-title { font-size: 20px; font-weight: 800; margin: 0; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.sheet-close { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--fill-track); font-size: 13px; cursor: pointer; color: var(--ink-secondary); }
+.sheet-close:hover { background: rgba(120,120,128,.26); }
+.color-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.color-swatch { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; padding: 0; }
+.color-swatch.selected { border-color: var(--ink); }
+.icon-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.icon-swatch { width: 40px; height: 40px; border-radius: 10px; border: 2px solid transparent; background: var(--fill-track); font-size: 19px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.icon-swatch.selected { border-color: var(--blue); background: var(--blue-bg); }
+.menu-hint { font-size: 11.5px; color: var(--ink-tertiary); margin: 10px 0 0; line-height: 1.4; }
+
+/* dark mode */
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --card-bg: #1C1C1E;
+  --ink: #FFFFFF;
+  --ink-secondary: rgba(235,235,245,.6);
+  --ink-tertiary: rgba(235,235,245,.3);
+  --line: rgba(84,84,88,.65);
+  --fill-track: rgba(120,120,128,.32);
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 1px 8px rgba(0,0,0,.3);
+}
+:root[data-theme="dark"] .reel-wrap { background: #2C2C2E; box-shadow: inset 0 1px 3px rgba(0,0,0,.3); }
+:root[data-theme="dark"] .dex-cell.seen { background: #2C2C2E; }
+:root[data-theme="dark"] .badge-card { background: #1C1C1E; }
+:root[data-theme="dark"] #budgetInput { background: #2C2C2E; }
+:root[data-theme="dark"] .tab-btn.active, :root[data-theme="dark"] .tier-btn.active { background: #636366; color: #fff; }
+:root[data-theme="dark"] .tier-btn[data-tier="premium"].active { background: var(--orange); color: #fff; }
+:root[data-theme="dark"] .cart-item input[type="checkbox"], :root[data-theme="dark"] .week-check { background: #2C2C2E; }
+
+@media (max-width: 420px) { .filter-label { width: auto; margin-right: 2px; } }
+@media (prefers-reduced-motion: reduce) { .reel-inner { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top-row">
+    <div class="brand">
+      <span class="app-icon-tile" id="appIconTile">🍳</span>
+      <span class="eyebrow">Kochorakel</span>
+    </div>
+    <div class="header-actions">
+      <button class="header-icon-btn" id="favoritesBtn" type="button" aria-label="Favoriten">
+        🤍<span class="header-badge" id="favoritesBadge" style="display:none;">0</span>
+      </button>
+      <button class="header-icon-btn" id="cartIconBtn" type="button" aria-label="Warenkorb">
+        🛒<span class="header-badge" id="cartIconBadge" style="display:none;">0</span>
+      </button>
+      <button class="header-icon-btn" id="menuBtn" type="button" aria-label="Menü">☰</button>
+    </div>
+  </div>
+  <h1>Was gibt's heute?</h1>
+  <p class="subline">Filter setzen, Hebel ziehen, Bauch entscheiden lassen.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="kochen" type="button">🎲 Kochen</button>
+    <button class="tab-btn" data-tab="woche" type="button">📅 Woche</button>
+    <button class="tab-btn" data-tab="fortschritt" type="button">🏅 Fortschritt <span class="tab-count" id="tabBadgeCount"></span></button>
+  </div>
+
+  <div class="tab-panel active" id="panelKochen">
+    <div class="xp-strip" id="xpStrip">
+      <span class="xp-strip-label" id="xpStripLabel">Lvl 1 · Kochlehrling</span>
+      <div class="xp-strip-track"><div class="xp-strip-fill" id="xpStripFill"></div></div>
+      <span class="xp-strip-arrow">Fortschritt ›</span>
+    </div>
+
+    <div class="filters">
+      <div class="filter-group" data-group="time">
+        <span class="filter-label">Zeit</span>
+        <button class="chip active" data-value="egal">Egal</button>
+        <button class="chip" data-value="schnell">Schnell</button>
+        <button class="chip" data-value="normal">Normal</button>
+        <button class="chip" data-value="aufwendig">Aufwendig</button>
+      </div>
+      <div class="filter-group" data-group="diet">
+        <span class="filter-label">Ernährung</span>
+        <button class="chip active" data-value="egal">Egal</button>
+        <button class="chip" data-value="vegetarisch">Vegetarisch</button>
+        <button class="chip" data-value="vegan">Vegan</button>
+      </div>
+      <div class="filter-group" data-group="type">
+        <span class="filter-label">Lust auf</span>
+        <button class="chip active" data-value="egal">Egal</button>
+        <button class="chip" data-value="herzhaft">Herzhaft</button>
+        <button class="chip" data-value="süß">Süß</button>
+      </div>
+    </div>
+
+    <details class="panel">
+      <summary>Zutaten, die du hast <span style="opacity:.55;font-weight:400;text-transform:none;">(optional)</span></summary>
+      <div class="panel-body">
+        <div>
+          <p class="section-label">Modus</p>
+          <div class="filter-group" data-group="ingredientMode">
+            <button class="chip chip-sm active" data-value="egal">Egal</button>
+            <button class="chip chip-sm" data-value="strict">Nur was ich hab</button>
+            <button class="chip chip-sm" data-value="buy2">+ 2 einkaufen</button>
+          </div>
+        </div>
+        <div class="subgroup"><p class="section-label">Grundnahrungsmittel</p><div class="ing-chips" data-cat="grund"></div></div>
+        <div class="subgroup"><p class="section-label">Vorrat &amp; Saucen</p><div class="ing-chips" data-cat="vorrat"></div></div>
+        <div class="subgroup"><p class="section-label">Milchprodukte &amp; Eier</p><div class="ing-chips" data-cat="milchprodukte"></div></div>
+        <div class="subgroup"><p class="section-label">Fleisch, Wurst &amp; Fisch</p><div class="ing-chips" data-cat="fleisch"></div></div>
+        <div class="subgroup"><p class="section-label">Gemüse</p><div class="ing-chips" data-cat="gemuese"></div></div>
+        <div class="subgroup"><p class="section-label">Obst</p><div class="ing-chips" data-cat="obst"></div></div>
+        <div class="subgroup"><p class="section-label">Gewürze &amp; Sonstiges</p><div class="ing-chips" data-cat="gewuerze"></div></div>
+      </div>
+    </details>
+
+    <p class="pool-count" id="poolCount"></p>
+    <p class="empty-msg" id="emptyMsg" style="display:none;"></p>
+
+    <div class="reel-wrap">
+      <div class="reel-card">
+        <button type="button" class="favorite-btn" id="favoriteBtn" aria-label="Favorit" style="display:none;">🤍</button>
+        <div class="reel-inner" id="reelInner">
+          <span class="reel-emoji" id="reelEmoji">❓</span>
+          <p class="reel-name" id="reelName">???</p>
+          <div class="reel-tags" id="reelTags"></div>
+          <div class="portion-price" id="portionPrice"></div>
+          <div class="ingredient-line" id="ingredientLine"></div>
+          <div id="cartAction"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="roll-btn" id="rollBtn" disabled>Kochen losen!</button>
+      <div class="confirm-row" id="confirmRow"></div>
+      <a class="recipe-link" id="recipeLink" href="#" target="_blank" rel="noopener" style="display:none;">Rezept auf Chefkoch ansehen ↗</a>
+      <p class="helper" id="helperText">Lade deinen Fortschritt …</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panelWoche">
+    <div class="card" id="weekLocked" style="display:none;">
+      <p class="locked-msg">🔒 Der Wochenplaner ist ein Premium-Feature — öffne das Menü oben rechts, um Premium zu aktivieren.</p>
+    </div>
+    <div id="weekContent">
+      <div class="card">
+        <p class="section-label">Filter für die Woche</p>
+        <div class="filters">
+          <div class="filter-group week-filter-group" data-group="time">
+            <span class="filter-label">Zeit</span>
+            <button class="chip active" data-value="egal">Egal</button>
+            <button class="chip" data-value="schnell">Schnell</button>
+            <button class="chip" data-value="normal">Normal</button>
+            <button class="chip" data-value="aufwendig">Aufwendig</button>
+          </div>
+          <div class="filter-group week-filter-group" data-group="diet">
+            <span class="filter-label">Ernährung</span>
+            <button class="chip active" data-value="egal">Egal</button>
+            <button class="chip" data-value="vegetarisch">Vegetarisch</button>
+            <button class="chip" data-value="vegan">Vegan</button>
+          </div>
+          <div class="filter-group week-filter-group" data-group="type">
+            <span class="filter-label">Lust auf</span>
+            <button class="chip active" data-value="egal">Egal</button>
+            <button class="chip" data-value="herzhaft">Herzhaft</button>
+            <button class="chip" data-value="süß">Süß</button>
+          </div>
+        </div>
+        <p class="pool-count" id="weekPoolCount"></p>
+      </div>
+      <div class="card">
+        <p class="section-label">Wochentage wählen</p>
+        <div class="filter-group day-picker" id="weekDayChips">
+          <button class="chip" data-day="Mo" type="button">Mo</button>
+          <button class="chip" data-day="Di" type="button">Di</button>
+          <button class="chip" data-day="Mi" type="button">Mi</button>
+          <button class="chip" data-day="Do" type="button">Do</button>
+          <button class="chip" data-day="Fr" type="button">Fr</button>
+          <button class="chip" data-day="Sa" type="button">Sa</button>
+          <button class="chip" data-day="So" type="button">So</button>
+        </div>
+        <button type="button" class="roll-week-btn" id="rollWeekBtn">🎲 Ganze Woche würfeln</button>
+      </div>
+      <div class="card">
+        <p class="section-label">Dein Plan</p>
+        <div id="weekDayRows"></div>
+      </div>
+      <div class="card">
+        <p class="section-label">Für wie viele Personen?</p>
+        <div class="people-row">
+          <button type="button" class="people-btn" id="peopleMinus">−</button>
+          <span class="people-count" id="peopleCountDisplay">4</span>
+          <button type="button" class="people-btn" id="peoplePlus">+</button>
+        </div>
+      </div>
+      <div class="card">
+        <p class="section-label">Wochenbudget</p>
+        <div class="budget-row">
+          <span class="budget-euro">€</span>
+          <input type="number" id="budgetInput" min="0" step="1" placeholder="z. B. 50" inputmode="decimal">
+        </div>
+        <div id="budgetSummary"></div>
+        <p class="budget-hint">Richtwerte für das, was du wirklich einkaufen müsstest — keine echten Marktpreise.</p>
+      </div>
+      <button class="roll-btn" id="addWeekToCartBtn" type="button">Ganze Woche in den Warenkorb</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panelFortschritt">
+    <div class="card">
+      <div class="xp-top">
+        <span class="xp-level" id="xpLevel">Lvl 1 · Kochlehrling</span>
+        <span class="xp-label" id="xpLabel">0 XP</span>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+    </div>
+    <div class="card">
+      <p class="section-label">Gerichte-Dex</p>
+      <p class="dex-stats" id="dexStats"></p>
+      <div class="dex-grid" id="dexGrid"></div>
+    </div>
+    <div class="card">
+      <p class="section-label">Abzeichen</p>
+      <div class="badge-grid" id="badgeGrid"></div>
+    </div>
+    <div class="card">
+      <p class="section-label">Kochtagebuch</p>
+      <div id="galleryBody"></div>
+    </div>
+    <button class="reset-link" id="resetProgress" type="button">Fortschritt zurücksetzen</button>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="favoritesOverlay">
+  <div class="sheet">
+    <div class="sheet-header">
+      <h2 class="sheet-title">Favoriten <span class="cart-count" id="favoritesCount" style="display:none;">0</span></h2>
+      <button class="sheet-close" id="favoritesClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+    <div class="card">
+      <p class="cart-empty" id="favoritesEmpty">Noch keine Favoriten. Tippe beim Ergebnis aufs Herz, um ein Gericht zu merken.</p>
+      <ul class="cart-list" id="favoritesList"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="cartOverlay">
+  <div class="sheet">
+    <div class="sheet-header">
+      <h2 class="sheet-title">Warenkorb <span class="cart-count" id="cartCount" style="display:none;">0</span></h2>
+      <button class="sheet-close" id="cartClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+    <div class="card">
+      <div class="cart-clear-row"><button class="cart-clear" id="cartClear" style="display:none;">Liste leeren</button></div>
+      <p class="cart-empty" id="cartEmpty">Noch nichts auf der Liste. Klick beim Ergebnis auf „Fehlendes in den Warenkorb", dann landet's hier.</p>
+      <ul class="cart-list" id="cartList"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="menuOverlay">
+  <div class="sheet">
+    <div class="sheet-header">
+      <h2 class="sheet-title">Einstellungen</h2>
+      <button class="sheet-close" id="menuClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+    <div class="card">
+      <p class="section-label">Darstellung</p>
+      <div class="tier-toggle" id="themeToggle">
+        <button class="tier-btn active" data-theme-choice="light" type="button">☀️ Hell</button>
+        <button class="tier-btn" data-theme-choice="dark" type="button">🌙 Dunkel</button>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-label">App-Farbe</p>
+      <div class="color-row" id="colorRow">
+        <button class="color-swatch" data-color="blue" style="background:#007AFF;" type="button" aria-label="Blau"></button>
+        <button class="color-swatch" data-color="purple" style="background:#AF52DE;" type="button" aria-label="Lila"></button>
+        <button class="color-swatch" data-color="pink" style="background:#FF375F;" type="button" aria-label="Pink"></button>
+        <button class="color-swatch" data-color="indigo" style="background:#5856D6;" type="button" aria-label="Indigo"></button>
+        <button class="color-swatch" data-color="teal" style="background:#30B0C7;" type="button" aria-label="Türkis"></button>
+        <button class="color-swatch" data-color="yellow" style="background:#FFCC00;" type="button" aria-label="Gelb"></button>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-label">App-Icon</p>
+      <div class="icon-row" id="iconRow">
+        <button class="icon-swatch" data-icon="🍳" type="button">🍳</button>
+        <button class="icon-swatch" data-icon="🍲" type="button">🍲</button>
+        <button class="icon-swatch" data-icon="🎲" type="button">🎲</button>
+        <button class="icon-swatch" data-icon="🥘" type="button">🥘</button>
+        <button class="icon-swatch" data-icon="🍜" type="button">🍜</button>
+        <button class="icon-swatch" data-icon="🧑‍🍳" type="button">🧑‍🍳</button>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-label">Abonnement</p>
+      <div class="tier-toggle" id="tierToggle" role="group" aria-label="Free oder Premium">
+        <button class="tier-btn active" data-tier="free" type="button">Free</button>
+        <button class="tier-btn" data-tier="premium" type="button">Premium</button>
+      </div>
+      <p class="menu-hint">Premium schaltet Foto-Kochtagebuch, 21 zusätzliche Gerichte und den Wochenplaner frei.</p>
+    </div>
+  </div>
+</div>
+
+<input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;">
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const dishes = [
+  { name: "Spaghetti Aglio e Olio", emoji: "🍝", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["nudeln","knoblauch","olivenoel","chili"] },
+  { name: "Rührei mit Speck", emoji: "🍳", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["eier","speck","butter"] },
+  { name: "Caprese-Salat", emoji: "🍅", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["tomaten","mozzarella","basilikum","olivenoel"] },
+  { name: "Toast Hawaii", emoji: "🍍", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["toast","schinken","ananas","reibekaese"] },
+  { name: "Pfannkuchen", emoji: "🥞", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["mehl","eier","milch","zucker"] },
+  { name: "Quesadillas", emoji: "🫓", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["tortilla","reibekaese","paprika","zwiebeln"] },
+  { name: "Gemüse-Omelett", emoji: "🥚", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["eier","paprika","zwiebeln","champignons"] },
+  { name: "Couscous-Salat", emoji: "🌾", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["couscous","tomaten","gurke","zitrone","olivenoel"] },
+  { name: "Avocado-Toast", emoji: "🥑", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["toast","avocado","zitrone","chili"] },
+  { name: "Nudeln mit Pesto", emoji: "🍝", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["nudeln","pesto","reibekaese"] },
+  { name: "Waffeln", emoji: "🧇", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["mehl","eier","milch","butter","zucker"] },
+  { name: "Schokopudding", emoji: "🍫", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["milch","schokolade","zucker"] },
+  { name: "Bruschetta", emoji: "🍞", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["toast","tomaten","knoblauch","basilikum","olivenoel"] },
+  { name: "Griechischer Salat", emoji: "🥗", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["tomaten","gurke","feta","olivenoel"] },
+  { name: "Tomatensuppe", emoji: "🍅", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["dosentomaten","zwiebeln","sahne","basilikum"] },
+  { name: "Burrito Bowl", emoji: "🌯", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["reis","kichererbsen","avocado","paprika","zitrone"] },
+  { name: "Pancakes (fluffig)", emoji: "🥞", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["mehl","eier","milch","honig"] },
+  { name: "Kartoffelsuppe", emoji: "🥔", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["kartoffeln","zwiebeln","bruehe","sahne"] },
+  { name: "Chili sin Carne", emoji: "🌶️", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["dosentomaten","kichererbsen","paprika","zwiebeln","chili"] },
+  { name: "Currywurst mit Pommes", emoji: "🌭", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["wurst","dosentomaten","currypulver","kartoffeln"] },
+  { name: "Gemüsecurry mit Reis", emoji: "🍛", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["reis","kokosmilch","currypulver","paprika","zucchini"] },
+  { name: "Spaghetti Bolognese", emoji: "🍝", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["nudeln","hackfleisch","dosentomaten","zwiebeln","knoblauch"] },
+  { name: "Falafel mit Hummus", emoji: "🧆", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["kichererbsen","knoblauch","zitrone","petersilie"] },
+  { name: "Hähnchen-Gemüse-Pfanne", emoji: "🍗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","paprika","zucchini","zwiebeln"] },
+  { name: "Kürbissuppe", emoji: "🎃", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["kuerbis","zwiebeln","bruehe","kokosmilch"] },
+  { name: "Risotto mit Pilzen", emoji: "🍚", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["reis","champignons","zwiebeln","reibekaese","bruehe"] },
+  { name: "Flammkuchen", emoji: "🫓", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["mehl","sahne","zwiebeln","speck"] },
+  { name: "Shakshuka", emoji: "🍳", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["eier","dosentomaten","paprika","zwiebeln","chili"] },
+  { name: "Linsensuppe", emoji: "🍲", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["linsen","karotten","zwiebeln","bruehe"] },
+  { name: "Käsespätzle", emoji: "🧀", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["mehl","eier","reibekaese","zwiebeln"] },
+  { name: "Fischstäbchen mit Kartoffelsalat", emoji: "🐟", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["fisch","kartoffeln","essig","zwiebeln"] },
+  { name: "Milchreis", emoji: "🍚", time: "normal", diet: "vegetarisch", type: "süß", ingredients: ["reis","milch","zucker","zimt"] },
+  { name: "Caesar Salad", emoji: "🥗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["salat","haehnchen","reibekaese","toast"] },
+  { name: "Thai-Curry mit Tofu", emoji: "🍛", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["tofu","kokosmilch","currypulver","paprika","zucchini"] },
+  { name: "Kartoffelgratin", emoji: "🥔", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["kartoffeln","sahne","reibekaese","knoblauch"] },
+  { name: "Gebackene Süßkartoffel", emoji: "🍠", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["suesskartoffel","kichererbsen","avocado","zitrone"] },
+  { name: "Chicken Tikka Masala", emoji: "🍛", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","dosentomaten","sahne","currypulver","zwiebeln"] },
+  { name: "Bibimbap", emoji: "🍚", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["reis","eier","karotten","spinat","sojasauce"] },
+  { name: "Minestrone", emoji: "🍲", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["dosentomaten","karotten","zucchini","nudeln","bruehe"] },
+  { name: "Ofengemüse mit Feta", emoji: "🍆", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["aubergine","zucchini","paprika","feta","olivenoel"] },
+  { name: "Döner-Bowl", emoji: "🥙", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","salat","tomaten","gurke","joghurt"] },
+  { name: "Kürbis-Gnocchi-Pfanne", emoji: "🎃", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["gnocchi","kuerbis","butter","reibekaese"] },
+  { name: "Vegane Bolognese", emoji: "🍝", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["nudeln","linsen","dosentomaten","zwiebeln","knoblauch"] },
+  { name: "Rinderbraten mit Klößen", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","kartoffeln","karotten","zwiebeln"] },
+  { name: "Lasagne", emoji: "🥘", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["nudeln","hackfleisch","dosentomaten","reibekaese","sahne"] },
+  { name: "Schweinebraten", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["schweinefleisch","kartoffeln","zwiebeln","bruehe"] },
+  { name: "Paella", emoji: "🥘", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["reis","haehnchen","fisch","paprika","zwiebeln"] },
+  { name: "Selbstgemachte Pizza", emoji: "🍕", time: "aufwendig", diet: "vegetarisch", type: "herzhaft", ingredients: ["mehl","tomaten","reibekaese","basilikum","olivenoel"] },
+  { name: "Gulasch", emoji: "🍲", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","zwiebeln","paprikapulver","bruehe"] },
+  { name: "Ramen from scratch", emoji: "🍜", time: "aufwendig", diet: "vegetarisch", type: "herzhaft", ingredients: ["nudeln","eier","sojasauce","champignons","zwiebeln"] },
+  { name: "Kürbisrisotto mit Salbeibutter", emoji: "🎃", time: "aufwendig", diet: "vegetarisch", type: "herzhaft", ingredients: ["reis","kuerbis","butter","reibekaese"] },
+  { name: "Apfelkuchen", emoji: "🥧", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","apfel","zucker","butter","zimt"] },
+  { name: "Bananenbrot", emoji: "🍌", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","banane","zucker","butter","eier"] },
+  { name: "Zimtschnecken", emoji: "🌀", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","zimt","butter","zucker","milch"] },
+  { name: "Enchiladas", emoji: "🌯", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["tortilla","hackfleisch","dosentomaten","reibekaese","zwiebeln"] },
+  { name: "Pad Thai", emoji: "🍜", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["nudeln","tofu","karotten","erdnuesse","sojasauce"], premium: true },
+  { name: "Katsu Curry", emoji: "🍛", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","currypulver","reis","karotten"], premium: true },
+  { name: "Butter Chicken", emoji: "🍛", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","dosentomaten","sahne","currypulver","knoblauch"], premium: true },
+  { name: "Miso-Suppe", emoji: "🍲", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["tofu","champignons","sojasauce","ingwer"], premium: true },
+  { name: "Gyoza", emoji: "🥟", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["hackfleisch","knoblauch","ingwer","sojasauce","zwiebeln"], premium: true },
+  { name: "Ratatouille", emoji: "🍆", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["aubergine","zucchini","paprika","tomaten","knoblauch"], premium: true },
+  { name: "Moussaka", emoji: "🍆", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["aubergine","hackfleisch","kartoffeln","sahne","tomaten"], premium: true },
+  { name: "Okonomiyaki", emoji: "🥞", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["mehl","eier","karotten","speck","sojasauce"], premium: true },
+  { name: "Tacos al Pastor", emoji: "🌮", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["schweinefleisch","ananas","tortilla","zwiebeln","chili"], premium: true },
+  { name: "Croque Monsieur", emoji: "🥪", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["toast","schinken","reibekaese","butter"], premium: true },
+  { name: "Boeuf Bourguignon", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","karotten","champignons","zwiebeln","bruehe"], premium: true },
+  { name: "Baba Ganoush mit Fladenbrot", emoji: "🫓", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["aubergine","knoblauch","zitrone","olivenoel","toast"], premium: true },
+  { name: "Shepherd's Pie", emoji: "🥧", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["hackfleisch","kartoffeln","karotten","zwiebeln","bruehe"], premium: true },
+  { name: "Churros mit Schokosoße", emoji: "🍩", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","zucker","zimt","schokolade","butter"], premium: true },
+  { name: "Tiramisu", emoji: "🍰", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["eier","zucker","sahne","schokolade"], premium: true },
+  { name: "Crème brûlée", emoji: "🍮", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["eier","sahne","zucker"], premium: true },
+  { name: "Pho", emoji: "🍜", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["nudeln","haehnchen","bruehe","ingwer","zwiebeln"], premium: true },
+  { name: "Poke Bowl", emoji: "🥗", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["reis","avocado","gurke","karotten","sojasauce"], premium: true },
+  { name: "Spinat-Kichererbsen-Curry", emoji: "🍛", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["spinat","kichererbsen","currypulver","kokosmilch","knoblauch"], premium: true },
+  { name: "Baklava", emoji: "🍯", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","honig","butter","zimt"], premium: true },
+  { name: "Käsefondue", emoji: "🧀", time: "aufwendig", diet: "vegetarisch", type: "herzhaft", ingredients: ["reibekaese","toast","knoblauch","essig"], premium: true },
+  { name: "Wiener Schnitzel", emoji: "🍖", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["schweinefleisch","mehl","eier","zitrone"], premium: true },
+  { name: "Rouladen", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","speck","zwiebeln","gurke"], premium: true },
+  { name: "Kartoffelpuffer", emoji: "🥔", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["kartoffeln","eier","mehl","zwiebeln"], premium: true },
+  { name: "Rotkohl mit Knödeln", emoji: "🥬", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["rotkohl","apfel","zwiebeln","kartoffeln"], premium: true },
+  { name: "Königsberger Klopse", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["hackfleisch","eier","zitrone","kapern"], premium: true },
+  { name: "Maultaschen", emoji: "🥟", time: "aufwendig", diet: "vegetarisch", type: "herzhaft", ingredients: ["mehl","eier","spinat","zwiebeln"], premium: true },
+  { name: "Sauerbraten", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","zwiebeln","honig","essig"], premium: true },
+  { name: "Labskaus", emoji: "🥔", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["kartoffeln","rindfleisch","zwiebeln","essig"], premium: true },
+  { name: "Penne Arrabbiata", emoji: "🍝", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["nudeln","dosentomaten","knoblauch","chili"], premium: true },
+  { name: "Risotto alla Milanese", emoji: "🍚", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["reis","bruehe","butter","parmesan"], premium: true },
+  { name: "Saltimbocca", emoji: "🍖", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["schweinefleisch","schinken","basilikum","butter"], premium: true },
+  { name: "Panzanella", emoji: "🥗", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["toast","tomaten","gurke","olivenoel"], premium: true },
+  { name: "Orecchiette mit Spinat und Parmesan", emoji: "🍝", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["nudeln","spinat","knoblauch","parmesan"], premium: true },
+  { name: "Vitello Tonnato", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","fisch","kapern","zitrone"], premium: true },
+  { name: "Panna Cotta", emoji: "🍮", time: "normal", diet: "vegetarisch", type: "süß", ingredients: ["sahne","zucker","zitrone"], premium: true },
+  { name: "Cannoli", emoji: "🍩", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","zucker","quark","schokolade"], premium: true },
+  { name: "Focaccia", emoji: "🍞", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["mehl","olivenoel","rosmarin","knoblauch"], premium: true },
+  { name: "Osso Buco", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","polenta","sellerie","tomaten"], premium: true },
+  { name: "Quiche Lorraine", emoji: "🥧", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["mehl","eier","speck","sahne"], premium: true },
+  { name: "Coq au Vin", emoji: "🍗", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","champignons","zwiebeln","bruehe"], premium: true },
+  { name: "Crêpes", emoji: "🥞", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["mehl","eier","milch","zucker"], premium: true },
+  { name: "Bouillabaisse", emoji: "🍲", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["fisch","tomaten","knoblauch","paprikapulver"], premium: true },
+  { name: "Croissant", emoji: "🥐", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","butter","zucker","milch"], premium: true },
+  { name: "Französische Zwiebelsuppe", emoji: "🍲", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["zwiebeln","lauch","bruehe","reibekaese"], premium: true },
+  { name: "Niçoise-Salat", emoji: "🥗", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["salat","fisch","eier","oliven"], premium: true },
+  { name: "Tortilla Española", emoji: "🍳", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["kartoffeln","eier","zwiebeln","olivenoel"], premium: true },
+  { name: "Gazpacho", emoji: "🍅", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["tomaten","gurke","paprika","olivenoel"], premium: true },
+  { name: "Patatas Bravas", emoji: "🥔", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["kartoffeln","dosentomaten","paprikapulver","olivenoel"], premium: true },
+  { name: "Crema Catalana", emoji: "🍮", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["eier","milch","zucker","zimt"], premium: true },
+  { name: "Empanadas", emoji: "🥟", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["mehl","hackfleisch","zwiebeln","paprika"], premium: true },
+  { name: "Souvlaki", emoji: "🍗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","zitrone","olivenoel","joghurt"], premium: true },
+  { name: "Tzatziki mit Fladenbrot", emoji: "🥙", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["joghurt","gurke","knoblauch","toast"], premium: true },
+  { name: "Fattoush", emoji: "🥗", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["salat","gurke","tomaten","zitrone"], premium: true },
+  { name: "Kibbeh", emoji: "🧆", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["hackfleisch","bulgur","zwiebeln","mandeln"], premium: true },
+  { name: "Shawarma-Bowl", emoji: "🍗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","joghurt","salat","tomaten"], premium: true },
+  { name: "Tabouleh", emoji: "🥗", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["bulgur","petersilie","tomaten","zitrone"], premium: true },
+  { name: "Halloumi vom Grill", emoji: "🧀", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["feta","zucchini","paprika","olivenoel"], premium: true },
+  { name: "Palak Paneer", emoji: "🍛", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["spinat","feta","sahne","currypulver"], premium: true },
+  { name: "Dal Tarka", emoji: "🍛", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["linsen","knoblauch","zwiebeln","currypulver"], premium: true },
+  { name: "Biryani", emoji: "🍚", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["reis","haehnchen","currypulver","zwiebeln"], premium: true },
+  { name: "Samosas", emoji: "🥟", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["mehl","kartoffeln","karotten","currypulver"], premium: true },
+  { name: "Chana Masala", emoji: "🍛", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["kichererbsen","dosentomaten","zwiebeln","kreuzkuemmel"], premium: true },
+  { name: "Tandoori-Hähnchen", emoji: "🍗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","joghurt","currypulver","zitrone"], premium: true },
+  { name: "Gulab Jamun", emoji: "🍯", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","milch","zucker","honig"], premium: true },
+  { name: "Rotes Thai-Curry mit Hähnchen", emoji: "🍛", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","kokosmilch","currypulver","zucchini"], premium: true },
+  { name: "Frühlingsrollen", emoji: "🥟", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["mehl","karotten","spinat","sojasauce"], premium: true },
+  { name: "Massaman Curry", emoji: "🍛", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","kokosmilch","kartoffeln","currypulver"], premium: true },
+  { name: "Bún Chả", emoji: "🍜", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["nudeln","hackfleisch","karotten","sojasauce"], premium: true },
+  { name: "Laksa", emoji: "🍜", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["nudeln","kokosmilch","haehnchen","limette"], premium: true },
+  { name: "Mango Sticky Rice", emoji: "🍚", time: "normal", diet: "vegan", type: "süß", ingredients: ["reis","kokosmilch","zucker","banane"], premium: true },
+  { name: "Kung Pao Chicken", emoji: "🍗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","erdnuesse","paprika","sojasauce"], premium: true },
+  { name: "Mapo Tofu", emoji: "🍲", time: "normal", diet: "vegan", type: "herzhaft", ingredients: ["tofu","sojasauce","knoblauch","chili"], premium: true },
+  { name: "Süß-saure Suppe", emoji: "🍲", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["eier","tofu","essig","zucker"], premium: true },
+  { name: "Chow Mein", emoji: "🍜", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["nudeln","hackfleisch","karotten","sojasauce"], premium: true },
+  { name: "Teriyaki-Lachs", emoji: "🐟", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["fisch","sojasauce","honig","ingwer"], premium: true },
+  { name: "Kimchi-Pfanne", emoji: "🍚", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["reis","sauerkraut","eier","sesam"], premium: true },
+  { name: "Bulgogi", emoji: "🍖", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","sojasauce","knoblauch","sesam"], premium: true },
+  { name: "Onigiri", emoji: "🍙", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["reis","sojasauce","sesam"], premium: true },
+  { name: "Tempura-Gemüse", emoji: "🍢", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["zucchini","paprika","mehl","sojasauce"], premium: true },
+  { name: "Guacamole mit Nachos", emoji: "🥑", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["avocado","zitrone","tomaten","tortilla"], premium: true },
+  { name: "Chilaquiles", emoji: "🌶️", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["tortilla","dosentomaten","eier","feta"], premium: true },
+  { name: "Ceviche", emoji: "🐟", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["garnelen","zitrone","koriander","chili"], premium: true },
+  { name: "Churrasco", emoji: "🍖", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["rindfleisch","knoblauch","petersilie","zitrone"], premium: true },
+  { name: "Feijoada", emoji: "🍲", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["schweinefleisch","wurst","linsen","zwiebeln"], premium: true },
+  { name: "Klassischer Cheeseburger", emoji: "🍔", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["hackfleisch","toast","reibekaese","gurke"], premium: true },
+  { name: "Mac and Cheese", emoji: "🧀", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["nudeln","reibekaese","milch","butter"], premium: true },
+  { name: "Fish and Chips", emoji: "🐟", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["fisch","kartoffeln","mehl","zitrone"], premium: true },
+  { name: "BBQ Pulled Pork", emoji: "🍖", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["schweinefleisch","honig","paprikapulver","zwiebeln"], premium: true },
+  { name: "Carrot Cake", emoji: "🥕", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["karotten","mehl","zucker","zimt"], premium: true },
+  { name: "French Toast (Armer Ritter)", emoji: "🍞", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["toast","eier","milch","zimt"], premium: true },
+  { name: "Granola-Bowl mit Joghurt", emoji: "🥣", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["joghurt","honig","banane","mandeln"], premium: true },
+  { name: "Bagel mit Lachs und Quark", emoji: "🥯", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["toast","quark","fisch","gurke"], premium: true },
+  { name: "Porridge mit Apfel", emoji: "🥣", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["milch","honig","apfel","zimt"], premium: true },
+  { name: "Rührtofu", emoji: "🍳", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["tofu","currypulver","paprika","zwiebeln"], premium: true },
+  { name: "Eggs Benedict", emoji: "🍳", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["eier","toast","schinken","butter"], premium: true },
+  { name: "Zitronenkuchen", emoji: "🍋", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","zitrone","zucker","butter"], premium: true },
+  { name: "Schokoladenkuchen", emoji: "🍫", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","schokolade","eier","zucker"], premium: true },
+  { name: "Vanillepudding", emoji: "🍮", time: "schnell", diet: "vegetarisch", type: "süß", ingredients: ["milch","zucker","zimt"], premium: true },
+  { name: "Käsekuchen", emoji: "🍰", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["quark","eier","zucker","mehl"], premium: true },
+  { name: "Mandelkekse", emoji: "🍪", time: "normal", diet: "vegetarisch", type: "süß", ingredients: ["mandeln","mehl","zucker","honig"], premium: true },
+  { name: "Rote Grütze", emoji: "🍮", time: "normal", diet: "vegan", type: "süß", ingredients: ["apfel","zucker","zimt"], premium: true },
+  { name: "Poutine", emoji: "🍟", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["kartoffeln","reibekaese","bruehe"], premium: true },
+  { name: "Piroggen", emoji: "🥟", time: "aufwendig", diet: "vegetarisch", type: "herzhaft", ingredients: ["mehl","kartoffeln","zwiebeln","quark"], premium: true },
+  { name: "Borschtsch", emoji: "🍲", time: "aufwendig", diet: "vegan", type: "herzhaft", ingredients: ["rotkohl","karotten","kartoffeln","zwiebeln"], premium: true },
+  { name: "Apfelstrudel", emoji: "🥧", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","apfel","zimt","butter"], premium: true },
+  { name: "Falscher Hase", emoji: "🍖", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["hackfleisch","eier","zwiebeln","toast"], premium: true },
+  { name: "Paprikahähnchen", emoji: "🍗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","paprikapulver","sahne","zwiebeln"], premium: true },
+  { name: "Chicken Wings BBQ", emoji: "🍗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","honig","paprikapulver","zitrone"], premium: true },
+  { name: "Süßkartoffel-Pommes", emoji: "🍠", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["suesskartoffel","olivenoel","paprikapulver"], premium: true },
+  { name: "Club Sandwich", emoji: "🥪", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["toast","haehnchen","speck","salat"], premium: true },
+  { name: "Reuben Sandwich", emoji: "🥪", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["toast","rindfleisch","sauerkraut","reibekaese"], premium: true },
+  { name: "Gemüse-Frittata", emoji: "🍳", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["eier","zucchini","paprika","feta"], premium: true },
+  { name: "Räucherlachs-Salat", emoji: "🥗", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["salat","fisch","gurke","zitrone"], premium: true },
+  { name: "Waldorf-Salat", emoji: "🥗", time: "schnell", diet: "vegetarisch", type: "herzhaft", ingredients: ["apfel","salat","mandeln","joghurt"], premium: true },
+  { name: "Tajine", emoji: "🍲", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["lamm","aubergine","zitrone","honig"], premium: true },
+  { name: "Grünkohl-Eintopf", emoji: "🥬", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["spinat","kartoffeln","wurst","zwiebeln"], premium: true },
+  { name: "Zwiebelkuchen", emoji: "🥧", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["mehl","zwiebeln","speck","sahne"], premium: true },
+  { name: "Yaki Udon", emoji: "🍜", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["nudeln","haehnchen","karotten","sojasauce"], premium: true },
+  { name: "Katsudon", emoji: "🍚", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["reis","schweinefleisch","eier","sojasauce"], premium: true },
+  { name: "Zabaione", emoji: "🍮", time: "normal", diet: "vegetarisch", type: "süß", ingredients: ["eier","zucker","honig"], premium: true }
+];
+
+const ingredientVocab = {
+  nudeln: { label: "Nudeln", cat: "grund", buyPrice: 1.2, usePrice: 0.6, amount: 400, unit: "g" },
+  reis: { label: "Reis", cat: "grund", buyPrice: 2.2, usePrice: 0.6, amount: 300, unit: "g" },
+  kartoffeln: { label: "Kartoffeln", cat: "grund", buyPrice: 2.5, usePrice: 1, amount: 600, unit: "g" },
+  mehl: { label: "Mehl", cat: "grund", buyPrice: 0.89, usePrice: 0.3, amount: 250, unit: "g" },
+  zucker: { label: "Zucker", cat: "grund", buyPrice: 1, usePrice: 0.2, amount: 100, unit: "g" },
+  toast: { label: "Brot/Toast", cat: "grund", buyPrice: 1.79, usePrice: 0.6, amount: 6, unit: "Scheiben" },
+  couscous: { label: "Couscous", cat: "grund", buyPrice: 1.99, usePrice: 0.7, amount: 250, unit: "g" },
+  tortilla: { label: "Tortilla-Fladen", cat: "grund", buyPrice: 2.29, usePrice: 1.2, amount: 6, unit: "Stück" },
+  gnocchi: { label: "Gnocchi", cat: "grund", buyPrice: 1.99, usePrice: 1.5, amount: 500, unit: "g" },
+  zwiebeln: { label: "Zwiebeln", cat: "vorrat", buyPrice: 1.29, usePrice: 0.25, amount: 2, unit: "Stück" },
+  knoblauch: { label: "Knoblauch", cat: "vorrat", buyPrice: 0.79, usePrice: 0.15, amount: 2, unit: "Zehen" },
+  olivenoel: { label: "Olivenöl", cat: "vorrat", buyPrice: 4.99, usePrice: 0.3, amount: 3, unit: "EL" },
+  bruehe: { label: "Brühe", cat: "vorrat", buyPrice: 1.49, usePrice: 0.4, amount: 500, unit: "ml" },
+  dosentomaten: { label: "Dosentomaten", cat: "vorrat", buyPrice: 0.99, usePrice: 0.9, amount: 400, unit: "g" },
+  kokosmilch: { label: "Kokosmilch", cat: "vorrat", buyPrice: 1.49, usePrice: 1.3, amount: 400, unit: "ml" },
+  sojasauce: { label: "Sojasoße", cat: "vorrat", buyPrice: 2.49, usePrice: 0.25, amount: 3, unit: "EL" },
+  pesto: { label: "Pesto", cat: "vorrat", buyPrice: 2.29, usePrice: 1.5, amount: 100, unit: "g" },
+  essig: { label: "Essig", cat: "vorrat", buyPrice: 1.29, usePrice: 0.15, amount: 2, unit: "EL" },
+  honig: { label: "Honig", cat: "vorrat", buyPrice: 3.49, usePrice: 0.4, amount: 2, unit: "EL" },
+  linsen: { label: "Linsen", cat: "vorrat", buyPrice: 1.79, usePrice: 0.9, amount: 200, unit: "g" },
+  kichererbsen: { label: "Kichererbsen", cat: "vorrat", buyPrice: 0.99, usePrice: 0.9, amount: 400, unit: "g" },
+  eier: { label: "Eier", cat: "milchprodukte", buyPrice: 3.29, usePrice: 0.7, amount: 3, unit: "Stück" },
+  milch: { label: "Milch", cat: "milchprodukte", buyPrice: 1.19, usePrice: 0.5, amount: 250, unit: "ml" },
+  sahne: { label: "Sahne", cat: "milchprodukte", buyPrice: 1.19, usePrice: 1, amount: 200, unit: "ml" },
+  butter: { label: "Butter", cat: "milchprodukte", buyPrice: 2.29, usePrice: 0.5, amount: 30, unit: "g" },
+  reibekaese: { label: "Reibekäse", cat: "milchprodukte", buyPrice: 2.49, usePrice: 1.8, amount: 100, unit: "g" },
+  joghurt: { label: "Joghurt", cat: "milchprodukte", buyPrice: 1.29, usePrice: 0.6, amount: 200, unit: "g" },
+  mozzarella: { label: "Mozzarella", cat: "milchprodukte", buyPrice: 1.19, usePrice: 1.19, amount: 125, unit: "g" },
+  feta: { label: "Feta", cat: "milchprodukte", buyPrice: 2.49, usePrice: 2, amount: 150, unit: "g" },
+  speck: { label: "Speck", cat: "fleisch", buyPrice: 2.29, usePrice: 1.8, amount: 100, unit: "g" },
+  hackfleisch: { label: "Hackfleisch", cat: "fleisch", buyPrice: 4.49, usePrice: 4, amount: 400, unit: "g" },
+  haehnchen: { label: "Hähnchenbrust", cat: "fleisch", buyPrice: 5.99, usePrice: 5.5, amount: 400, unit: "g" },
+  rindfleisch: { label: "Rindfleisch", cat: "fleisch", buyPrice: 8.99, usePrice: 8, amount: 500, unit: "g" },
+  schweinefleisch: { label: "Schweinefleisch", cat: "fleisch", buyPrice: 5.99, usePrice: 5.5, amount: 400, unit: "g" },
+  schinken: { label: "Schinken", cat: "fleisch", buyPrice: 2.29, usePrice: 1.8, amount: 100, unit: "g" },
+  wurst: { label: "Wurst", cat: "fleisch", buyPrice: 2.99, usePrice: 2.5, amount: 300, unit: "g" },
+  fisch: { label: "Fisch", cat: "fleisch", buyPrice: 6.99, usePrice: 6.5, amount: 400, unit: "g" },
+  tofu: { label: "Tofu", cat: "fleisch", buyPrice: 1.99, usePrice: 1.8, amount: 300, unit: "g" },
+  tomaten: { label: "Tomaten", cat: "gemuese", buyPrice: 2.49, usePrice: 1.5, amount: 4, unit: "Stück" },
+  paprika: { label: "Paprika", cat: "gemuese", buyPrice: 1.99, usePrice: 1.3, amount: 2, unit: "Stück" },
+  zucchini: { label: "Zucchini", cat: "gemuese", buyPrice: 1.29, usePrice: 1.1, amount: 1, unit: "Stück" },
+  karotten: { label: "Karotten", cat: "gemuese", buyPrice: 1.19, usePrice: 0.5, amount: 300, unit: "g" },
+  champignons: { label: "Champignons", cat: "gemuese", buyPrice: 1.79, usePrice: 1.5, amount: 250, unit: "g" },
+  spinat: { label: "Spinat", cat: "gemuese", buyPrice: 1.99, usePrice: 1.7, amount: 300, unit: "g" },
+  salat: { label: "Salat", cat: "gemuese", buyPrice: 1.49, usePrice: 1.2, amount: 150, unit: "g" },
+  gurke: { label: "Gurke", cat: "gemuese", buyPrice: 0.99, usePrice: 0.8, amount: 1, unit: "Stück" },
+  kuerbis: { label: "Kürbis", cat: "gemuese", buyPrice: 2.99, usePrice: 2, amount: 500, unit: "g" },
+  suesskartoffel: { label: "Süßkartoffel", cat: "gemuese", buyPrice: 2.29, usePrice: 1.8, amount: 400, unit: "g" },
+  aubergine: { label: "Aubergine", cat: "gemuese", buyPrice: 1.49, usePrice: 1.3, amount: 1, unit: "Stück" },
+  avocado: { label: "Avocado", cat: "obst", buyPrice: 1.29, usePrice: 1.1, amount: 1, unit: "Stück" },
+  zitrone: { label: "Zitrone", cat: "obst", buyPrice: 0.59, usePrice: 0.35, amount: 1, unit: "Stück" },
+  apfel: { label: "Apfel", cat: "obst", buyPrice: 2.49, usePrice: 0.6, amount: 2, unit: "Stück" },
+  banane: { label: "Banane", cat: "obst", buyPrice: 1.79, usePrice: 0.4, amount: 2, unit: "Stück" },
+  ananas: { label: "Ananas", cat: "obst", buyPrice: 2.49, usePrice: 1.2, amount: 300, unit: "g" },
+  basilikum: { label: "Basilikum", cat: "gewuerze", buyPrice: 1.49, usePrice: 0.9, amount: 15, unit: "g" },
+  petersilie: { label: "Petersilie", cat: "gewuerze", buyPrice: 0.99, usePrice: 0.6, amount: 15, unit: "g" },
+  chili: { label: "Chili", cat: "gewuerze", buyPrice: 1.29, usePrice: 0.2, amount: 1, unit: "Stück" },
+  currypulver: { label: "Currypulver", cat: "gewuerze", buyPrice: 1.79, usePrice: 0.3, amount: 2, unit: "TL" },
+  paprikapulver: { label: "Paprikapulver", cat: "gewuerze", buyPrice: 1.49, usePrice: 0.2, amount: 2, unit: "TL" },
+  zimt: { label: "Zimt", cat: "gewuerze", buyPrice: 1.99, usePrice: 0.2, amount: 1, unit: "TL" },
+  schokolade: { label: "Schokolade", cat: "gewuerze", buyPrice: 1.49, usePrice: 1.3, amount: 100, unit: "g" },
+  ingwer: { label: "Ingwer", cat: "gewuerze", buyPrice: 0.99, usePrice: 0.4, amount: 20, unit: "g" },
+  erdnuesse: { label: "Erdnüsse", cat: "gewuerze", buyPrice: 1.99, usePrice: 0.8, amount: 50, unit: "g" },
+  lamm: { label: "Lamm", cat: "fleisch", buyPrice: 9.99, usePrice: 8.5, amount: 500, unit: "g" },
+  garnelen: { label: "Garnelen", cat: "fleisch", buyPrice: 6.99, usePrice: 6, amount: 300, unit: "g" },
+  sellerie: { label: "Sellerie", cat: "gemuese", buyPrice: 1.29, usePrice: 0.6, amount: 1, unit: "Stück" },
+  lauch: { label: "Lauch", cat: "gemuese", buyPrice: 1.19, usePrice: 0.6, amount: 1, unit: "Stück" },
+  rotkohl: { label: "Rotkohl", cat: "gemuese", buyPrice: 1.49, usePrice: 1, amount: 400, unit: "g" },
+  sauerkraut: { label: "Sauerkraut", cat: "gemuese", buyPrice: 1.29, usePrice: 0.9, amount: 300, unit: "g" },
+  oliven: { label: "Oliven", cat: "gewuerze", buyPrice: 2.29, usePrice: 0.8, amount: 80, unit: "g" },
+  kapern: { label: "Kapern", cat: "gewuerze", buyPrice: 2.49, usePrice: 0.3, amount: 20, unit: "g" },
+  rosmarin: { label: "Rosmarin", cat: "gewuerze", buyPrice: 1.29, usePrice: 0.2, amount: 5, unit: "g" },
+  kreuzkuemmel: { label: "Kreuzkümmel", cat: "gewuerze", buyPrice: 1.79, usePrice: 0.2, amount: 1, unit: "TL" },
+  sesam: { label: "Sesam", cat: "gewuerze", buyPrice: 1.49, usePrice: 0.3, amount: 1, unit: "EL" },
+  limette: { label: "Limette", cat: "obst", buyPrice: 0.59, usePrice: 0.35, amount: 1, unit: "Stück" },
+  koriander: { label: "Koriander", cat: "gewuerze", buyPrice: 0.99, usePrice: 0.6, amount: 10, unit: "g" },
+  mandeln: { label: "Mandeln", cat: "gewuerze", buyPrice: 2.99, usePrice: 1, amount: 50, unit: "g" },
+  quark: { label: "Quark", cat: "milchprodukte", buyPrice: 1.29, usePrice: 0.9, amount: 250, unit: "g" },
+  parmesan: { label: "Parmesan", cat: "milchprodukte", buyPrice: 2.99, usePrice: 1.5, amount: 60, unit: "g" },
+  polenta: { label: "Polenta", cat: "grund", buyPrice: 1.99, usePrice: 1.2, amount: 250, unit: "g" },
+  bulgur: { label: "Bulgur", cat: "grund", buyPrice: 1.79, usePrice: 0.8, amount: 200, unit: "g" }
+};
+
+const weekDays = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+
+const levels = [
+  { title: "Kochlehrling", min: 0 },
+  { title: "Beikoch", min: 50 },
+  { title: "Sous-Chef", min: 150 },
+  { title: "Küchenchef", min: 350 },
+  { title: "Chefkoch", min: 700 },
+  { title: "Sternekoch", min: 1200 }
+];
+
+const accentColors = { blue: "#007AFF", purple: "#AF52DE", pink: "#FF375F", indigo: "#5856D6", teal: "#30B0C7", yellow: "#FFCC00" };
+
+const badgeDefs = [
+  { id: "kochlehrling-debuet", icon: "🎓", color: "#007AFF", name: "Kochlehrling-Debüt", desc: "Erstes bestätigtes Gericht", premium: false, progress: function(){ return { current: Math.min(distinctCookedNames().size, 1), target: 1 }; } },
+  { id: "alles-esser", icon: "🍽️", color: "#FF9500", name: "Alles-Esser", desc: "Alle 3 Ernährungsarten gekocht", premium: false, progress: function(){ return { current: dietsCooked().size, target: 3 }; } },
+  { id: "suesser-zahn", icon: "🍰", color: "#FF2D55", name: "Süßer Zahn", desc: "5 süße Gerichte gekocht", premium: false, progress: function(){ return { current: sweetDistinctCount(), target: 5 }; } },
+  { id: "sparfuchs", icon: "🦊", color: "#A2845E", name: "Sparfuchs", desc: "5x nur mit vorhandenen Zutaten gekocht", premium: false, progress: function(){ return { current: strictCookCount(), target: 5 }; } },
+  { id: "restekoenig", icon: "🧺", color: "#34C759", name: "Restekönig", desc: "5x den Warenkorb komplett abgehakt", premium: false, progress: function(){ return { current: profile.cartCompletions || 0, target: 5 }; } },
+  { id: "vielfalt-fan", icon: "🌈", color: "#AF52DE", name: "Vielfalt-Fan", desc: "15 verschiedene Gerichte gekocht", premium: false, progress: function(){ return { current: distinctCookedNames().size, target: 15 }; } },
+  { id: "wiederholungstaeter", icon: "🔁", color: "#5AC8FA", name: "Wiederholungstäter", desc: "Ein Gericht 3x gekocht", premium: false, progress: function(){ const counts = cookCountsMap(); const best = Object.values(counts).reduce(function(m,c){ return Math.max(m,c); }, 0); return { current: Math.min(best,3), target: 3 }; } },
+  { id: "nachteule", icon: "🦉", color: "#5856D6", name: "Nachteule", desc: "Nach Mitternacht gekocht", premium: false, progress: function(){ return { current: nightCookExists() ? 1 : 0, target: 1 }; } },
+  { id: "kompletter-dex", icon: "📖", color: "#00C7BE", name: "Kompletter Dex", desc: "Alle Gerichte entdeckt", premium: false, progress: function(){ return { current: profile.dishesSeen.length, target: dishes.length }; } },
+  { id: "meisterkoch", icon: "👑", color: "#FFCC00", name: "Meisterkoch", desc: "Alle Gerichte gekocht", premium: false, progress: function(){ return { current: distinctCookedNames().size, target: dishes.length }; } },
+  { id: "foodie-fotograf", icon: "📸", color: "#FF3B30", name: "Foodie-Fotograf", desc: "10 Fotos im Kochtagebuch", premium: true, progress: function(){ return { current: Math.min((profile.photos || []).length, 10), target: 10 }; } }
+];
+
+const state = { time: "egal", diet: "egal", type: "egal", ingredientMode: "egal" };
+const weekFilterState = { time: "egal", diet: "egal", type: "egal" };
+const have = new Set();
+const cartMap = new Map();
+const selectedDays = new Set();
+let lastPick = null;
+let currentDish = null;
+let spinning = false;
+let weekSpinning = false;
+let tier = "free";
+let profile = null;
+let profileLoaded = false;
+let pendingConfirmContext = null;
+let confirmedForCurrentResult = false;
+let cartWasComplete = false;
+let peopleCount = 4;
+const prefersReducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+const reelInner = document.getElementById("reelInner");
+const reelEmoji = document.getElementById("reelEmoji");
+const reelName = document.getElementById("reelName");
+const reelTags = document.getElementById("reelTags");
+const portionPriceEl = document.getElementById("portionPrice");
+const ingredientLineEl = document.getElementById("ingredientLine");
+const cartActionEl = document.getElementById("cartAction");
+const recipeLink = document.getElementById("recipeLink");
+const helperText = document.getElementById("helperText");
+const rollBtn = document.getElementById("rollBtn");
+const poolCountEl = document.getElementById("poolCount");
+const emptyMsgEl = document.getElementById("emptyMsg");
+const cartListEl = document.getElementById("cartList");
+const cartEmptyEl = document.getElementById("cartEmpty");
+const cartCountEl = document.getElementById("cartCount");
+const cartClearBtn = document.getElementById("cartClear");
+const confirmRowEl = document.getElementById("confirmRow");
+const photoInputEl = document.getElementById("photoInput");
+const toastContainerEl = document.getElementById("toastContainer");
+const xpLevelEl = document.getElementById("xpLevel");
+const xpLabelEl = document.getElementById("xpLabel");
+const xpFillEl = document.getElementById("xpFill");
+const xpStripEl = document.getElementById("xpStrip");
+const xpStripLabelEl = document.getElementById("xpStripLabel");
+const xpStripFillEl = document.getElementById("xpStripFill");
+const dexStatsEl = document.getElementById("dexStats");
+const dexGridEl = document.getElementById("dexGrid");
+const badgeGridEl = document.getElementById("badgeGrid");
+const tabBadgeCountEl = document.getElementById("tabBadgeCount");
+const galleryBodyEl = document.getElementById("galleryBody");
+const resetProgressBtn = document.getElementById("resetProgress");
+const weekLockedEl = document.getElementById("weekLocked");
+const weekContentEl = document.getElementById("weekContent");
+const weekDayRowsEl = document.getElementById("weekDayRows");
+const budgetInputEl = document.getElementById("budgetInput");
+const budgetSummaryEl = document.getElementById("budgetSummary");
+const addWeekToCartBtn = document.getElementById("addWeekToCartBtn");
+const rollWeekBtn = document.getElementById("rollWeekBtn");
+const peopleMinusBtn = document.getElementById("peopleMinus");
+const peoplePlusBtn = document.getElementById("peoplePlus");
+const peopleCountDisplayEl = document.getElementById("peopleCountDisplay");
+const cartIconBtn = document.getElementById("cartIconBtn");
+const cartIconBadge = document.getElementById("cartIconBadge");
+const cartOverlay = document.getElementById("cartOverlay");
+const favoriteBtnEl = document.getElementById("favoriteBtn");
+const favoritesBtn = document.getElementById("favoritesBtn");
+const favoritesBadgeEl = document.getElementById("favoritesBadge");
+const favoritesOverlay = document.getElementById("favoritesOverlay");
+const favoritesClose = document.getElementById("favoritesClose");
+const favoritesCountEl = document.getElementById("favoritesCount");
+const favoritesEmptyEl = document.getElementById("favoritesEmpty");
+const favoritesListEl = document.getElementById("favoritesList");
+const cartClose = document.getElementById("cartClose");
+const menuBtn = document.getElementById("menuBtn");
+const menuOverlay = document.getElementById("menuOverlay");
+const menuClose = document.getElementById("menuClose");
+const colorRowEl = document.getElementById("colorRow");
+const iconRowEl = document.getElementById("iconRow");
+const appIconTileEl = document.getElementById("appIconTile");
+const themeToggleEl = document.getElementById("themeToggle");
+
+function defaultProfile() {
+  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [] };
+}
+function normalizeProfile(p) {
+  const d = defaultProfile();
+  return {
+    xp: typeof p.xp === "number" ? p.xp : d.xp,
+    dishesSeen: p.dishesSeen || d.dishesSeen,
+    cookLog: p.cookLog || d.cookLog,
+    cartCompletions: typeof p.cartCompletions === "number" ? p.cartCompletions : d.cartCompletions,
+    badgesUnlocked: p.badgesUnlocked || d.badgesUnlocked,
+    photos: p.photos || d.photos,
+    weekPlan: p.weekPlan || d.weekPlan,
+    weekSelectedDays: p.weekSelectedDays || d.weekSelectedDays,
+    weekConfirmed: p.weekConfirmed || d.weekConfirmed,
+    weekBudget: typeof p.weekBudget === "number" ? p.weekBudget : d.weekBudget,
+    peopleCount: typeof p.peopleCount === "number" ? p.peopleCount : d.peopleCount,
+    accentColor: p.accentColor || d.accentColor,
+    appIcon: p.appIcon || d.appIcon,
+    theme: p.theme || d.theme,
+    favorites: p.favorites || d.favorites
+  };
+}
+
+function dishByName(name) { return dishes.find(function(d){ return d.name === name; }); }
+function distinctCookedNames() { return new Set(profile.cookLog.map(function(e){ return e.name; })); }
+function cookCountsMap() { const m = {}; profile.cookLog.forEach(function(e){ m[e.name] = (m[e.name] || 0) + 1; }); return m; }
+function dietsCooked() { const s = new Set(); profile.cookLog.forEach(function(e){ const d = dishByName(e.name); if (d) s.add(d.diet); }); return s; }
+function sweetDistinctCount() { const s = new Set(); profile.cookLog.forEach(function(e){ const d = dishByName(e.name); if (d && d.type === "süß") s.add(e.name); }); return s.size; }
+function nightCookExists() { return profile.cookLog.some(function(e){ return new Date(e.ts).getHours() < 5; }); }
+function strictCookCount() { return profile.cookLog.filter(function(e){ return e.mode === "strict"; }).length; }
+function dishPricePerPortion(dish) {
+  const total = dish.ingredients.reduce(function(sum, id){ return sum + (ingredientVocab[id].usePrice || 0); }, 0);
+  return total / peopleCount;
+}
+function formatEuro(n) { return n.toFixed(2).replace(".", ",") + " €"; }
+function formatAmount(id) {
+  const ing = ingredientVocab[id];
+  if (!ing || typeof ing.amount !== "number") return "";
+  const scaled = ing.amount * (peopleCount / 4);
+  const unit = ing.unit;
+  let val;
+  if (unit === "Stück" || unit === "Zehen" || unit === "Scheiben") {
+    val = Math.max(1, Math.round(scaled));
+  } else if (unit === "g" || unit === "ml") {
+    val = scaled < 10 ? Math.round(scaled) : Math.round(scaled / 10) * 10;
+  } else {
+    val = Math.round(scaled * 2) / 2;
+  }
+  const noSpace = (unit === "g" || unit === "ml");
+  return val + (noSpace ? unit : " " + unit);
+}
+function ingredientDisplay(id) {
+  const amt = formatAmount(id);
+  return (amt ? amt + " " : "") + ingredientVocab[id].label;
+}
+function chefkochUrl(name) { return "https://www.chefkoch.de/rs/s0/" + encodeURIComponent(name) + "/Rezepte.html"; }
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
+  return "rgba(" + r + "," + g + "," + b + "," + alpha + ")";
+}
+function applyAccentColor(key) {
+  const hex = accentColors[key] || accentColors.blue;
+  document.documentElement.style.setProperty("--blue", hex);
+  document.documentElement.style.setProperty("--blue-bg", hexToRgba(hex, 0.12));
+  colorRowEl.querySelectorAll(".color-swatch").forEach(function(btn){ btn.classList.toggle("selected", btn.dataset.color === key); });
+}
+function applyTheme(choice) {
+  const themeChoice = choice === "dark" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", themeChoice);
+  themeToggleEl.querySelectorAll(".tier-btn").forEach(function(btn){ btn.classList.toggle("active", btn.dataset.themeChoice === themeChoice); });
+}
+
+function updateFavoritesBadge() {
+  const n = (profile.favorites || []).length;
+  favoritesBadgeEl.textContent = n;
+  favoritesBadgeEl.style.display = n ? "flex" : "none";
+}
+
+function renderFavoriteBtn(dish) {
+  const isFav = profile.favorites.indexOf(dish.name) !== -1;
+  favoriteBtnEl.textContent = isFav ? "❤️" : "🤍";
+  favoriteBtnEl.classList.toggle("active", isFav);
+  favoriteBtnEl.style.display = "flex";
+}
+
+function toggleFavorite(name) {
+  const idx = profile.favorites.indexOf(name);
+  if (idx === -1) { profile.favorites.push(name); showToast("❤️ Zu Favoriten hinzugefügt"); }
+  else { profile.favorites.splice(idx, 1); showToast("Favorit entfernt"); }
+  saveProfile();
+  updateFavoritesBadge();
+  if (currentDish && currentDish.name === name) renderFavoriteBtn(currentDish);
+  if (favoritesOverlay.style.display === "flex") renderFavoritesSheet();
+}
+
+function renderFavoritesSheet() {
+  const favs = profile.favorites || [];
+  favoritesCountEl.textContent = favs.length;
+  favoritesCountEl.style.display = favs.length ? "inline-block" : "none";
+  if (favs.length === 0) {
+    favoritesEmptyEl.style.display = "block";
+    favoritesListEl.innerHTML = "";
+    return;
+  }
+  favoritesEmptyEl.style.display = "none";
+  favoritesListEl.innerHTML = favs.map(function(name){
+    const dish = dishByName(name);
+    if (!dish) return "";
+    return '<li class="favorite-item"><span class="fav-emoji">' + dish.emoji + '</span><span class="fav-name">' + dish.name + '</span><button type="button" class="fav-remove" data-name="' + name + '">✕</button></li>';
+  }).join("");
+  favoritesListEl.querySelectorAll(".fav-remove").forEach(function(btn){
+    btn.addEventListener("click", function(){ toggleFavorite(btn.dataset.name); });
+  });
+}
+
+async function loadProfile() {
+  let loaded = null;
+  try {
+    const res = await window.storage.get("kochorakel-profile", false);
+    if (res && res.value) loaded = JSON.parse(res.value);
+  } catch (e) { loaded = null; }
+  profile = loaded ? normalizeProfile(loaded) : defaultProfile();
+}
+async function saveProfile() { try { await window.storage.set("kochorakel-profile", JSON.stringify(profile), false); } catch (e) {} }
+function addXp(amount) { profile.xp += amount; }
+
+function getLevelInfo(xp) {
+  let current = levels[0], idx = 0;
+  for (let i = 0; i < levels.length; i++) { if (xp >= levels[i].min) { current = levels[i]; idx = i; } }
+  const next = levels[idx + 1] || null;
+  return { current: current, next: next, index: idx + 1 };
+}
+
+function renderXp() {
+  const info = getLevelInfo(profile.xp);
+  const levelText = "Lvl " + info.index + " · " + info.current.title;
+  xpLevelEl.textContent = levelText;
+  xpStripLabelEl.textContent = levelText;
+  let pct, label;
+  if (info.next) {
+    const span = info.next.min - info.current.min;
+    const progressed = profile.xp - info.current.min;
+    pct = Math.max(0, Math.min(100, (progressed / span) * 100));
+    label = profile.xp + " / " + info.next.min + " XP";
+  } else { pct = 100; label = profile.xp + " XP · Max-Level"; }
+  xpFillEl.style.width = pct + "%";
+  xpStripFillEl.style.width = pct + "%";
+  xpLabelEl.textContent = label;
+}
+
+function renderDex() {
+  const cookedSet = distinctCookedNames();
+  dexStatsEl.textContent = profile.dishesSeen.length + "/" + dishes.length + " entdeckt · " + cookedSet.size + "/" + dishes.length + " gekocht";
+  dexGridEl.innerHTML = dishes.map(function(d){
+    const seen = profile.dishesSeen.indexOf(d.name) !== -1;
+    const cooked = cookedSet.has(d.name);
+    const locked = !seen && d.premium && tier !== "premium";
+    const cls = cooked ? "cooked" : (seen ? "seen" : (locked ? "locked" : "unseen"));
+    const content = seen ? d.emoji : (locked ? "🔒" : "?");
+    const title = seen ? d.name : (locked ? d.name + " (Premium)" : "???");
+    return '<div class="dex-cell ' + cls + '" title="' + title + '">' + content + "</div>";
+  }).join("");
+}
+
+function renderBadges() {
+  tabBadgeCountEl.textContent = profile.badgesUnlocked.length + "/" + badgeDefs.length;
+  badgeGridEl.innerHTML = badgeDefs.map(function(b){
+    const unlocked = profile.badgesUnlocked.indexOf(b.id) !== -1;
+    const premiumLocked = b.premium && tier !== "premium" && !unlocked;
+    const cls = "badge-card" + (unlocked ? " unlocked" : "") + (premiumLocked ? " premium-locked" : "");
+    const p = b.progress();
+    let bottom;
+    if (premiumLocked) {
+      bottom = '<span class="badge-desc">🔒 Nur Premium</span>';
+    } else if (unlocked) {
+      bottom = '<span class="badge-desc">' + b.desc + "</span>";
+    } else {
+      const pct = p.target > 0 ? Math.max(0, Math.min(100, (p.current / p.target) * 100)) : 0;
+      bottom = '<span class="badge-desc">' + b.desc + '</span><div class="badge-progress-track"><div class="badge-progress-fill" style="width:' + pct + '%;"></div></div><span class="badge-progress-label">' + p.current + "/" + p.target + "</span>";
+    }
+    return '<div class="' + cls + '"><span class="badge-icon" style="background:' + b.color + ';">' + b.icon + '</span><span class="badge-name">' + b.name + "</span>" + bottom + "</div>";
+  }).join("");
+}
+
+function renderPhotoGallery() {
+  if (tier !== "premium") {
+    galleryBodyEl.innerHTML = '<p class="locked-msg">🔒 Ab Premium verfügbar — öffne das Menü oben rechts, um Kochfotos zu sammeln.</p>';
+    return;
+  }
+  const photos = (profile && profile.photos) || [];
+  if (photos.length === 0) { galleryBodyEl.innerHTML = '<p class="cart-empty">Noch keine Fotos. Bestätige ein Gericht mit Foto, dann erscheint es hier.</p>'; return; }
+  galleryBodyEl.innerHTML = '<div class="gallery-grid">' + photos.map(function(p){
+    return '<div class="gallery-item"><img src="' + p.dataUrl + '" alt="' + p.name + '"><span>' + p.name + "</span></div>";
+  }).join("") + "</div>";
+}
+
+function showToast(msg) {
+  const t = document.createElement("div");
+  t.className = "xp-toast";
+  t.textContent = msg;
+  toastContainerEl.appendChild(t);
+  requestAnimationFrame(function(){ t.classList.add("show"); });
+  setTimeout(function(){ t.classList.remove("show"); setTimeout(function(){ t.remove(); }, 300); }, 2600);
+}
+
+function checkBadges() {
+  const newlyUnlocked = [];
+  badgeDefs.forEach(function(b){
+    const p = b.progress();
+    if (profile.badgesUnlocked.indexOf(b.id) === -1 && p.current >= p.target) {
+      profile.badgesUnlocked.push(b.id);
+      newlyUnlocked.push(b);
+    }
+  });
+  if (newlyUnlocked.length) {
+    profile.xp += 25 * newlyUnlocked.length;
+    newlyUnlocked.forEach(function(b){ showToast("🏅 Abzeichen freigeschaltet: " + b.name); });
+  }
+}
+
+function afterProgressUpdate() {
+  checkBadges();
+  renderXp();
+  renderDex();
+  renderBadges();
+  renderPhotoGallery();
+  saveProfile();
+}
+
+function computePool(filterState, ignoreTier) {
+  return dishes.filter(function(d){
+    if (filterState.time !== "egal" && d.time !== filterState.time) return false;
+    if (filterState.diet === "vegan" && d.diet !== "vegan") return false;
+    if (filterState.diet === "vegetarisch" && !(d.diet === "vegetarisch" || d.diet === "vegan")) return false;
+    if (filterState.type !== "egal" && d.type !== filterState.type) return false;
+    if (state.ingredientMode !== "egal") {
+      const missing = d.ingredients.filter(function(id){ return !have.has(id); }).length;
+      if (state.ingredientMode === "strict" && missing !== 0) return false;
+      if (state.ingredientMode === "buy2" && missing > 2) return false;
+    }
+    if (!ignoreTier && d.premium && tier !== "premium") return false;
+    return true;
+  });
+}
+function getPool(ignoreTier) { return computePool(state, ignoreTier); }
+function getWeekPool(ignoreTier) { return computePool(weekFilterState, ignoreTier); }
+
+function updatePoolCount() {
+  const pool = getPool();
+  const fullPool = tier === "free" ? getPool(true) : pool;
+  if (pool.length === 0) {
+    poolCountEl.style.display = "none";
+    if (tier === "free" && fullPool.length > 0) {
+      emptyMsgEl.textContent = "Keine Treffer in Free – mit Premium gäbe es " + fullPool.length + " Treffer für diese Filter.";
+    } else if (state.ingredientMode !== "egal" && have.size === 0) {
+      emptyMsgEl.textContent = "Wähl erst ein paar Zutaten aus, die du zu Hause hast.";
+    } else {
+      emptyMsgEl.textContent = "Keine Treffer für diese Kombi – lockere die Filter ein bisschen.";
+    }
+    emptyMsgEl.style.display = "block";
+    rollBtn.disabled = true;
+  } else {
+    emptyMsgEl.style.display = "none";
+    poolCountEl.style.display = "block";
+    let html = "<strong>" + pool.length + "</strong> Gericht" + (pool.length === 1 ? "" : "e") + " im Topf";
+    if (tier === "free" && fullPool.length > pool.length) html += ' <span class="pool-extra">+' + (fullPool.length - pool.length) + " mit Premium</span>";
+    poolCountEl.innerHTML = html;
+    rollBtn.disabled = !profileLoaded;
+  }
+  return pool;
+}
+
+function updateWeekPoolCount() {
+  const el = document.getElementById("weekPoolCount");
+  if (!el) return;
+  const pool = getWeekPool();
+  const fullPool = tier === "free" ? getWeekPool(true) : pool;
+  if (pool.length === 0) {
+    el.style.color = "var(--red)";
+    el.textContent = (tier === "free" && fullPool.length > 0)
+      ? "Keine Treffer in Free – mit Premium gäbe es " + fullPool.length + " Treffer für diese Filter."
+      : "Keine Treffer für diese Kombi – lockere die Filter ein bisschen.";
+  } else {
+    el.style.color = "";
+    let html = "<strong>" + pool.length + "</strong> Gericht" + (pool.length === 1 ? "" : "e") + " im Topf";
+    if (tier === "free" && fullPool.length > pool.length) html += ' <span class="pool-extra">+' + (fullPool.length - pool.length) + " mit Premium</span>";
+    el.innerHTML = html;
+  }
+}
+
+function renderTags(dish) {
+  const tagTime = { schnell: "Schnell", normal: "Normal", aufwendig: "Aufwendig" }[dish.time];
+  const tagDiet = { alles: "Alles", vegetarisch: "Vegetarisch", vegan: "Vegan" }[dish.diet];
+  const tagType = { herzhaft: "Herzhaft", "süß": "Süß" }[dish.type];
+  let html = '<span class="tag">' + tagTime + "</span>" +
+    '<span class="tag' + (dish.diet !== "alles" ? " veg" : "") + '">' + tagDiet + "</span>" +
+    '<span class="tag">' + tagType + "</span>";
+  if (dish.premium) html += '<span class="tag premium">✨ Premium</span>';
+  reelTags.innerHTML = html;
+}
+
+function renderPortionPrice(dish) {
+  portionPriceEl.textContent = "≈ " + formatEuro(dishPricePerPortion(dish)) + " pro Portion";
+}
+
+function renderResultIngredients(dish) {
+  const missing = dish.ingredients.filter(function(id){ return !have.has(id); });
+  let html = "";
+  if (missing.length > 0) {
+    html += '<p class="missing-line"><span class="lbl">Fehlt dir: </span>' + missing.map(function(id){ return ingredientDisplay(id); }).join(", ") + "</p>";
+  } else {
+    html += '<span class="all-have">Du hast schon alles da 🎉</span>';
+  }
+  html += '<button type="button" class="ing-toggle" id="ingToggle">Alle Zutaten anzeigen ▾</button>';
+  html += '<div class="ing-full" id="ingFull" style="display:none;">' + dish.ingredients.map(function(id){
+    return '<span class="ing' + (missing.indexOf(id) !== -1 ? " missing" : "") + '">' + ingredientDisplay(id) + "</span>";
+  }).join(", ") + "</div>";
+  ingredientLineEl.innerHTML = html;
+  document.getElementById("ingToggle").addEventListener("click", function(){
+    const box = document.getElementById("ingFull");
+    const isHidden = box.style.display === "none";
+    box.style.display = isHidden ? "block" : "none";
+    this.textContent = isHidden ? "Zutaten ausblenden ▴" : "Alle Zutaten anzeigen ▾";
+  });
+
+  if (missing.length > 0) {
+    cartActionEl.innerHTML = '<button type="button" class="cart-btn" id="addCartBtn">Fehlendes in den Warenkorb (' + missing.length + ")</button>";
+    document.getElementById("addCartBtn").addEventListener("click", function(){ addToCart(missing); });
+  } else {
+    cartActionEl.innerHTML = "";
+  }
+}
+
+function renderConfirmRow(dish) {
+  confirmRowEl.innerHTML = "";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "confirm-btn";
+  btn.textContent = tier === "premium" ? "📸 Ich hab's gekocht" : "✅ Ich hab's gekocht";
+  let skipBtn = null;
+  if (tier === "premium") {
+    skipBtn = document.createElement("button");
+    skipBtn.type = "button";
+    skipBtn.className = "confirm-skip";
+    skipBtn.textContent = "ohne Foto bestätigen";
+    skipBtn.addEventListener("click", function(){ confirmCook(dish, null, btn, skipBtn); });
+  }
+  btn.addEventListener("click", function(){ handleConfirmClick(dish, btn, skipBtn); });
+  confirmRowEl.appendChild(btn);
+  if (skipBtn) confirmRowEl.appendChild(skipBtn);
+}
+
+function handleConfirmClick(dish, btn, skipBtn) {
+  if (tier === "premium") { pendingConfirmContext = { type: "reel", dish: dish, btn: btn, skipBtn: skipBtn }; photoInputEl.click(); }
+  else { confirmCook(dish, null, btn, skipBtn); }
+}
+
+function compressImage(file) {
+  return new Promise(function(resolve, reject){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        const maxW = 480;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.6));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+photoInputEl.addEventListener("change", async function(e){
+  const file = e.target.files[0];
+  const ctx = pendingConfirmContext;
+  pendingConfirmContext = null;
+  if (!file || !ctx) { photoInputEl.value = ""; return; }
+  let dataUrl = null;
+  try { dataUrl = await compressImage(file); } catch (err) { dataUrl = null; }
+  if (ctx.type === "reel") { confirmCook(ctx.dish, dataUrl, ctx.btn, ctx.skipBtn); }
+  else if (ctx.type === "week") { confirmWeekDay(ctx.day, dataUrl); }
+  photoInputEl.value = "";
+});
+
+function confirmCook(dish, photoDataUrl, btn, skipBtn) {
+  if (!profileLoaded || confirmedForCurrentResult) return;
+  confirmedForCurrentResult = true;
+  const nowIso = new Date().toISOString();
+  profile.cookLog.push({ name: dish.name, ts: nowIso, mode: state.ingredientMode, hasPhoto: !!photoDataUrl });
+  if (photoDataUrl) {
+    profile.photos = profile.photos || [];
+    profile.photos.unshift({ id: Date.now() + "-" + Math.random().toString(36).slice(2), name: dish.name, ts: nowIso, dataUrl: photoDataUrl });
+    if (profile.photos.length > 20) profile.photos.length = 20;
+  }
+  addXp(photoDataUrl ? 15 : 10);
+  showToast((photoDataUrl ? "+15" : "+10") + " XP · Gekocht: " + dish.name);
+  if (btn) { btn.disabled = true; btn.textContent = photoDataUrl ? "📸 Bestätigt ✓" : "✅ Bestätigt ✓"; }
+  if (skipBtn) { skipBtn.disabled = true; skipBtn.style.display = "none"; }
+  afterProgressUpdate();
+}
+
+function addToCart(ids) {
+  ids.forEach(function(id){ if (!cartMap.has(id)) cartMap.set(id, { checked: false }); });
+  cartWasComplete = false;
+  renderCart();
+}
+
+function checkCartCompletion() {
+  const items = Array.from(cartMap.values());
+  const allChecked = items.length > 0 && items.every(function(it){ return it.checked; });
+  if (allChecked && !cartWasComplete) {
+    cartWasComplete = true;
+    profile.cartCompletions = (profile.cartCompletions || 0) + 1;
+    addXp(10);
+    showToast("Warenkorb komplett! +10 XP 🎉");
+  } else if (!allChecked) { cartWasComplete = false; }
+}
+
+function renderCart() {
+  const items = Array.from(cartMap.entries());
+  cartCountEl.textContent = items.length;
+  cartCountEl.style.display = items.length ? "inline-block" : "none";
+  cartClearBtn.style.display = items.length ? "inline-block" : "none";
+  cartIconBadge.textContent = items.length;
+  cartIconBadge.style.display = items.length ? "flex" : "none";
+  if (items.length === 0) { cartListEl.innerHTML = ""; cartEmptyEl.style.display = "block"; return; }
+  cartEmptyEl.style.display = "none";
+  cartListEl.innerHTML = items.map(function(entry){
+    const id = entry[0], item = entry[1];
+    return '<li class="cart-item' + (item.checked ? " checked" : "") + '"><input type="checkbox" id="cart-' + id + '" ' + (item.checked ? "checked" : "") + '><label for="cart-' + id + '">' + ingredientDisplay(id) + "</label></li>";
+  }).join("");
+  items.forEach(function(entry){
+    const id = entry[0];
+    document.getElementById("cart-" + id).addEventListener("change", function(e){
+      cartMap.get(id).checked = e.target.checked;
+      if (profileLoaded && e.target.checked) addXp(2);
+      renderCart();
+      if (profileLoaded) { checkCartCompletion(); afterProgressUpdate(); }
+    });
+  });
+}
+
+function tick(dish) {
+  reelInner.style.transition = "none";
+  reelInner.style.transform = "rotateX(-90deg)";
+  void reelInner.offsetWidth;
+  reelEmoji.textContent = dish.emoji;
+  reelName.textContent = dish.name;
+  renderTags(dish);
+  reelInner.style.transition = "transform 100ms ease-out";
+  reelInner.style.transform = "rotateX(0deg)";
+}
+
+function pickFinal(pool) {
+  let candidates = pool;
+  if (pool.length > 1 && lastPick) candidates = pool.filter(function(d){ return d.name !== lastPick.name; });
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function finish(dish) {
+  spinning = false;
+  lastPick = dish;
+  currentDish = dish;
+  confirmedForCurrentResult = false;
+  helperText.textContent = "Nicht überzeugt? Einfach nochmal klicken.";
+  recipeLink.href = chefkochUrl(dish.name);
+  recipeLink.style.display = "inline-block";
+  renderPortionPrice(dish);
+  renderResultIngredients(dish);
+  renderConfirmRow(dish);
+  renderFavoriteBtn(dish);
+
+  reelInner.classList.remove("rare");
+  reelInner.style.animation = "none";
+  void reelInner.offsetWidth;
+  reelInner.style.animation = "settle 260ms ease-out";
+  if (dish.premium) {
+    void reelInner.offsetWidth;
+    reelInner.classList.add("rare");
+  }
+
+  if (profileLoaded) {
+    const wasNew = profile.dishesSeen.indexOf(dish.name) === -1;
+    if (wasNew) { profile.dishesSeen.push(dish.name); addXp(15); showToast("+15 XP · Neu entdeckt: " + dish.name); }
+    else { addXp(3); }
+    afterProgressUpdate();
+  }
+  updatePoolCount();
+}
+
+function spin() {
+  if (spinning) return;
+  const pool = updatePoolCount();
+  if (pool.length === 0 || !profileLoaded) return;
+  spinning = true;
+  rollBtn.disabled = true;
+  recipeLink.style.display = "none";
+  portionPriceEl.textContent = "";
+  ingredientLineEl.innerHTML = "";
+  cartActionEl.innerHTML = "";
+  confirmRowEl.innerHTML = "";
+  favoriteBtnEl.style.display = "none";
+  reelInner.classList.remove("rare");
+  helperText.textContent = "Es brutzelt …";
+
+  const finalDish = pickFinal(pool);
+  let ticks = 0;
+  const maxTicks = 14;
+  let delay = 60;
+  function loop() {
+    const randomDish = pool[Math.floor(Math.random() * pool.length)];
+    tick(ticks === maxTicks - 1 ? finalDish : randomDish);
+    ticks++;
+    if (ticks < maxTicks) { delay *= 1.14; setTimeout(loop, delay); }
+    else { finish(finalDish); }
+  }
+  loop();
+}
+
+/* week planner */
+function getWeekMissingIngredients() {
+  const missingSet = new Set();
+  weekDays.forEach(function(day){
+    if (!selectedDays.has(day)) return;
+    const dishName = profile.weekPlan[day];
+    if (!dishName) return;
+    const dish = dishByName(dishName);
+    if (!dish) return;
+    dish.ingredients.forEach(function(id){ if (!have.has(id)) missingSet.add(id); });
+  });
+  return Array.from(missingSet);
+}
+
+function pickDayCandidate(pool) {
+  const usedNames = weekDays.map(function(d){ return profile.weekPlan[d]; }).filter(Boolean);
+  let candidates = pool.filter(function(d){ return usedNames.indexOf(d.name) === -1; });
+  if (candidates.length === 0) candidates = pool;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function weekRowHTML(day, dish) {
+  const confirmed = !!profile.weekConfirmed[day];
+  const premiumTint = dish && dish.premium ? " dish-premium" : "";
+  const confirmedCls = confirmed ? " confirmed" : "";
+  const priceLine = dish ? '<span class="week-portion-price">≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
+  const dishLabel = dish ? ('<a class="week-recipe-link" href="' + chefkochUrl(dish.name) + '" target="_blank" rel="noopener">' + dish.emoji + " " + dish.name + "</a>") : "Noch kein Gericht";
+  const checkboxDisabled = (!dish || confirmed) ? " disabled" : "";
+  const checkboxChecked = confirmed ? " checked" : "";
+  const photoBtnHtml = (dish && tier === "premium" && !confirmed) ? '<button type="button" class="week-photo-btn" data-day="' + day + '">📸</button>' : "";
+  const rollClearHtml = confirmed ? "" :
+    '<button type="button" class="week-roll-btn" data-day="' + day + '">🎲</button>' +
+    '<button type="button" class="week-clear-btn' + (dish ? "" : " hidden") + '" data-day="' + day + '">✕</button>';
+  return '<div class="week-row' + premiumTint + confirmedCls + '" data-day="' + day + '">' +
+    '<input type="checkbox" class="week-check" data-day="' + day + '"' + checkboxDisabled + checkboxChecked + '>' +
+    '<span class="week-day-label">' + day + '</span>' +
+    '<span class="week-dish-info"><span class="week-dish">' + dishLabel + '</span>' + priceLine + '</span>' +
+    photoBtnHtml + rollClearHtml +
+  "</div>";
+}
+
+function wireRowButtons(rowEl, day) {
+  if (!rowEl) return;
+  const roll = rowEl.querySelector(".week-roll-btn");
+  if (roll) roll.addEventListener("click", function(){ rollDayDish(day); });
+  const clear = rowEl.querySelector(".week-clear-btn");
+  if (clear) clear.addEventListener("click", function(){ clearDayDish(day); });
+  const check = rowEl.querySelector(".week-check");
+  if (check) check.addEventListener("change", function(){ if (check.checked) confirmWeekDay(day, null); });
+  const photoBtn = rowEl.querySelector(".week-photo-btn");
+  if (photoBtn) photoBtn.addEventListener("click", function(){ pendingConfirmContext = { type: "week", day: day }; photoInputEl.click(); });
+}
+
+function refreshSingleRow(day) {
+  const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
+  if (!rowEl) return;
+  const dishName = profile.weekPlan[day];
+  const dish = dishName ? dishByName(dishName) : null;
+  const wrap = document.createElement("div");
+  wrap.innerHTML = weekRowHTML(day, dish);
+  const replacement = wrap.firstElementChild;
+  rowEl.replaceWith(replacement);
+  wireRowButtons(replacement, day);
+}
+
+function updateRowContent(rowEl, dish, suppressPremiumTint) {
+  if (!rowEl) return;
+  const dishInfo = rowEl.querySelector(".week-dish-info");
+  const priceLine = dish ? '<span class="week-portion-price">≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
+  dishInfo.innerHTML = '<span class="week-dish">' + (dish ? (dish.emoji + " " + dish.name) : "Noch kein Gericht") + '</span>' + priceLine;
+  if (!suppressPremiumTint) rowEl.classList.toggle("dish-premium", !!(dish && dish.premium));
+}
+
+function spinDayRow(day, pool, onComplete) {
+  const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
+  const finalDish = pickDayCandidate(pool);
+  profile.weekPlan[day] = finalDish.name;
+  profile.weekConfirmed[day] = false;
+  if (!rowEl || prefersReducedMotion) {
+    refreshSingleRow(day);
+    if (onComplete) onComplete();
+    return;
+  }
+  let ticks = 0;
+  const maxTicks = 9;
+  let delay = 60;
+  function tickRow() {
+    const isLast = ticks === maxTicks - 1;
+    if (isLast) {
+      refreshSingleRow(day);
+    } else {
+      const randomDish = pool[Math.floor(Math.random() * pool.length)];
+      updateRowContent(rowEl, randomDish, true);
+    }
+    ticks++;
+    if (ticks < maxTicks) { delay *= 1.16; setTimeout(tickRow, delay); }
+    else { if (onComplete) onComplete(); }
+  }
+  tickRow();
+}
+
+function updateAddWeekButton() {
+  const missing = getWeekMissingIngredients();
+  addWeekToCartBtn.disabled = missing.length === 0;
+  addWeekToCartBtn.textContent = missing.length > 0 ? ("Ganze Woche in den Warenkorb (" + missing.length + ")") : "Ganze Woche in den Warenkorb";
+}
+
+function refreshRowPrices() {
+  weekDayRowsEl.querySelectorAll(".week-row").forEach(function(rowEl){
+    const day = rowEl.dataset.day;
+    const dishName = profile.weekPlan[day];
+    const dish = dishName ? dishByName(dishName) : null;
+    const priceEl = rowEl.querySelector(".week-portion-price");
+    if (dish && priceEl) priceEl.textContent = "≈" + formatEuro(dishPricePerPortion(dish)) + "/Portion";
+  });
+}
+
+function confirmWeekDay(day, photoDataUrl) {
+  const dishName = profile.weekPlan[day];
+  if (!dishName || profile.weekConfirmed[day]) return;
+  const dish = dishByName(dishName);
+  if (!dish) return;
+  profile.weekConfirmed[day] = true;
+  const nowIso = new Date().toISOString();
+  profile.cookLog.push({ name: dish.name, ts: nowIso, mode: state.ingredientMode, hasPhoto: !!photoDataUrl });
+  if (photoDataUrl) {
+    profile.photos = profile.photos || [];
+    profile.photos.unshift({ id: Date.now() + "-" + Math.random().toString(36).slice(2), name: dish.name, ts: nowIso, dataUrl: photoDataUrl });
+    if (profile.photos.length > 20) profile.photos.length = 20;
+  }
+  addXp(photoDataUrl ? 15 : 10);
+  showToast((photoDataUrl ? "+15" : "+10") + " XP · Gekocht: " + dish.name);
+  afterProgressUpdate();
+  refreshSingleRow(day);
+}
+
+function rollDayDish(day) {
+  const pool = getWeekPool();
+  if (pool.length === 0) { showToast("Keine Gerichte für die aktuellen Wochen-Filter."); return; }
+  const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
+  if (rowEl) rowEl.classList.add("spinning");
+  spinDayRow(day, pool, function(){
+    saveProfile();
+    updateAddWeekButton();
+    renderBudgetSummary();
+  });
+}
+
+function clearDayDish(day) {
+  profile.weekPlan[day] = null;
+  profile.weekConfirmed[day] = false;
+  saveProfile();
+  refreshSingleRow(day);
+  updateAddWeekButton();
+  renderBudgetSummary();
+}
+
+function rollWholeWeek() {
+  if (weekSpinning) return;
+  const pool = getWeekPool();
+  if (pool.length === 0) { showToast("Keine Gerichte für die aktuellen Wochen-Filter."); return; }
+  if (selectedDays.size === 0) {
+    weekDays.forEach(function(d){ selectedDays.add(d); });
+    profile.weekSelectedDays = Array.from(selectedDays);
+    renderWeekDayChips();
+    renderWeekRows();
+  }
+  const activeDays = weekDays.filter(function(d){ return selectedDays.has(d); });
+  if (activeDays.length === 0) return;
+
+  weekSpinning = true;
+  rollWeekBtn.disabled = true;
+
+  let i = 0;
+  function next() {
+    if (i >= activeDays.length) {
+      weekSpinning = false;
+      rollWeekBtn.disabled = false;
+      saveProfile();
+      updateAddWeekButton();
+      renderBudgetSummary();
+      showToast("🎲 Ganze Woche gewürfelt!");
+      return;
+    }
+    const day = activeDays[i];
+    const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
+    if (rowEl) rowEl.classList.add("spinning");
+    spinDayRow(day, pool, function(){
+      i++;
+      setTimeout(next, prefersReducedMotion ? 0 : 90);
+    });
+  }
+  next();
+}
+
+function renderWeekDayChips() {
+  document.querySelectorAll("#weekDayChips .chip").forEach(function(btn){
+    btn.classList.toggle("active", selectedDays.has(btn.dataset.day));
+  });
+}
+
+function renderWeekRows() {
+  const active = weekDays.filter(function(d){ return selectedDays.has(d); });
+  if (active.length === 0) {
+    weekDayRowsEl.innerHTML = '<p class="cart-empty">Wähl oben Tage aus, die du planen willst.</p>';
+  } else {
+    weekDayRowsEl.innerHTML = active.map(function(day){
+      const dishName = profile.weekPlan[day];
+      const dish = dishName ? dishByName(dishName) : null;
+      return weekRowHTML(day, dish);
+    }).join("");
+    active.forEach(function(day){
+      const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
+      wireRowButtons(rowEl, day);
+    });
+  }
+  updateAddWeekButton();
+}
+
+function renderBudgetSummary() {
+  const missing = getWeekMissingIngredients();
+  const rawTotal = missing.reduce(function(sum, id){ return sum + (ingredientVocab[id].buyPrice || 0); }, 0);
+  const scaledTotal = rawTotal * (peopleCount / 4);
+  const totalStr = formatEuro(scaledTotal);
+  if (typeof profile.weekBudget === "number") {
+    const budgetStr = formatEuro(profile.weekBudget);
+    const pct = Math.max(0, Math.min(100, (scaledTotal / profile.weekBudget) * 100));
+    const over = scaledTotal > profile.weekBudget;
+    budgetSummaryEl.innerHTML = '<div class="budget-track"><div class="budget-fill' + (over ? " over" : "") + '" style="width:' + pct + '%;"></div></div>' +
+      '<p class="budget-text' + (over ? " over" : "") + '">≈ ' + totalStr + " von " + budgetStr + (over ? " – drüber!" : "") + "</p>";
+  } else {
+    budgetSummaryEl.innerHTML = '<p class="budget-text">≈ ' + totalStr + " geschätzt</p>";
+  }
+}
+
+function renderPeopleCount() {
+  peopleCountDisplayEl.textContent = peopleCount;
+  peopleMinusBtn.disabled = peopleCount <= 1;
+  peoplePlusBtn.disabled = peopleCount >= 12;
+}
+
+function renderWeekTab() {
+  const locked = tier !== "premium";
+  weekLockedEl.style.display = locked ? "block" : "none";
+  weekContentEl.style.display = locked ? "none" : "block";
+  if (!locked) {
+    updateWeekPoolCount();
+    renderWeekDayChips();
+    renderWeekRows();
+    renderBudgetSummary();
+    renderPeopleCount();
+  }
+}
+
+document.querySelectorAll("#weekDayChips .chip").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    const day = btn.dataset.day;
+    if (selectedDays.has(day)) { selectedDays.delete(day); btn.classList.remove("active"); }
+    else { selectedDays.add(day); btn.classList.add("active"); }
+    profile.weekSelectedDays = Array.from(selectedDays);
+    saveProfile();
+    renderWeekRows();
+    renderBudgetSummary();
+  });
+});
+
+rollWeekBtn.addEventListener("click", rollWholeWeek);
+
+peopleMinusBtn.addEventListener("click", function(){
+  if (peopleCount <= 1) return;
+  peopleCount--;
+  profile.peopleCount = peopleCount;
+  saveProfile();
+  renderPeopleCount();
+  refreshRowPrices();
+  renderBudgetSummary();
+  renderCart();
+  if (currentDish) { renderPortionPrice(currentDish); renderResultIngredients(currentDish); }
+});
+peoplePlusBtn.addEventListener("click", function(){
+  if (peopleCount >= 12) return;
+  peopleCount++;
+  profile.peopleCount = peopleCount;
+  saveProfile();
+  renderPeopleCount();
+  refreshRowPrices();
+  renderBudgetSummary();
+  renderCart();
+  if (currentDish) { renderPortionPrice(currentDish); renderResultIngredients(currentDish); }
+});
+
+budgetInputEl.addEventListener("input", function(){
+  const val = parseFloat(budgetInputEl.value);
+  profile.weekBudget = isNaN(val) ? null : val;
+  saveProfile();
+  renderBudgetSummary();
+});
+
+addWeekToCartBtn.addEventListener("click", function(){
+  const missing = getWeekMissingIngredients();
+  if (missing.length === 0) return;
+  addToCart(missing);
+  showToast("Wochenliste zum Warenkorb hinzugefügt 🛒");
+});
+
+/* ingredient chip builder */
+Object.keys(ingredientVocab).forEach(function(id){
+  const meta = ingredientVocab[id];
+  const container = document.querySelector('.ing-chips[data-cat="' + meta.cat + '"]');
+  if (!container) return;
+  const btn = document.createElement("button");
+  btn.className = "chip chip-sm";
+  btn.textContent = meta.label;
+  btn.type = "button";
+  btn.addEventListener("click", function(){
+    if (have.has(id)) { have.delete(id); btn.classList.remove("active"); }
+    else { have.add(id); btn.classList.add("active"); }
+    updatePoolCount();
+    if (currentDish) renderResultIngredients(currentDish);
+    if (tier === "premium") { updateAddWeekButton(); renderBudgetSummary(); }
+  });
+  container.appendChild(btn);
+});
+
+document.querySelectorAll(".filter-group:not(.day-picker):not(.week-filter-group)").forEach(function(group){
+  const key = group.dataset.group;
+  group.querySelectorAll(".chip").forEach(function(chip){
+    chip.addEventListener("click", function(){
+      group.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("active"); });
+      chip.classList.add("active");
+      state[key] = chip.dataset.value;
+      updatePoolCount();
+    });
+  });
+});
+
+document.querySelectorAll(".week-filter-group").forEach(function(group){
+  const key = group.dataset.group;
+  group.querySelectorAll(".chip").forEach(function(chip){
+    chip.addEventListener("click", function(){
+      group.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("active"); });
+      chip.classList.add("active");
+      weekFilterState[key] = chip.dataset.value;
+      updateWeekPoolCount();
+    });
+  });
+});
+
+document.querySelectorAll(".tier-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".tier-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    tier = btn.dataset.tier;
+    updatePoolCount();
+    renderDex();
+    renderBadges();
+    renderPhotoGallery();
+    renderWeekTab();
+    if (currentDish && !confirmedForCurrentResult) renderConfirmRow(currentDish);
+  });
+});
+
+function switchTab(tabName) {
+  document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.toggle("active", b.dataset.tab === tabName); });
+  document.getElementById("panelKochen").classList.toggle("active", tabName === "kochen");
+  document.getElementById("panelWoche").classList.toggle("active", tabName === "woche");
+  document.getElementById("panelFortschritt").classList.toggle("active", tabName === "fortschritt");
+}
+document.querySelectorAll(".tab-btn").forEach(function(btn){ btn.addEventListener("click", function(){ switchTab(btn.dataset.tab); }); });
+xpStripEl.addEventListener("click", function(){ switchTab("fortschritt"); });
+
+favoriteBtnEl.addEventListener("click", function(){ if (currentDish) toggleFavorite(currentDish.name); });
+
+favoritesBtn.addEventListener("click", function(){ renderFavoritesSheet(); favoritesOverlay.style.display = "flex"; });
+favoritesClose.addEventListener("click", function(){ favoritesOverlay.style.display = "none"; });
+favoritesOverlay.addEventListener("click", function(e){ if (e.target === favoritesOverlay) favoritesOverlay.style.display = "none"; });
+
+cartIconBtn.addEventListener("click", function(){ cartOverlay.style.display = "flex"; });
+cartClose.addEventListener("click", function(){ cartOverlay.style.display = "none"; });
+cartOverlay.addEventListener("click", function(e){ if (e.target === cartOverlay) cartOverlay.style.display = "none"; });
+
+menuBtn.addEventListener("click", function(){ menuOverlay.style.display = "flex"; });
+menuClose.addEventListener("click", function(){ menuOverlay.style.display = "none"; });
+menuOverlay.addEventListener("click", function(e){ if (e.target === menuOverlay) menuOverlay.style.display = "none"; });
+
+colorRowEl.querySelectorAll(".color-swatch").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    profile.accentColor = btn.dataset.color;
+    saveProfile();
+    applyAccentColor(btn.dataset.color);
+  });
+});
+iconRowEl.querySelectorAll(".icon-swatch").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    profile.appIcon = btn.dataset.icon;
+    saveProfile();
+    appIconTileEl.textContent = btn.dataset.icon;
+    iconRowEl.querySelectorAll(".icon-swatch").forEach(function(b){ b.classList.toggle("selected", b === btn); });
+  });
+});
+themeToggleEl.querySelectorAll(".tier-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    profile.theme = btn.dataset.themeChoice;
+    saveProfile();
+    applyTheme(btn.dataset.themeChoice);
+  });
+});
+
+cartClearBtn.addEventListener("click", function(){ cartMap.clear(); cartWasComplete = false; renderCart(); });
+
+resetProgressBtn.addEventListener("click", async function(){
+  if (!window.confirm("Wirklich deinen ganzen Fortschritt (XP, Abzeichen, Fotos, Wochenplan) löschen?")) return;
+  profile = defaultProfile();
+  selectedDays.clear();
+  peopleCount = 4;
+  await saveProfile();
+  afterProgressUpdate();
+  renderWeekTab();
+  applyAccentColor("blue");
+  applyTheme("light");
+  appIconTileEl.textContent = "🍳";
+  iconRowEl.querySelectorAll(".icon-swatch").forEach(function(b){ b.classList.toggle("selected", b.dataset.icon === "🍳"); });
+  updateFavoritesBadge();
+  showToast("Fortschritt zurückgesetzt");
+});
+
+rollBtn.addEventListener("click", spin);
+
+(async function init(){
+  updatePoolCount();
+  renderCart();
+  await loadProfile();
+  profileLoaded = true;
+  (profile.weekSelectedDays || []).forEach(function(d){ selectedDays.add(d); });
+  peopleCount = typeof profile.peopleCount === "number" ? profile.peopleCount : 4;
+  budgetInputEl.value = typeof profile.weekBudget === "number" ? profile.weekBudget : "";
+  applyAccentColor(profile.accentColor || "blue");
+  applyTheme(profile.theme || "light");
+  appIconTileEl.textContent = profile.appIcon || "🍳";
+  iconRowEl.querySelectorAll(".icon-swatch").forEach(function(b){ b.classList.toggle("selected", b.dataset.icon === (profile.appIcon || "🍳")); });
+  updateFavoritesBadge();
+  helperText.textContent = "Bereit? Filter setzen und losen.";
+  updatePoolCount();
+  renderXp();
+  renderDex();
+  renderBadges();
+  renderPhotoGallery();
+  renderWeekTab();
+})();
+</script>
+</body>
+</html>
