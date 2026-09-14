@@ -13,6 +13,7 @@ Kochorakel ist eine mobile Rezept- und Wochenplan-App mit Gastmodus, Fortschritt
 - serverseitiger Premium-Status
 - geschützter Adminbereich für Nutzer, Premium und Sperrstatus
 - installierbare iPhone-/Android-Web-App mit eigenem Symbol und Offline-Grundfunktion
+- 200 Gerichte mit eigener Rezeptansicht, Portionen, Zutatenmengen und Zubereitung
 
 ## Datenbank vorbereiten
 
@@ -23,7 +24,7 @@ Kochorakel ist eine mobile Rezept- und Wochenplan-App mit Gastmodus, Fortschritt
    - Site URL: `http://localhost:5500/kochorakel.html`
    - Redirect URLs: `http://localhost:5500/**` und `http://127.0.0.1:5500/**`
 
-Das in der SQL-Datei hinterlegte Admin-Konto ist `davinmerkel77@gmail.com`. Das Passwort wird ausschließlich in Supabase Auth verwaltet und gehört nicht in dieses Repository.
+Die Adminrolle wird in Supabase in der Tabelle `profiles` verwaltet. Passwörter werden ausschließlich in Supabase Auth verwaltet und gehören nicht in dieses Repository.
 
 ## Online und auf dem iPhone installieren
 
