@@ -278,6 +278,53 @@ details.panel[open] > summary::after { content: '\2013'; }
 .icon-swatch.selected { border-color: var(--blue); background: var(--blue-bg); }
 .menu-hint { font-size: 11.5px; color: var(--ink-tertiary); margin: 10px 0 0; line-height: 1.4; }
 
+
+/* account, authentication and admin */
+.account-dot { position:absolute; right:1px; bottom:1px; width:9px; height:9px; border-radius:50%; background:var(--ink-tertiary); border:2px solid var(--card-bg); }
+.account-dot.online { background:var(--green); }
+.account-dot.admin { background:var(--orange); }
+.auth-status { display:flex; align-items:center; gap:12px; }
+.auth-avatar { width:46px; height:46px; border-radius:14px; background:var(--blue-bg); color:var(--blue); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.auth-status-copy { min-width:0; flex:1; }
+.auth-status-title { display:block; color:var(--ink); font-size:15px; font-weight:750; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.auth-status-subtitle { display:block; margin-top:3px; color:var(--ink-secondary); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.auth-tabs, .tier-toggle { display:flex; background:var(--fill-track); border-radius:10px; padding:3px; gap:3px; }
+.auth-tab, .tier-btn { flex:1; border:0; background:transparent; color:var(--ink-secondary); border-radius:8px; padding:9px 10px; font-size:13px; font-weight:650; cursor:pointer; }
+.auth-tab.active, .tier-btn.active { background:var(--card-bg); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.12); }
+.tier-btn[data-tier="premium"].active { background:var(--orange); color:#fff; }
+.tier-btn:disabled { cursor:not-allowed; opacity:.72; }
+.auth-form { display:flex; flex-direction:column; gap:11px; margin-top:14px; }
+.auth-field { display:flex; flex-direction:column; gap:6px; }
+.auth-field label { color:var(--ink-secondary); font-size:12px; font-weight:650; }
+.auth-input { width:100%; border:1px solid var(--line); border-radius:11px; padding:11px 12px; background:var(--bg); color:var(--ink); font-size:16px; }
+.auth-input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-bg); }
+.auth-primary, .auth-secondary, .auth-danger { width:100%; border:0; border-radius:11px; padding:11px 14px; font-size:14px; font-weight:700; cursor:pointer; }
+.auth-primary { background:var(--blue); color:#fff; }
+.auth-secondary { background:var(--fill-track); color:var(--ink); }
+.auth-danger { background:var(--red-bg); color:var(--red); }
+.auth-primary:disabled, .auth-secondary:disabled { opacity:.55; cursor:wait; }
+.auth-link { border:0; background:none; color:var(--blue); font-size:12.5px; cursor:pointer; padding:4px; text-align:center; }
+.auth-message { display:none; margin:12px 0 0; border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.4; background:var(--blue-bg); color:var(--blue); }
+.auth-message.error { display:block; background:var(--red-bg); color:var(--red); }
+.auth-message.success { display:block; background:var(--green-bg); color:var(--green); }
+.account-badges { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.account-badge { border-radius:999px; padding:4px 9px; background:var(--fill-track); color:var(--ink-secondary); font-size:10.5px; font-weight:750; }
+.account-badge.admin { background:var(--orange-bg); color:var(--orange); }
+.account-badge.premium { background:var(--orange-bg); color:var(--orange); }
+.sync-state { min-height:16px; margin:8px 0 0; color:var(--ink-tertiary); font-size:11.5px; }
+.account-actions { display:grid; gap:8px; margin-top:12px; }
+.admin-list { display:flex; flex-direction:column; gap:10px; }
+.admin-user { border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--card-bg); }
+.admin-user-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:10px; }
+.admin-user-name { color:var(--ink); font-size:13px; font-weight:750; overflow-wrap:anywhere; }
+.admin-user-email { color:var(--ink-secondary); font-size:11px; overflow-wrap:anywhere; margin-top:2px; }
+.admin-controls { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.admin-check { display:flex; align-items:center; gap:7px; color:var(--ink-secondary); font-size:12px; }
+.admin-save { margin-top:10px; width:100%; border:0; border-radius:9px; padding:9px; background:var(--blue-bg); color:var(--blue); font-weight:700; cursor:pointer; }
+.admin-empty { color:var(--ink-secondary); font-size:13px; text-align:center; padding:16px 4px; }
+.hidden { display:none !important; }
+:root[data-theme="dark"] .auth-input { background:#2C2C2E; }
+
 /* dark mode */
 :root[data-theme="dark"] {
   --bg: #000000;
@@ -314,6 +361,9 @@ details.panel[open] > summary::after { content: '\2013'; }
       </button>
       <button class="header-icon-btn" id="cartIconBtn" type="button" aria-label="Warenkorb">
         🛒<span class="header-badge" id="cartIconBadge" style="display:none;">0</span>
+      </button>
+      <button class="header-icon-btn" id="accountBtn" type="button" aria-label="Konto">
+        👤<span class="account-dot" id="accountDot"></span>
       </button>
       <button class="header-icon-btn" id="menuBtn" type="button" aria-label="Menü">☰</button>
     </div>
@@ -563,7 +613,124 @@ details.panel[open] > summary::after { content: '\2013'; }
         <button class="tier-btn active" data-tier="free" type="button">Free</button>
         <button class="tier-btn" data-tier="premium" type="button">Premium</button>
       </div>
-      <p class="menu-hint">Premium schaltet Foto-Kochtagebuch, 21 zusätzliche Gerichte und den Wochenplaner frei.</p>
+      <p class="menu-hint" id="subscriptionHint">Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.</p>
+    </div>
+  </div>
+</div>
+
+
+<div class="sheet-overlay" id="accountOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="accountTitle">Konto</h2>
+      <button class="sheet-close" id="accountClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+
+    <div id="authLoggedOut">
+      <div class="card">
+        <div class="auth-status">
+          <div class="auth-avatar">👤</div>
+          <div class="auth-status-copy">
+            <span class="auth-status-title">Gastprofil</span>
+            <span class="auth-status-subtitle">Deine Daten bleiben auf diesem Gerät.</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="auth-tabs" role="tablist" aria-label="Anmelden oder registrieren">
+          <button class="auth-tab active" id="loginTabBtn" data-auth-mode="login" type="button">Anmelden</button>
+          <button class="auth-tab" id="registerTabBtn" data-auth-mode="register" type="button">Registrieren</button>
+        </div>
+        <form class="auth-form" id="authForm">
+          <div class="auth-field hidden" id="displayNameField">
+            <label for="authDisplayName">Anzeigename</label>
+            <input class="auth-input" id="authDisplayName" name="displayName" maxlength="50" autocomplete="nickname" placeholder="Dein Name">
+          </div>
+          <div class="auth-field">
+            <label for="authEmail">E-Mail-Adresse</label>
+            <input class="auth-input" id="authEmail" name="email" type="email" autocomplete="email" required placeholder="name@beispiel.de">
+          </div>
+          <div class="auth-field">
+            <label for="authPassword">Passwort</label>
+            <input class="auth-input" id="authPassword" name="password" type="password" minlength="8" autocomplete="current-password" required placeholder="Mindestens 8 Zeichen">
+          </div>
+          <div class="auth-field hidden" id="passwordRepeatField">
+            <label for="authPasswordRepeat">Passwort wiederholen</label>
+            <input class="auth-input" id="authPasswordRepeat" name="passwordRepeat" type="password" minlength="8" autocomplete="new-password" placeholder="Passwort erneut eingeben">
+          </div>
+          <button class="auth-primary" id="authSubmitBtn" type="submit">Anmelden</button>
+          <button class="auth-link" id="forgotPasswordBtn" type="button">Passwort vergessen?</button>
+        </form>
+        <div class="auth-message" id="authMessage" aria-live="polite"></div>
+      </div>
+      <button class="auth-secondary" id="continueGuestBtn" type="button">Als Gast weitermachen</button>
+    </div>
+
+    <div id="authLoggedIn" class="hidden">
+      <div class="card">
+        <div class="auth-status">
+          <div class="auth-avatar" id="accountAvatar">🧑‍🍳</div>
+          <div class="auth-status-copy">
+            <span class="auth-status-title" id="accountDisplayName">Kochorakel-Konto</span>
+            <span class="auth-status-subtitle" id="accountEmail"></span>
+          </div>
+        </div>
+        <div class="account-badges">
+          <span class="account-badge" id="accountRoleBadge">Nutzer</span>
+          <span class="account-badge" id="accountTierBadge">Free</span>
+        </div>
+        <p class="sync-state" id="syncState">Mit der Cloud synchronisiert.</p>
+      </div>
+      <div class="card">
+        <p class="section-label">Profil</p>
+        <form class="auth-form" id="profileForm">
+          <div class="auth-field">
+            <label for="profileDisplayName">Anzeigename</label>
+            <input class="auth-input" id="profileDisplayName" maxlength="50" autocomplete="nickname">
+          </div>
+          <button class="auth-primary" type="submit">Namen speichern</button>
+        </form>
+      </div>
+      <div class="account-actions">
+        <button class="auth-secondary hidden" id="openAdminBtn" type="button">Adminbereich öffnen</button>
+        <button class="auth-danger" id="signOutBtn" type="button">Abmelden</button>
+      </div>
+    </div>
+
+    <div id="passwordRecoveryBox" class="card hidden">
+      <p class="section-label">Neues Passwort</p>
+      <form class="auth-form" id="passwordRecoveryForm">
+        <div class="auth-field">
+          <label for="newPassword">Neues Passwort</label>
+          <input class="auth-input" id="newPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </div>
+        <div class="auth-field">
+          <label for="newPasswordRepeat">Passwort wiederholen</label>
+          <input class="auth-input" id="newPasswordRepeat" type="password" minlength="8" autocomplete="new-password" required>
+        </div>
+        <button class="auth-primary" type="submit">Passwort speichern</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="adminOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="adminTitle">Administration</h2>
+      <button class="sheet-close" id="adminClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+    <div class="card">
+      <div class="auth-status">
+        <div class="auth-avatar">🛡️</div>
+        <div class="auth-status-copy">
+          <span class="auth-status-title">Nutzer verwalten</span>
+          <span class="auth-status-subtitle">Premium vergeben und Konten sperren.</span>
+        </div>
+      </div>
+    </div>
+    <div class="admin-list" id="adminUserList">
+      <p class="admin-empty">Nutzer werden geladen …</p>
     </div>
   </div>
 </div>
@@ -571,7 +738,12 @@ details.panel[open] > summary::after { content: '\2013'; }
 <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;">
 <div class="toast-container" id="toastContainer"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL = "https://ylhulzbbvbeutghljsyi.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_44JxuRidBM7uiSNDliEWNA_uBVT_DGS";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
 const dishes = [
   { name: "Spaghetti Aglio e Olio", emoji: "🍝", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["nudeln","knoblauch","olivenoel","chili"] },
   { name: "Rührei mit Speck", emoji: "🍳", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["eier","speck","butter"] },
@@ -874,6 +1046,11 @@ let weekSpinning = false;
 let tier = "free";
 let profile = null;
 let profileLoaded = false;
+let authMode = "login";
+let currentSession = null;
+let currentProfileRow = null;
+let saveChain = Promise.resolve();
+let passwordRecoveryActive = false;
 let pendingConfirmContext = null;
 let confirmedForCurrentResult = false;
 let cartWasComplete = false;
@@ -940,9 +1117,44 @@ const colorRowEl = document.getElementById("colorRow");
 const iconRowEl = document.getElementById("iconRow");
 const appIconTileEl = document.getElementById("appIconTile");
 const themeToggleEl = document.getElementById("themeToggle");
+const tierToggleEl = document.getElementById("tierToggle");
+const subscriptionHintEl = document.getElementById("subscriptionHint");
+const accountBtn = document.getElementById("accountBtn");
+const accountDot = document.getElementById("accountDot");
+const accountOverlay = document.getElementById("accountOverlay");
+const accountClose = document.getElementById("accountClose");
+const authLoggedOut = document.getElementById("authLoggedOut");
+const authLoggedIn = document.getElementById("authLoggedIn");
+const authForm = document.getElementById("authForm");
+const authDisplayName = document.getElementById("authDisplayName");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const authPasswordRepeat = document.getElementById("authPasswordRepeat");
+const displayNameField = document.getElementById("displayNameField");
+const passwordRepeatField = document.getElementById("passwordRepeatField");
+const authSubmitBtn = document.getElementById("authSubmitBtn");
+const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
+const authMessage = document.getElementById("authMessage");
+const continueGuestBtn = document.getElementById("continueGuestBtn");
+const accountDisplayName = document.getElementById("accountDisplayName");
+const accountEmail = document.getElementById("accountEmail");
+const accountRoleBadge = document.getElementById("accountRoleBadge");
+const accountTierBadge = document.getElementById("accountTierBadge");
+const syncStateEl = document.getElementById("syncState");
+const profileForm = document.getElementById("profileForm");
+const profileDisplayName = document.getElementById("profileDisplayName");
+const openAdminBtn = document.getElementById("openAdminBtn");
+const signOutBtn = document.getElementById("signOutBtn");
+const adminOverlay = document.getElementById("adminOverlay");
+const adminClose = document.getElementById("adminClose");
+const adminUserList = document.getElementById("adminUserList");
+const passwordRecoveryBox = document.getElementById("passwordRecoveryBox");
+const passwordRecoveryForm = document.getElementById("passwordRecoveryForm");
+const newPassword = document.getElementById("newPassword");
+const newPasswordRepeat = document.getElementById("newPasswordRepeat");
 
 function defaultProfile() {
-  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [] };
+  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], localTier: "free" };
 }
 function normalizeProfile(p) {
   const d = defaultProfile();
@@ -961,7 +1173,8 @@ function normalizeProfile(p) {
     accentColor: p.accentColor || d.accentColor,
     appIcon: p.appIcon || d.appIcon,
     theme: p.theme || d.theme,
-    favorites: p.favorites || d.favorites
+    favorites: p.favorites || d.favorites,
+    localTier: p.localTier === "premium" ? "premium" : d.localTier
   };
 }
 
@@ -1057,15 +1270,111 @@ function renderFavoritesSheet() {
   });
 }
 
-async function loadProfile() {
+async function loadGuestProfile() {
   let loaded = null;
   try {
-    const res = await window.storage.get("kochorakel-profile", false);
-    if (res && res.value) loaded = JSON.parse(res.value);
+    const saved = localStorage.getItem("kochorakel-guest-profile") || localStorage.getItem("kochorakel-profile");
+    if (saved) loaded = JSON.parse(saved);
   } catch (e) { loaded = null; }
-  profile = loaded ? normalizeProfile(loaded) : defaultProfile();
+
+  if (!loaded && window.storage && typeof window.storage.get === "function") {
+    try {
+      const legacy = await window.storage.get("kochorakel-profile", false);
+      if (legacy && legacy.value) loaded = JSON.parse(legacy.value);
+    } catch (e) {}
+  }
+  return loaded ? normalizeProfile(loaded) : defaultProfile();
 }
-async function saveProfile() { try { await window.storage.set("kochorakel-profile", JSON.stringify(profile), false); } catch (e) {} }
+
+function hasMeaningfulProgress(candidate) {
+  if (!candidate) return false;
+  return candidate.xp > 0 ||
+    (candidate.dishesSeen && candidate.dishesSeen.length > 0) ||
+    (candidate.favorites && candidate.favorites.length > 0) ||
+    (candidate.cookLog && candidate.cookLog.length > 0) ||
+    Object.keys(candidate.weekPlan || {}).some(function(key){ return !!candidate.weekPlan[key]; });
+}
+
+async function loadCloudProfile(session) {
+  const userId = session.user.id;
+  const profileResult = await supabaseClient
+    .from("profiles")
+    .select("id,email,display_name,role,is_premium,is_suspended")
+    .eq("id", userId)
+    .single();
+
+  if (profileResult.error) throw profileResult.error;
+  currentProfileRow = profileResult.data;
+
+  if (currentProfileRow.is_suspended) {
+    await supabaseClient.auth.signOut();
+    currentSession = null;
+    currentProfileRow = null;
+    throw new Error("Dieses Konto wurde gesperrt.");
+  }
+
+  const dataResult = await supabaseClient
+    .from("user_app_data")
+    .select("data")
+    .eq("user_id", userId)
+    .single();
+
+  if (dataResult.error) throw dataResult.error;
+  const cloudData = dataResult.data && dataResult.data.data;
+  const guestData = await loadGuestProfile();
+
+  if (cloudData && Object.keys(cloudData).length > 0) {
+    profile = normalizeProfile(cloudData);
+  } else if (hasMeaningfulProgress(guestData)) {
+    profile = normalizeProfile(guestData);
+    await supabaseClient.from("user_app_data").upsert({
+      user_id: userId,
+      data: profile,
+      updated_at: new Date().toISOString()
+    });
+    showToast("Gastfortschritt ins Konto übernommen");
+  } else {
+    profile = defaultProfile();
+  }
+
+  tier = currentProfileRow.is_premium ? "premium" : "free";
+}
+
+async function loadProfile() {
+  if (currentSession) {
+    await loadCloudProfile(currentSession);
+  } else {
+    currentProfileRow = null;
+    profile = await loadGuestProfile();
+    tier = profile.localTier === "premium" ? "premium" : "free";
+  }
+}
+
+async function saveProfile() {
+  if (!profile) return;
+  const snapshot = JSON.parse(JSON.stringify(profile));
+
+  if (!currentSession) {
+    try { localStorage.setItem("kochorakel-guest-profile", JSON.stringify(snapshot)); } catch (e) {}
+    return;
+  }
+
+  const userId = currentSession.user.id;
+  if (syncStateEl) syncStateEl.textContent = "Speichert …";
+  saveChain = saveChain.catch(function(){}).then(async function(){
+    const result = await supabaseClient.from("user_app_data").upsert({
+      user_id: userId,
+      data: snapshot,
+      updated_at: new Date().toISOString()
+    });
+    if (result.error) {
+      if (syncStateEl) syncStateEl.textContent = "Synchronisierung fehlgeschlagen.";
+      throw result.error;
+    }
+    if (syncStateEl) syncStateEl.textContent = "Mit der Cloud synchronisiert.";
+  });
+  return saveChain;
+}
 function addXp(amount) { profile.xp += amount; }
 
 function getLevelInfo(xp) {
@@ -1817,11 +2126,17 @@ document.querySelectorAll(".week-filter-group").forEach(function(group){
   });
 });
 
-document.querySelectorAll(".tier-btn").forEach(function(btn){
+tierToggleEl.querySelectorAll("[data-tier]").forEach(function(btn){
   btn.addEventListener("click", function(){
-    document.querySelectorAll(".tier-btn").forEach(function(b){ b.classList.remove("active"); });
-    btn.classList.add("active");
-    tier = btn.dataset.tier;
+    if (currentSession) {
+      showToast("Premium wird über dein Konto verwaltet.");
+      renderTierState();
+      return;
+    }
+    tier = btn.dataset.tier === "premium" ? "premium" : "free";
+    profile.localTier = tier;
+    saveProfile();
+    renderTierState();
     updatePoolCount();
     renderDex();
     renderBadges();
@@ -1830,6 +2145,339 @@ document.querySelectorAll(".tier-btn").forEach(function(btn){
     if (currentDish && !confirmedForCurrentResult) renderConfirmRow(currentDish);
   });
 });
+
+function escapeHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function redirectUrl() {
+  if (window.location.protocol === "file:") return "http://localhost:5500/kochorakel.html";
+  return window.location.origin + window.location.pathname;
+}
+
+function setAuthMessage(message, kind) {
+  authMessage.textContent = message || "";
+  authMessage.className = "auth-message" + (kind ? " " + kind : "");
+  authMessage.style.display = message ? "block" : "none";
+}
+
+function setAuthMode(mode) {
+  authMode = mode === "register" ? "register" : "login";
+  document.querySelectorAll("[data-auth-mode]").forEach(function(btn){
+    btn.classList.toggle("active", btn.dataset.authMode === authMode);
+  });
+  const registering = authMode === "register";
+  displayNameField.classList.toggle("hidden", !registering);
+  passwordRepeatField.classList.toggle("hidden", !registering);
+  authPassword.autocomplete = registering ? "new-password" : "current-password";
+  authSubmitBtn.textContent = registering ? "Konto erstellen" : "Anmelden";
+  forgotPasswordBtn.classList.toggle("hidden", registering);
+  authPasswordRepeat.required = registering;
+  setAuthMessage("", "");
+}
+
+function renderTierState() {
+  tierToggleEl.querySelectorAll("[data-tier]").forEach(function(btn){
+    btn.classList.toggle("active", btn.dataset.tier === tier);
+    btn.disabled = !!currentSession;
+  });
+  if (currentSession) {
+    subscriptionHintEl.textContent = tier === "premium"
+      ? "Premium ist für dieses Konto aktiv."
+      : "Dieses Konto nutzt aktuell Free. Premium wird vom Administrator verwaltet.";
+  } else {
+    subscriptionHintEl.textContent = "Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.";
+  }
+}
+
+function renderAccountState() {
+  const signedIn = !!(currentSession && currentProfileRow);
+  authLoggedOut.classList.toggle("hidden", signedIn);
+  authLoggedIn.classList.toggle("hidden", !signedIn);
+  accountDot.className = "account-dot" + (signedIn ? " online" : "");
+
+  if (!signedIn) {
+    accountBtn.setAttribute("aria-label", "Konto – Gastmodus");
+    renderTierState();
+    return;
+  }
+
+  const isAdmin = currentProfileRow.role === "admin";
+  accountDot.classList.toggle("admin", isAdmin);
+  accountDisplayName.textContent = currentProfileRow.display_name || "Kochorakel-Konto";
+  accountEmail.textContent = currentProfileRow.email || currentSession.user.email || "";
+  profileDisplayName.value = currentProfileRow.display_name || "";
+  accountRoleBadge.textContent = isAdmin ? "Administrator" : "Nutzer";
+  accountRoleBadge.className = "account-badge" + (isAdmin ? " admin" : "");
+  accountTierBadge.textContent = currentProfileRow.is_premium ? "Premium" : "Free";
+  accountTierBadge.className = "account-badge" + (currentProfileRow.is_premium ? " premium" : "");
+  openAdminBtn.classList.toggle("hidden", !isAdmin);
+  accountBtn.setAttribute("aria-label", "Konto – " + (currentProfileRow.display_name || currentProfileRow.email));
+  renderTierState();
+}
+
+function applyProfileToUi() {
+  selectedDays.clear();
+  (profile.weekSelectedDays || []).forEach(function(day){ selectedDays.add(day); });
+  peopleCount = typeof profile.peopleCount === "number" ? profile.peopleCount : 4;
+  budgetInputEl.value = typeof profile.weekBudget === "number" ? profile.weekBudget : "";
+  applyAccentColor(profile.accentColor || "blue");
+  applyTheme(profile.theme || "light");
+  appIconTileEl.textContent = profile.appIcon || "🍳";
+  iconRowEl.querySelectorAll(".icon-swatch").forEach(function(button){
+    button.classList.toggle("selected", button.dataset.icon === (profile.appIcon || "🍳"));
+  });
+  updateFavoritesBadge();
+  updatePoolCount();
+  renderXp();
+  renderDex();
+  renderBadges();
+  renderPhotoGallery();
+  renderWeekTab();
+  renderTierState();
+  renderAccountState();
+}
+
+async function activateSession(session) {
+  profileLoaded = false;
+  rollBtn.disabled = true;
+  currentSession = session;
+  try {
+    await loadProfile();
+    profileLoaded = true;
+    applyProfileToUi();
+    helperText.textContent = "Angemeldet und synchronisiert.";
+    return true;
+  } catch (error) {
+    currentSession = null;
+    currentProfileRow = null;
+    profile = await loadGuestProfile();
+    tier = profile.localTier === "premium" ? "premium" : "free";
+    profileLoaded = true;
+    applyProfileToUi();
+    helperText.textContent = "Gastmodus";
+    setAuthMessage(error.message || "Konto konnte nicht geladen werden.", "error");
+    return false;
+  }
+}
+
+async function switchToGuest() {
+  currentSession = null;
+  currentProfileRow = null;
+  profileLoaded = false;
+  profile = await loadGuestProfile();
+  tier = profile.localTier === "premium" ? "premium" : "free";
+  profileLoaded = true;
+  applyProfileToUi();
+  helperText.textContent = "Gastmodus – Fortschritt bleibt auf diesem Gerät.";
+}
+
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+  const email = authEmail.value.trim().toLowerCase();
+  const password = authPassword.value;
+  const displayName = authDisplayName.value.trim();
+
+  if (!email || password.length < 8) {
+    setAuthMessage("Bitte gib eine gültige E-Mail und mindestens 8 Passwortzeichen ein.", "error");
+    return;
+  }
+  if (authMode === "register" && password !== authPasswordRepeat.value) {
+    setAuthMessage("Die beiden Passwörter stimmen nicht überein.", "error");
+    return;
+  }
+
+  authSubmitBtn.disabled = true;
+  setAuthMessage("Bitte warten …", "");
+  try {
+    if (authMode === "register") {
+      const result = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: { display_name: displayName || email.split("@")[0] },
+          emailRedirectTo: redirectUrl()
+        }
+      });
+      if (result.error) throw result.error;
+      authPassword.value = "";
+      authPasswordRepeat.value = "";
+      if (result.data.session) {
+        await activateSession(result.data.session);
+        setAuthMessage("Konto wurde erstellt.", "success");
+      } else {
+        setAuthMessage("Konto erstellt. Bitte bestätige jetzt den Link in deiner E-Mail.", "success");
+      }
+    } else {
+      const result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+      if (result.error) throw result.error;
+      authPassword.value = "";
+      const active = await activateSession(result.data.session);
+      if (active) setAuthMessage("", "");
+    }
+  } catch (error) {
+    setAuthMessage(error.message || "Anmeldung fehlgeschlagen.", "error");
+  } finally {
+    authSubmitBtn.disabled = false;
+  }
+}
+
+async function requestPasswordReset() {
+  const email = authEmail.value.trim().toLowerCase();
+  if (!email) {
+    setAuthMessage("Trage zuerst deine E-Mail-Adresse ein.", "error");
+    authEmail.focus();
+    return;
+  }
+  forgotPasswordBtn.disabled = true;
+  try {
+    const result = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl() });
+    if (result.error) throw result.error;
+    setAuthMessage("Wenn ein Konto existiert, wurde eine E-Mail zum Zurücksetzen gesendet.", "success");
+  } catch (error) {
+    setAuthMessage(error.message || "Die E-Mail konnte nicht gesendet werden.", "error");
+  } finally {
+    forgotPasswordBtn.disabled = false;
+  }
+}
+
+async function updatePassword(event) {
+  event.preventDefault();
+  if (newPassword.value.length < 8 || newPassword.value !== newPasswordRepeat.value) {
+    setAuthMessage("Die Passwörter müssen übereinstimmen und mindestens 8 Zeichen haben.", "error");
+    return;
+  }
+  const result = await supabaseClient.auth.updateUser({ password: newPassword.value });
+  if (result.error) {
+    setAuthMessage(result.error.message, "error");
+    return;
+  }
+  newPassword.value = "";
+  newPasswordRepeat.value = "";
+  passwordRecoveryActive = false;
+  passwordRecoveryBox.classList.add("hidden");
+  setAuthMessage("Dein neues Passwort wurde gespeichert.", "success");
+}
+
+async function updateDisplayName(event) {
+  event.preventDefault();
+  const name = profileDisplayName.value.trim();
+  if (!name) {
+    showToast("Bitte gib einen Anzeigenamen ein.");
+    return;
+  }
+  const result = await supabaseClient.rpc("update_my_profile", { p_display_name: name });
+  if (result.error) {
+    showToast("Name konnte nicht gespeichert werden.");
+    return;
+  }
+  currentProfileRow.display_name = name.slice(0, 50);
+  renderAccountState();
+  showToast("Profil gespeichert");
+}
+
+async function signOut() {
+  signOutBtn.disabled = true;
+  try {
+    await saveProfile();
+    await supabaseClient.auth.signOut();
+    await switchToGuest();
+    accountOverlay.style.display = "none";
+    showToast("Abgemeldet – Gastmodus aktiv");
+  } finally {
+    signOutBtn.disabled = false;
+  }
+}
+
+async function loadAdminUsers() {
+  if (!currentProfileRow || currentProfileRow.role !== "admin") return;
+  adminUserList.innerHTML = '<p class="admin-empty">Nutzer werden geladen …</p>';
+  const result = await supabaseClient
+    .from("profiles")
+    .select("id,email,display_name,role,is_premium,is_suspended,created_at")
+    .order("created_at", { ascending: false });
+
+  if (result.error) {
+    adminUserList.innerHTML = '<p class="admin-empty">Nutzer konnten nicht geladen werden.</p>';
+    return;
+  }
+  if (!result.data.length) {
+    adminUserList.innerHTML = '<p class="admin-empty">Noch keine Nutzer vorhanden.</p>';
+    return;
+  }
+
+  adminUserList.innerHTML = result.data.map(function(user){
+    const own = currentSession && user.id === currentSession.user.id;
+    const label = user.display_name || user.email || "Unbenannter Nutzer";
+    return '<div class="admin-user" data-user-id="' + escapeHtml(user.id) + '">' +
+      '<div class="admin-user-head"><div><div class="admin-user-name">' + escapeHtml(label) + '</div>' +
+      '<div class="admin-user-email">' + escapeHtml(user.email || "") + '</div></div>' +
+      '<span class="account-badge' + (user.role === "admin" ? " admin" : "") + '">' + (user.role === "admin" ? "Admin" : "Nutzer") + '</span></div>' +
+      '<div class="admin-controls">' +
+      '<label class="admin-check"><input type="checkbox" data-field="premium"' + (user.is_premium ? " checked" : "") + '> Premium</label>' +
+      '<label class="admin-check"><input type="checkbox" data-field="suspended"' + (user.is_suspended ? " checked" : "") + (own ? " disabled" : "") + '> Gesperrt</label>' +
+      '</div><button class="admin-save" type="button">Änderungen speichern</button></div>';
+  }).join("");
+
+  adminUserList.querySelectorAll(".admin-user").forEach(function(row){
+    row.querySelector(".admin-save").addEventListener("click", async function(){
+      const button = this;
+      const premium = row.querySelector('[data-field="premium"]').checked;
+      const suspended = row.querySelector('[data-field="suspended"]').checked;
+      button.disabled = true;
+      button.textContent = "Speichert …";
+      const result = await supabaseClient.rpc("admin_set_user_access", {
+        p_user_id: row.dataset.userId,
+        p_is_premium: premium,
+        p_is_suspended: suspended
+      });
+      if (result.error) {
+        showToast("Änderung fehlgeschlagen");
+      } else {
+        showToast("Nutzer aktualisiert");
+        if (currentSession && row.dataset.userId === currentSession.user.id) {
+          currentProfileRow.is_premium = premium;
+          tier = premium ? "premium" : "free";
+          applyProfileToUi();
+        }
+      }
+      button.disabled = false;
+      button.textContent = "Änderungen speichern";
+    });
+  });
+}
+
+async function initializeAuth() {
+  try {
+    const result = await supabaseClient.auth.getSession();
+    if (result.error) throw result.error;
+    currentSession = result.data.session;
+  } catch (error) {
+    currentSession = null;
+    setAuthMessage("Online-Anmeldung ist gerade nicht erreichbar. Der Gastmodus funktioniert weiter.", "error");
+  }
+
+  await loadProfile();
+  profileLoaded = true;
+  applyProfileToUi();
+
+  supabaseClient.auth.onAuthStateChange(function(event, session){
+    if (event === "PASSWORD_RECOVERY") {
+      passwordRecoveryActive = true;
+      passwordRecoveryBox.classList.remove("hidden");
+      accountOverlay.style.display = "flex";
+    } else if (event === "SIGNED_OUT" && currentSession) {
+      setTimeout(function(){ switchToGuest(); }, 0);
+    } else if (event === "SIGNED_IN" && session && (!currentSession || currentSession.user.id !== session.user.id)) {
+      setTimeout(function(){ activateSession(session); }, 0);
+    }
+  });
+}
 
 function switchTab(tabName) {
   document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.toggle("active", b.dataset.tab === tabName); });
@@ -1853,6 +2501,26 @@ cartOverlay.addEventListener("click", function(e){ if (e.target === cartOverlay)
 menuBtn.addEventListener("click", function(){ menuOverlay.style.display = "flex"; });
 menuClose.addEventListener("click", function(){ menuOverlay.style.display = "none"; });
 menuOverlay.addEventListener("click", function(e){ if (e.target === menuOverlay) menuOverlay.style.display = "none"; });
+
+accountBtn.addEventListener("click", function(){ renderAccountState(); accountOverlay.style.display = "flex"; });
+accountClose.addEventListener("click", function(){ accountOverlay.style.display = "none"; });
+accountOverlay.addEventListener("click", function(e){ if (e.target === accountOverlay) accountOverlay.style.display = "none"; });
+continueGuestBtn.addEventListener("click", function(){ accountOverlay.style.display = "none"; });
+document.querySelectorAll("[data-auth-mode]").forEach(function(btn){
+  btn.addEventListener("click", function(){ setAuthMode(btn.dataset.authMode); });
+});
+authForm.addEventListener("submit", handleAuthSubmit);
+forgotPasswordBtn.addEventListener("click", requestPasswordReset);
+profileForm.addEventListener("submit", updateDisplayName);
+signOutBtn.addEventListener("click", signOut);
+passwordRecoveryForm.addEventListener("submit", updatePassword);
+openAdminBtn.addEventListener("click", function(){
+  accountOverlay.style.display = "none";
+  adminOverlay.style.display = "flex";
+  loadAdminUsers();
+});
+adminClose.addEventListener("click", function(){ adminOverlay.style.display = "none"; });
+adminOverlay.addEventListener("click", function(e){ if (e.target === adminOverlay) adminOverlay.style.display = "none"; });
 
 colorRowEl.querySelectorAll(".color-swatch").forEach(function(btn){
   btn.addEventListener("click", function(){
@@ -1900,23 +2568,20 @@ rollBtn.addEventListener("click", spin);
 (async function init(){
   updatePoolCount();
   renderCart();
-  await loadProfile();
-  profileLoaded = true;
-  (profile.weekSelectedDays || []).forEach(function(d){ selectedDays.add(d); });
-  peopleCount = typeof profile.peopleCount === "number" ? profile.peopleCount : 4;
-  budgetInputEl.value = typeof profile.weekBudget === "number" ? profile.weekBudget : "";
-  applyAccentColor(profile.accentColor || "blue");
-  applyTheme(profile.theme || "light");
-  appIconTileEl.textContent = profile.appIcon || "🍳";
-  iconRowEl.querySelectorAll(".icon-swatch").forEach(function(b){ b.classList.toggle("selected", b.dataset.icon === (profile.appIcon || "🍳")); });
-  updateFavoritesBadge();
-  helperText.textContent = "Bereit? Filter setzen und losen.";
-  updatePoolCount();
-  renderXp();
-  renderDex();
-  renderBadges();
-  renderPhotoGallery();
-  renderWeekTab();
+  setAuthMode("login");
+  try {
+    await initializeAuth();
+    helperText.textContent = currentSession ? "Angemeldet und synchronisiert." : "Gastmodus – Fortschritt bleibt auf diesem Gerät.";
+  } catch (error) {
+    currentSession = null;
+    currentProfileRow = null;
+    profile = await loadGuestProfile();
+    tier = profile.localTier === "premium" ? "premium" : "free";
+    profileLoaded = true;
+    applyProfileToUi();
+    helperText.textContent = "Gastmodus – Online-Anmeldung konnte nicht geladen werden.";
+    setAuthMessage(error.message || "Online-Anmeldung ist nicht verfügbar.", "error");
+  }
 })();
 </script>
 </body>
