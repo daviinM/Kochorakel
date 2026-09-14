@@ -1154,7 +1154,7 @@ const newPassword = document.getElementById("newPassword");
 const newPasswordRepeat = document.getElementById("newPasswordRepeat");
 
 function defaultProfile() {
-  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], localTier: "free" };
+  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, cartItems: [], badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], localTier: "free" };
 }
 function normalizeProfile(p) {
   const d = defaultProfile();
@@ -1163,6 +1163,7 @@ function normalizeProfile(p) {
     dishesSeen: p.dishesSeen || d.dishesSeen,
     cookLog: p.cookLog || d.cookLog,
     cartCompletions: typeof p.cartCompletions === "number" ? p.cartCompletions : d.cartCompletions,
+    cartItems: Array.isArray(p.cartItems) ? p.cartItems.filter(function(item){ return item && typeof item.id === "string" && ingredientVocab[item.id]; }).map(function(item){ return { id: item.id, checked: !!item.checked }; }) : d.cartItems,
     badgesUnlocked: p.badgesUnlocked || d.badgesUnlocked,
     photos: p.photos || d.photos,
     weekPlan: p.weekPlan || d.weekPlan,
@@ -1292,6 +1293,7 @@ function hasMeaningfulProgress(candidate) {
     (candidate.dishesSeen && candidate.dishesSeen.length > 0) ||
     (candidate.favorites && candidate.favorites.length > 0) ||
     (candidate.cookLog && candidate.cookLog.length > 0) ||
+    (candidate.cartItems && candidate.cartItems.length > 0) ||
     Object.keys(candidate.weekPlan || {}).some(function(key){ return !!candidate.weekPlan[key]; });
 }
 
@@ -1660,10 +1662,28 @@ function confirmCook(dish, photoDataUrl, btn, skipBtn) {
   afterProgressUpdate();
 }
 
+function syncCartToProfile() {
+  profile.cartItems = Array.from(cartMap.entries()).map(function(entry){
+    return { id: entry[0], checked: !!entry[1].checked };
+  });
+}
+
+function restoreCartFromProfile() {
+  cartMap.clear();
+  (profile.cartItems || []).forEach(function(item){
+    if (ingredientVocab[item.id]) cartMap.set(item.id, { checked: !!item.checked });
+  });
+  const items = Array.from(cartMap.values());
+  cartWasComplete = items.length > 0 && items.every(function(item){ return item.checked; });
+  renderCart();
+}
+
 function addToCart(ids) {
   ids.forEach(function(id){ if (!cartMap.has(id)) cartMap.set(id, { checked: false }); });
   cartWasComplete = false;
+  syncCartToProfile();
   renderCart();
+  saveProfile();
 }
 
 function checkCartCompletion() {
@@ -1696,7 +1716,7 @@ function renderCart() {
       cartMap.get(id).checked = e.target.checked;
       if (profileLoaded && e.target.checked) addXp(2);
       renderCart();
-      if (profileLoaded) { checkCartCompletion(); afterProgressUpdate(); }
+      if (profileLoaded) { checkCartCompletion(); syncCartToProfile(); afterProgressUpdate(); }
     });
   });
 }
@@ -2233,6 +2253,7 @@ function applyProfileToUi() {
     button.classList.toggle("selected", button.dataset.icon === (profile.appIcon || "🍳"));
   });
   updateFavoritesBadge();
+  restoreCartFromProfile();
   updatePoolCount();
   renderXp();
   renderDex();
@@ -2545,16 +2566,19 @@ themeToggleEl.querySelectorAll(".tier-btn").forEach(function(btn){
   });
 });
 
-cartClearBtn.addEventListener("click", function(){ cartMap.clear(); cartWasComplete = false; renderCart(); });
+cartClearBtn.addEventListener("click", function(){ cartMap.clear(); cartWasComplete = false; syncCartToProfile(); renderCart(); saveProfile(); });
 
 resetProgressBtn.addEventListener("click", async function(){
   if (!window.confirm("Wirklich deinen ganzen Fortschritt (XP, Abzeichen, Fotos, Wochenplan) löschen?")) return;
   profile = defaultProfile();
   selectedDays.clear();
+  cartMap.clear();
+  cartWasComplete = false;
   peopleCount = 4;
   await saveProfile();
   afterProgressUpdate();
   renderWeekTab();
+  renderCart();
   applyAccentColor("blue");
   applyTheme("light");
   appIconTileEl.textContent = "🍳";
