@@ -1932,13 +1932,13 @@ function renderResultIngredients(dish) {
   const toAdd = missing.filter(function(id){ return !cartHasSource(id, source); });
   let html = "";
   if (missing.length > 0) {
-    html += '<p class="missing-line"><span class="lbl">Fehlt dir: </span>' + missing.map(function(id){ return ingredientDisplay(id); }).join(", ") + "</p>";
+    html += '<p class="missing-line"><span class="lbl">Fehlt dir: </span>' + missing.map(function(id){ return formatQuantity(scaledRecipeQuantity(dish, id, peopleCount).amount, scaledRecipeQuantity(dish, id, peopleCount).unit) + " " + ingredientVocab[id].label; }).join(", ") + "</p>";
   } else {
     html += '<span class="all-have">Du hast schon alles da 🎉</span>';
   }
   html += '<button type="button" class="ing-toggle" id="ingToggle">Alle Zutaten anzeigen ▾</button>';
   html += '<div class="ing-full" id="ingFull" style="display:none;">' + dish.ingredients.map(function(id){
-    return '<span class="ing' + (missing.indexOf(id) !== -1 ? " missing" : "") + '">' + ingredientDisplay(id) + "</span>";
+    return '<span class="ing' + (missing.indexOf(id) !== -1 ? " missing" : "") + '">' + formatQuantity(scaledRecipeQuantity(dish, id, peopleCount).amount, scaledRecipeQuantity(dish, id, peopleCount).unit) + " " + ingredientVocab[id].label + "</span>";
   }).join(", ") + "</div>";
   ingredientLineEl.innerHTML = html;
   document.getElementById("ingToggle").addEventListener("click", function(){
@@ -2975,6 +2975,7 @@ recipeAddMissing.addEventListener("click", function(){
   addToCart(missing, { dish: currentRecipeDish, portions: recipePeopleCountValue, source: recipeSource(currentRecipeDish) });
   showToast("Zutaten mit Mengen zum Warenkorb hinzugefügt 🛒");
   renderRecipeSheet();
+  if (currentDish && currentDish.name === currentRecipeDish.name) renderResultIngredients(currentDish);
 });
 
 favoritesBtn.addEventListener("click", function(){ renderFavoritesSheet(); favoritesOverlay.style.display = "flex"; });
