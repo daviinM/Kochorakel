@@ -1,4 +1,4 @@
-const CACHE_NAME = "kochorakel-v7";
+const CACHE_NAME = "kochorakel-v8";
 const APP_SHELL = [
   "./", "./index.html", "./kochorakel.html", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
