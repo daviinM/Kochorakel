@@ -221,6 +221,7 @@ body.recipe-modal-open { overflow: hidden; }
 .recipe-steps { counter-reset: recipe-step; list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 11px; color: var(--ink); }
 .recipe-steps li { counter-increment: recipe-step; position: relative; min-height: 62px; margin-left: 16px; padding: 14px 15px 14px 48px; border-radius: 16px; background: var(--fill-track); font-size: 14px; line-height: 1.48; }
 .recipe-steps li::before { content: counter(recipe-step); position: absolute; left: -16px; top: 50%; width: 42px; height: 42px; display: grid; place-items: center; transform: translateY(-50%); border-radius: 50%; color: var(--blue); background: var(--card-bg); border: 1px solid var(--line); font-size: 14px; font-weight: 850; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.recipe-step-time { display: inline-flex; margin: 7px 0 0; padding: 3px 7px; border-radius: 999px; background: var(--card-bg); color: var(--ink-secondary); font-size: 10.5px; font-weight: 700; }
 .recipe-note { margin: 15px 2px 0 32px; color: var(--ink-tertiary); font-size: 11.5px; line-height: 1.45; }
 .recipe-actions { position: sticky; z-index: 7; bottom: calc(-18px - env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 9px; margin: 0 -20px; padding: 15px 20px calc(16px + env(safe-area-inset-bottom)); background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 72%, transparent), var(--bg) 22px); }
 .recipe-cart-btn { order: 2; width: 100%; min-height: 52px; border: none; border-radius: 15px; padding: 14px 16px; background: var(--blue); color: #fff; font-size: 15px; font-weight: 800; cursor: pointer; touch-action: manipulation; box-shadow: 0 8px 22px color-mix(in srgb, var(--blue) 24%, transparent); }
@@ -302,6 +303,10 @@ body.recipe-modal-open { overflow: hidden; }
 .roll-week-btn:hover:not(:disabled) { opacity: .92; }
 .roll-week-btn:active:not(:disabled) { transform: scale(.99); }
 .roll-week-btn:disabled { opacity: .5; cursor: default; }
+.week-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.week-secondary-btn { min-height: 40px; border: none; border-radius: 11px; background: var(--fill-track); color: var(--ink); font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.week-secondary-btn:active { transform: scale(.98); }
+.week-plan-hint { margin: -3px 0 9px; color: var(--ink-tertiary); font-size: 11px; line-height: 1.35; }
 
 .week-row { display: flex; align-items: center; gap: 9px; padding: 9px 2px; border-bottom: 1px solid var(--line); }
 .week-row:last-child { border-bottom: none; }
@@ -315,8 +320,13 @@ body.recipe-modal-open { overflow: hidden; }
 .week-row.confirmed .week-dish { text-decoration: line-through; color: var(--ink-tertiary); }
 .week-portion-price { font-size: 11px; color: var(--ink-secondary); }
 .week-row.confirmed .week-portion-price { opacity: .6; }
+.week-row.locked { background: var(--blue-bg); border-radius: 10px; padding-left: 8px; padding-right: 8px; margin: 0 -8px; border-bottom-color: transparent; }
+.week-row.rest-day .week-dish { color: var(--ink-secondary); font-weight: 650; }
 .week-roll-btn { background: var(--blue-bg); border: none; color: var(--blue); width: 30px; height: 30px; border-radius: 9px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
 .week-roll-btn:hover { background: rgba(0,122,255,.2); }
+.week-roll-btn:disabled { opacity: .32; cursor: default; }
+.week-lock-btn { background: var(--fill-track); border: none; color: var(--ink-secondary); width: 30px; height: 30px; border-radius: 9px; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+.week-lock-btn.active { color: var(--blue); background: var(--blue-bg); }
 .week-clear-btn { background: none; border: none; color: var(--ink-tertiary); font-size: 15px; cursor: pointer; padding: 4px; flex-shrink: 0; }
 .week-clear-btn:hover { color: var(--red); }
 .week-clear-btn.hidden { display: none; }
@@ -339,6 +349,11 @@ body.recipe-modal-open { overflow: hidden; }
 .budget-text { font-size: 13px; color: var(--ink-secondary); margin: 0; }
 .budget-text.over { color: var(--red); font-weight: 700; }
 .budget-hint { font-size: 11px; color: var(--ink-tertiary); margin: 6px 0 0; }
+.week-shopping-list { display: grid; gap: 0; }
+.week-shopping-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 42px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 13.5px; }
+.week-shopping-item:last-child { border-bottom: none; }
+.week-shopping-amount { color: var(--ink-secondary); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.app-version { margin: 4px 0 2px; text-align: center; color: var(--ink-tertiary); font-size: 10.5px; letter-spacing: .02em; }
 
 .reset-link { display: block; margin: 6px auto 0; background: none; border: none; color: var(--ink-secondary); font-size: 11.5px; text-decoration: underline; cursor: pointer; }
 .reset-link:hover { color: var(--ink); }
@@ -595,10 +610,15 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
           <button class="chip" data-day="Sa" type="button">Sa</button>
           <button class="chip" data-day="So" type="button">So</button>
         </div>
-        <button type="button" class="roll-week-btn" id="rollWeekBtn">🎲 Ganze Woche würfeln</button>
+        <button type="button" class="roll-week-btn" id="rollWeekBtn">🎲 Offene Tage würfeln</button>
+        <div class="week-actions">
+          <button type="button" class="week-secondary-btn" id="addRestDayBtn">🥡 Restetag</button>
+          <button type="button" class="week-secondary-btn" id="newWeekBtn">↻ Neue Woche</button>
+        </div>
       </div>
       <div class="card">
         <p class="section-label">Dein Plan</p>
+        <p class="week-plan-hint">🔒 schützt ein Gericht beim nächsten Würfeln. Tippe auf den Namen für das Rezept.</p>
         <div id="weekDayRows"></div>
       </div>
       <div class="card">
@@ -617,6 +637,10 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
         </div>
         <div id="budgetSummary"></div>
         <p class="budget-hint">Richtwerte für das, was du wirklich einkaufen müsstest — keine echten Marktpreise.</p>
+      </div>
+      <div class="card">
+        <p class="section-label">Einkaufsvorschau</p>
+        <div class="week-shopping-list" id="weekShoppingPreview"></div>
       </div>
       <button class="roll-btn" id="addWeekToCartBtn" type="button">Ganze Woche in den Warenkorb</button>
     </div>
@@ -757,6 +781,7 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
       </div>
       <p class="menu-hint" id="subscriptionHint">Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.</p>
     </div>
+    <p class="app-version">Kochorakel · Version 1.1.0</p>
   </div>
 </div>
 
@@ -1183,6 +1208,208 @@ const ingredientVocab = {
   lachs: { label: "Lachs", cat: "fleisch", buyPrice: 8.99, usePrice: 8.99, amount: 600, unit: "g" }
 };
 
+Object.assign(ingredientVocab, {
+  hefe: { label: "Hefe", cat: "grund", buyPrice: 0.49, usePrice: 0.35, amount: 1, unit: "Päckchen" },
+  mascarpone: { label: "Mascarpone", cat: "milchprodukte", buyPrice: 2.49, usePrice: 2.49, amount: 500, unit: "g" },
+  loeffelbiskuits: { label: "Löffelbiskuits", cat: "grund", buyPrice: 1.79, usePrice: 1.79, amount: 250, unit: "g" },
+  kaffee: { label: "Starker Kaffee", cat: "vorrat", buyPrice: 3.99, usePrice: 0.35, amount: 250, unit: "ml" },
+  speisestaerke: { label: "Speisestärke", cat: "grund", buyPrice: 1.19, usePrice: 0.2, amount: 40, unit: "g" },
+  vanille: { label: "Vanille", cat: "gewuerze", buyPrice: 1.49, usePrice: 0.75, amount: 1, unit: "Päckchen" },
+  gelatine: { label: "Gelatine", cat: "gewuerze", buyPrice: 1.29, usePrice: 0.65, amount: 4, unit: "Blätter" },
+  paniermehl: { label: "Paniermehl", cat: "grund", buyPrice: 1.29, usePrice: 0.45, amount: 150, unit: "g" },
+  rotebete: { label: "Rote Bete", cat: "gemuese", buyPrice: 1.49, usePrice: 1.2, amount: 500, unit: "g" },
+  beeren: { label: "Beerenmischung", cat: "obst", buyPrice: 3.49, usePrice: 3.49, amount: 500, unit: "g" },
+  mango: { label: "Mango", cat: "obst", buyPrice: 1.49, usePrice: 1.49, amount: 2, unit: "Stück" },
+  halloumi: { label: "Halloumi", cat: "milchprodukte", buyPrice: 3.29, usePrice: 3.29, amount: 250, unit: "g" },
+  bagel: { label: "Bagels", cat: "grund", buyPrice: 2.49, usePrice: 2.49, amount: 4, unit: "Stück" },
+  filoteig: { label: "Filoteig", cat: "grund", buyPrice: 2.29, usePrice: 2.29, amount: 250, unit: "g" },
+  ricotta: { label: "Ricotta", cat: "milchprodukte", buyPrice: 2.19, usePrice: 2.19, amount: 250, unit: "g" },
+  kalbfleisch: { label: "Kalbfleisch", cat: "fleisch", buyPrice: 11.99, usePrice: 10.5, amount: 600, unit: "g" },
+  gewuerzgurken: { label: "Gewürzgurken", cat: "gemuese", buyPrice: 1.69, usePrice: 0.8, amount: 4, unit: "Stück" },
+  fladenbrot: { label: "Fladenbrot", cat: "grund", buyPrice: 1.99, usePrice: 1.99, amount: 1, unit: "Stück" },
+  gyozateig: { label: "Gyoza-Teigblätter", cat: "grund", buyPrice: 2.99, usePrice: 2.99, amount: 24, unit: "Stück" },
+  fruehlingsrollenteig: { label: "Frühlingsrollenteig", cat: "grund", buyPrice: 2.49, usePrice: 2.49, amount: 12, unit: "Blätter" },
+  baguette: { label: "Baguette", cat: "grund", buyPrice: 1.49, usePrice: 1.49, amount: 1, unit: "Stück" },
+  lasagneplatten: { label: "Lasagneplatten", cat: "grund", buyPrice: 1.59, usePrice: 1.3, amount: 250, unit: "g" },
+  weisswein: { label: "Trockener Weißwein", cat: "vorrat", buyPrice: 4.49, usePrice: 1.2, amount: 250, unit: "ml" }
+});
+
+const recipeIngredientCorrections = {
+  "Mango Sticky Rice": ["reis","kokosmilch","zucker","mango"],
+  "Halloumi vom Grill": ["halloumi","zucchini","paprika","olivenoel","zitrone"],
+  "Tiramisu": ["mascarpone","loeffelbiskuits","kaffee","eier","zucker","kakao"],
+  "Panna Cotta": ["sahne","zucker","vanille","gelatine","beeren"],
+  "Crème brûlée": ["sahne","eier","zucker","vanille"],
+  "Schokopudding": ["milch","zucker","kakao","speisestaerke","schokolade"],
+  "Vanillepudding": ["milch","zucker","vanille","speisestaerke"],
+  "Pizza Margherita": ["mehl","hefe","dosentomaten","mozzarella","basilikum","olivenoel"],
+  "Focaccia": ["mehl","hefe","olivenoel","rosmarin"],
+  "Croissants": ["mehl","hefe","butter","milch","zucker"],
+  "Zimtschnecken": ["mehl","hefe","milch","butter","zucker","zimt"],
+  "Baklava": ["filoteig","butter","mandeln","zucker","honig"],
+  "Cannoli": ["mehl","ricotta","zucker","schokolade"],
+  "Wiener Schnitzel": ["kalbfleisch","mehl","eier","paniermehl","zitrone"],
+  "Rouladen": ["rindfleisch","senf","speck","zwiebeln","gewuerzgurken"],
+  "Labskaus": ["kartoffeln","rindfleisch","rotebete","gewuerzgurken","eier","zwiebeln"],
+  "Borschtsch": ["rotebete","rotkohl","kartoffeln","karotten","rindfleisch","bruehe"],
+  "Rote Grütze": ["beeren","zucker","speisestaerke"],
+  "Bagel mit Frischkäse": ["bagel","frischkaese","gurke"],
+  "Baba Ganoush": ["aubergine","fladenbrot","sesam","zitrone","knoblauch","olivenoel"],
+  "Tzatziki": ["joghurt","gurke","knoblauch","zitrone","fladenbrot"],
+  "Käsefondue": ["reibekaese","weisswein","knoblauch","baguette","speisestaerke"],
+  "Frühlingsrollen": ["fruehlingsrollenteig","karotten","rotkohl","sojasauce"],
+  "Gyoza": ["gyozateig","hackfleisch","rotkohl","ingwer","sojasauce"],
+  "Lasagne": ["lasagneplatten","hackfleisch","dosentomaten","zwiebeln","milch","butter","mehl","reibekaese"]
+};
+
+function defaultRecipeAmount(dish, id) {
+  const meta = ingredientVocab[id];
+  let amount = meta.amount;
+  const name = dish.name.toLowerCase();
+  if (id === "eier" && /omelett|frittata|shakshuka/.test(name)) amount = 6;
+  if (id === "eier" && /kuchen|torte|brownie|tiramisu|crème brûlée/.test(name)) amount = 4;
+  if (id === "kartoffeln" && /kartoffel|pommes|rösti|gnocchi|labskaus/.test(name)) amount = 800;
+  if (id === "nudeln") amount = 400;
+  if (id === "reis" && /risotto|paella|biryani|reis|bowl|jambalaya/.test(name)) amount = 320;
+  if (id === "mehl" && /pizza|focaccia|brot|croissant|zimtschnecken/.test(name)) amount = 500;
+  if (id === "mehl" && /kuchen|tarte|muffin|brownie|cookie/.test(name)) amount = 250;
+  if (id === "hackfleisch" || id === "haehnchen" || id === "schweinefleisch" || id === "fisch" || id === "tofu") amount = 500;
+  if (id === "rindfleisch" || id === "kalbfleisch" || id === "lamm") amount = 600;
+  if (id === "lachs") amount = 600;
+  if (id === "garnelen") amount = 400;
+  if (id === "dosentomaten" && /suppe|eintopf|curry|chili|bolognese|lasagne|gulasch/.test(name)) amount = 800;
+  if (id === "bruehe" && /suppe|eintopf|risotto|borschtsch|pho|ramen/.test(name)) amount = 1000;
+  if (id === "reibekaese" && /fondue/.test(name)) amount = 600;
+  return [amount, meta.unit];
+}
+
+function recipeTiming(dish) {
+  const name = dish.name.toLowerCase();
+  const special = [
+    [/tiramisu|panna cotta|mousse|eis/, [30, 240]],
+    [/croissant/, [45, 150]],
+    [/rouladen|gulasch|cassoulet|braten|ragout/, [30, 120]],
+    [/brot|focaccia|pizza|zimtschnecken/, [30, 75]],
+    [/eintopf|borschtsch|pho|biryani|lasagne|moussaka/, [25, 60]]
+  ].find(function(entry){ return entry[0].test(name); });
+  if (special) return { prep: special[1][0], cook: special[1][1] };
+  const total = typeof dish.minutes === "number" ? dish.minutes : ({ schnell: 20, normal: 40, aufwendig: 75 }[dish.time] || 40);
+  const prep = Math.max(8, Math.round((total * (dish.type === "süß" ? .38 : .3)) / 5) * 5);
+  return { prep: prep, cook: Math.max(5, total - prep) };
+}
+
+function recipeDifficulty(dish) {
+  const name = dish.name.toLowerCase();
+  if (/croissant|soufflé|rouladen|risotto|ravioli|gyoza|baklava|beef wellington|crème brûlée/.test(name)) return "Anspruchsvoll";
+  if (dish.time === "aufwendig" || /lasagne|braten|biryani|paella|torte|quiche/.test(name)) return "Mittel";
+  return "Einfach";
+}
+
+function recipeTip(dish) {
+  const name = dish.name.toLowerCase();
+  if (/salat|caprese|bruschetta|ceviche/.test(name)) return "Dressing und empfindliche Zutaten erst kurz vor dem Servieren mischen.";
+  if (/reis|risotto|paella|biryani/.test(name)) return "Die Flüssigkeit nach und nach kontrollieren, damit der Reis gar, aber nicht matschig wird.";
+  if (/nudel|pasta|spaghetti|carbonara|lasagne/.test(name)) return "Etwas Kochwasser aufheben: Es bindet die Sauce besser als zusätzliche Sahne.";
+  if (/kuchen|muffin|brownie|cookie|tarte|crumble/.test(name)) return "Trockene Zutaten nur kurz unterheben, damit das Gebäck locker bleibt.";
+  if (/schnitzel|nugget|puffer|rösti|pommes|fritt/.test(name)) return "In kleinen Portionen arbeiten, damit die Temperatur in Pfanne oder Ofen stabil bleibt.";
+  if (/suppe|eintopf|curry|gulasch|borschtsch/.test(name)) return "Nach dem Köcheln erneut abschmecken; Gewürze wirken mit der Zeit kräftiger.";
+  return "Garzeit gegen Ende prüfen und Salz, Pfeffer sowie Säure erst final ausbalancieren.";
+}
+
+function generatedRecipeSteps(dish) {
+  const name = dish.name.toLowerCase();
+  const labels = dish.ingredients.map(function(id){ return ingredientVocab[id].label; });
+  const ingredientText = labels.join(", ");
+  const protein = dish.ingredients.filter(function(id){ return ingredientVocab[id].cat === "fleisch"; }).map(function(id){ return ingredientVocab[id].label; }).join(" und ");
+  const vegetables = dish.ingredients.filter(function(id){ return ingredientVocab[id].cat === "gemuese"; }).map(function(id){ return ingredientVocab[id].label; }).join(", ");
+  const base = dish.ingredients.filter(function(id){ return ingredientVocab[id].cat === "grund"; }).map(function(id){ return ingredientVocab[id].label; }).join(" und ");
+
+  if (dish.type === "süß" && /tiramisu|panna cotta|mousse|pudding|grütze|eis/.test(name)) return [
+    "Alle Zutaten abwiegen und " + ingredientText + " griffbereit stellen.",
+    "Die Grundmasse bei niedriger bis mittlerer Hitze glatt rühren; dabei ständig am Topfboden entlangarbeiten.",
+    "Aromen und empfindliche Zutaten erst einarbeiten, wenn die Masse nicht mehr stark kocht.",
+    "In Portionsgefäße füllen und zunächst auf Raumtemperatur abkühlen lassen.",
+    "Abgedeckt vollständig kühlen und erst direkt vor dem Servieren garnieren."
+  ];
+  if (dish.type === "süß" && /kuchen|muffin|brownie|cookie|tarte|strudel|crumble|baklava|croissant|zimtschnecken/.test(name)) return [
+    "Backofen passend zum Gebäck auf 180 °C Ober-/Unterhitze vorheizen und die Form vorbereiten.",
+    "Die trockenen Zutaten aus " + ingredientText + " gleichmäßig vermischen.",
+    "Flüssige Zutaten separat verrühren und nur so lange unterheben, bis ein gleichmäßiger Teig entsteht.",
+    "Teig formen beziehungsweise in die Form geben und Oberfläche oder Füllung gleichmäßig verteilen.",
+    "Goldbraun backen, die Garprobe machen und vor dem Anschneiden ausreichend abkühlen lassen."
+  ];
+  if (/salat|caprese|bruschetta|ceviche|tartar|tzatziki|baba ganoush/.test(name)) return [
+    "Alle Zutaten waschen, trocken tupfen und in mundgerechte Stücke schneiden.",
+    (vegetables || ingredientText) + " in einer großen Schüssel locker vermengen.",
+    "Aus Öl, Säure und den Würzzutaten ein ausgewogenes Dressing beziehungsweise eine Creme rühren.",
+    "Dressing unterheben und das Gericht 5 bis 10 Minuten durchziehen lassen.",
+    "Noch einmal abschmecken und frisch mit den übrigen Zutaten servieren."
+  ];
+  if (/suppe|eintopf|curry|gulasch|borschtsch|cassoulet|ragout|chili|dal|harira|pho|ramen|tom kha|laksa/.test(name)) return [
+    "Zutaten vorbereiten: " + ingredientText + "; feste Zutaten möglichst gleich groß schneiden.",
+    "Zwiebeln, Gewürze und gegebenenfalls " + (protein || "Gemüse") + " in einem großen Topf aromatisch anrösten.",
+    "Brühe, Tomaten oder Kokosmilch angießen und den Topfansatz vollständig lösen.",
+    (vegetables || "Die übrigen Zutaten") + " zugeben und bei sanfter Hitze gar köcheln lassen.",
+    "Konsistenz einstellen, kräftig abschmecken und vor dem Servieren kurz ruhen lassen."
+  ];
+  if (/pizza|auflauf|lasagne|gratin|quiche|pie|braten|ofengemüse|gebacken|moussaka|parmigiana/.test(name)) return [
+    "Backofen auf 190 °C Ober-/Unterhitze vorheizen und eine passende Form vorbereiten.",
+    "Alle Zutaten vorbereiten: " + ingredientText + ".",
+    (protein || vegetables || "Die Hauptzutaten") + " je nach Garzeit kurz anbraten oder vorgaren.",
+    "Alles gleichmäßig schichten beziehungsweise in der Form verteilen und Sauce oder Belag darübergeben.",
+    "Im heißen Ofen vollständig garen, kurz ruhen lassen und erst dann portionieren."
+  ];
+  if (/pasta|spaghetti|nudel|carbonara|cacio|tagliatelle|ravioli|tortellini|gnocchi/.test(name)) return [
+    (base || "Nudeln") + " in reichlich Salzwasser bissfest garen; eine Tasse Kochwasser zurückbehalten.",
+    "Währenddessen " + (vegetables || protein || "die Saucenzutaten") + " vorbereiten und in einer großen Pfanne garen.",
+    "Sauce mit den übrigen Zutaten aufbauen und bei mittlerer Hitze sämig werden lassen.",
+    "Die abgetropfte Pasta direkt in die Pfanne geben und mit etwas Kochwasser gründlich durchschwenken.",
+    "Final abschmecken, kurz ziehen lassen und sofort servieren."
+  ];
+  if (/reis|risotto|paella|biryani|jambalaya|pilaw|bowl/.test(name)) return [
+    "Reis abspülen beziehungsweise Risottoreis trocken bereitstellen und alle Zutaten schneiden.",
+    (protein || vegetables || "Die Aromaten") + " in einem breiten Topf oder einer Pfanne anrösten.",
+    "Reis zugeben, kurz mitrösten und die vorgesehene Flüssigkeit angießen.",
+    "Bei kontrollierter Hitze garen; dabei Flüssigkeit und Biss regelmäßig prüfen.",
+    "Mit den restlichen Zutaten vollenden, abschmecken und locker angerichtet servieren."
+  ];
+  if (/schnitzel|nugget|puffer|rösti|pommes|fritt|falafel|frühlingsrolle|gyoza/.test(name)) return [
+    "Alle Zutaten vorbereiten: " + ingredientText + "; feuchte Zutaten sorgfältig trocken tupfen.",
+    "Masse formen beziehungsweise die Zutaten nacheinander panieren oder füllen.",
+    "Pfanne oder Ofen auf die passende Temperatur bringen und nur wenig auf einmal hineingeben.",
+    "Rundherum goldbraun und vollständig garen; einmal kontrolliert wenden.",
+    "Kurz abtropfen beziehungsweise ruhen lassen, abschmecken und knusprig servieren."
+  ];
+  return [
+    "Alle Zutaten vorbereiten und abmessen: " + ingredientText + ".",
+    (base ? base + " nach Packungsangabe beziehungsweise bis zur gewünschten Garstufe zubereiten." : "Pfanne oder Topf auf mittlere Hitze bringen und die Aromaten anschwitzen."),
+    (protein || vegetables || "Die Hauptzutaten") + " gleichmäßig anbraten beziehungsweise garen.",
+    "Die übrigen Zutaten zugeben, sorgfältig vermengen und die Konsistenz bei Bedarf anpassen.",
+    "Gargrad prüfen, final abschmecken und das Gericht heiß anrichten."
+  ];
+}
+
+dishes.forEach(function(dish) {
+  if (recipeIngredientCorrections[dish.name]) dish.ingredients = recipeIngredientCorrections[dish.name].slice();
+  const timing = recipeTiming(dish);
+  dish.prepMinutes = timing.prep;
+  dish.cookMinutes = timing.cook;
+  dish.minutes = timing.prep + timing.cook;
+  dish.difficulty = recipeDifficulty(dish);
+  dish.tip = recipeTip(dish);
+  dish.amounts = dish.amounts || {};
+  dish.ingredients.forEach(function(id) {
+    if (!dish.amounts[id] || !ingredientVocab[id]) dish.amounts[id] = defaultRecipeAmount(dish, id);
+  });
+  dish.steps = dish.steps && dish.steps.length >= 4 ? dish.steps : generatedRecipeSteps(dish);
+  dish.stepMinutes = dish.steps.map(function(_, index) {
+    if (index === 0) return Math.max(5, Math.round(dish.prepMinutes / 5) * 5);
+    if (index === dish.steps.length - 1) return Math.max(5, dish.cookMinutes - Math.max(0, dish.steps.length - 2) * 5);
+    return 5;
+  });
+});
+
+const REST_DAY = "__rest__";
 const weekDays = ["Mo","Di","Mi","Do","Fr","Sa","So"];
 
 const levels = [
@@ -1215,6 +1442,7 @@ const weekFilterState = { time: "egal", diet: "egal", type: "egal" };
 const have = new Set();
 const cartMap = new Map();
 const selectedDays = new Set();
+const lockedDays = new Set();
 let lastPick = null;
 let currentDish = null;
 let currentRecipeDish = null;
@@ -1290,6 +1518,9 @@ const budgetInputEl = document.getElementById("budgetInput");
 const budgetSummaryEl = document.getElementById("budgetSummary");
 const addWeekToCartBtn = document.getElementById("addWeekToCartBtn");
 const rollWeekBtn = document.getElementById("rollWeekBtn");
+const addRestDayBtn = document.getElementById("addRestDayBtn");
+const newWeekBtn = document.getElementById("newWeekBtn");
+const weekShoppingPreviewEl = document.getElementById("weekShoppingPreview");
 const peopleMinusBtn = document.getElementById("peopleMinus");
 const peoplePlusBtn = document.getElementById("peoplePlus");
 const peopleCountDisplayEl = document.getElementById("peopleCountDisplay");
@@ -1349,7 +1580,7 @@ const newPassword = document.getElementById("newPassword");
 const newPasswordRepeat = document.getElementById("newPasswordRepeat");
 
 function defaultProfile() {
-  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, cartItems: [], badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], localTier: "free" };
+  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, cartItems: [], badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekLockedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], localTier: "free" };
 }
 function normalizeProfile(p) {
   const d = defaultProfile();
@@ -1368,6 +1599,7 @@ function normalizeProfile(p) {
     photos: p.photos || d.photos,
     weekPlan: p.weekPlan || d.weekPlan,
     weekSelectedDays: p.weekSelectedDays || d.weekSelectedDays,
+    weekLockedDays: Array.isArray(p.weekLockedDays) ? p.weekLockedDays : d.weekLockedDays,
     weekConfirmed: p.weekConfirmed || d.weekConfirmed,
     weekBudget: typeof p.weekBudget === "number" ? p.weekBudget : d.weekBudget,
     peopleCount: typeof p.peopleCount === "number" ? p.peopleCount : d.peopleCount,
@@ -1777,7 +2009,7 @@ function recipeTimeText(dish) {
 }
 
 function roundedRecipeQuantity(amount, unit) {
-  if (unit === "Stück" || unit === "Zehen" || unit === "Scheiben") return Math.max(1, Math.round(amount));
+  if (unit === "Stück" || unit === "Zehen" || unit === "Scheiben" || unit === "Päckchen" || unit === "Blätter") return Math.max(1, Math.round(amount));
   if (unit === "EL" || unit === "TL") return Math.round(amount * 2) / 2;
   if (amount < 100) return Math.round(amount / 5) * 5;
   return Math.round(amount / 10) * 10;
@@ -1906,6 +2138,9 @@ function renderRecipeSheet() {
   recipeFavoriteBtn.setAttribute("aria-pressed", isFavorite ? "true" : "false");
   recipeFavoriteBtn.setAttribute("aria-label", isFavorite ? "Aus Favoriten entfernen" : "Zu Favoriten hinzufügen");
   recipeMeta.innerHTML = '<span class="recipe-meta-pill">⏱ ' + recipeTimeText(dish) + '</span>' +
+    '<span class="recipe-meta-pill">🔪 ' + dish.prepMinutes + ' Min. Vorbereitung</span>' +
+    '<span class="recipe-meta-pill">⏳ ' + dish.cookMinutes + ' Min. weitere Zeit</span>' +
+    '<span class="recipe-meta-pill">↗ ' + escapeHtml(dish.difficulty) + '</span>' +
     '<span class="recipe-meta-pill">' + escapeHtml(dietText) + '</span>' +
     '<span class="recipe-meta-pill">≈ ' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' +
     (dish.premium ? '<span class="recipe-meta-pill">✨ Premium</span>' : "");
@@ -1924,10 +2159,11 @@ function renderRecipeSheet() {
   }).join("");
 
   const steps = dish.steps || fallbackRecipeSteps(dish);
-  recipeSteps.innerHTML = steps.map(function(step){ return "<li>" + escapeHtml(step) + "</li>"; }).join("");
-  recipeNote.textContent = dish.steps
-    ? "Mengen sind Richtwerte. Salz, Pfeffer und Wasser zählen zum Grundvorrat."
-    : "Grundablauf: Garzeiten und Würzung an Zutaten, Produktangaben und Gerät anpassen. Salz, Pfeffer und Wasser zählen zum Grundvorrat.";
+  recipeSteps.innerHTML = steps.map(function(step, index){
+    const duration = dish.stepMinutes && dish.stepMinutes[index] ? '<span class="recipe-step-time">ca. ' + dish.stepMinutes[index] + ' Min.</span>' : "";
+    return "<li>" + escapeHtml(step) + "<br>" + duration + "</li>";
+  }).join("");
+  recipeNote.textContent = "Tipp: " + dish.tip + " Mengen sind Richtwerte; Salz, Pfeffer und Wasser zählen zum Grundvorrat.";
 
   const missing = dish.ingredients.filter(function(id){ return !have.has(id); });
   const toAdd = missing.filter(function(id){ return !cartHasSource(id, recipeSource(dish)); });
@@ -2316,17 +2552,42 @@ function spin() {
 }
 
 /* week planner */
-function getWeekMissingIngredients() {
-  const missingSet = new Set();
-  weekDays.forEach(function(day){
+function getWeekShoppingEntries() {
+  const combined = new Map();
+  weekDays.forEach(function(day) {
     if (!selectedDays.has(day)) return;
     const dishName = profile.weekPlan[day];
-    if (!dishName) return;
+    if (!dishName || dishName === REST_DAY) return;
     const dish = dishByName(dishName);
     if (!dish) return;
-    dish.ingredients.forEach(function(id){ if (!have.has(id)) missingSet.add(id); });
+    dish.ingredients.forEach(function(id) {
+      if (have.has(id)) return;
+      const quantity = scaledRecipeQuantity(dish, id, peopleCount);
+      const key = id + "|" + quantity.unit;
+      const previous = combined.get(key);
+      if (previous) previous.amount += quantity.amount;
+      else combined.set(key, { id: id, amount: quantity.amount, unit: quantity.unit });
+    });
   });
-  return Array.from(missingSet);
+  return Array.from(combined.values()).sort(function(a, b) {
+    return ingredientVocab[a.id].label.localeCompare(ingredientVocab[b.id].label, "de");
+  });
+}
+
+function getWeekMissingIngredients() {
+  return getWeekShoppingEntries().map(function(entry){ return entry.id; });
+}
+
+function renderWeekShoppingPreview() {
+  const entries = getWeekShoppingEntries();
+  if (entries.length === 0) {
+    weekShoppingPreviewEl.innerHTML = '<p class="cart-empty">Plane Gerichte oder markiere vorhandene Zutaten.</p>';
+    return;
+  }
+  weekShoppingPreviewEl.innerHTML = entries.map(function(entry) {
+    return '<div class="week-shopping-item"><span>' + escapeHtml(ingredientVocab[entry.id].label) + '</span>' +
+      '<span class="week-shopping-amount">' + escapeHtml(formatQuantity(roundedRecipeQuantity(entry.amount, entry.unit), entry.unit)) + '</span></div>';
+  }).join("");
 }
 
 function rebuildWeekCart() {
@@ -2338,7 +2599,9 @@ function rebuildWeekCart() {
 
   weekDays.forEach(function(day){
     if (!selectedDays.has(day)) return;
-    const dish = dishByName(profile.weekPlan[day]);
+    const dishName = profile.weekPlan[day];
+    if (!dishName || dishName === REST_DAY) return;
+    const dish = dishByName(dishName);
     if (!dish) return;
     const missing = dish.ingredients.filter(function(id){ return !have.has(id); });
     addToCart(missing, {
@@ -2356,29 +2619,39 @@ function rebuildWeekCart() {
 }
 
 function pickDayCandidate(pool) {
-  const usedNames = weekDays.map(function(d){ return profile.weekPlan[d]; }).filter(Boolean);
+  const usedNames = weekDays.map(function(d){ return profile.weekPlan[d]; }).filter(function(name){ return name && name !== REST_DAY; });
   let candidates = pool.filter(function(d){ return usedNames.indexOf(d.name) === -1; });
   if (candidates.length === 0) candidates = pool;
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 function weekRowHTML(day, dish) {
-  const confirmed = !!profile.weekConfirmed[day];
+  const dishName = profile.weekPlan[day];
+  const isRestDay = dishName === REST_DAY;
+  const confirmed = !!profile.weekConfirmed[day] && !!dish;
+  const isLocked = lockedDays.has(day);
   const premiumTint = dish && dish.premium ? " dish-premium" : "";
   const confirmedCls = confirmed ? " confirmed" : "";
-  const priceLine = dish ? '<span class="week-portion-price">≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
-  const dishLabel = dish ? ('<a class="week-recipe-link" href="#recipe" data-recipe-name="' + escapeHtml(dish.name) + '">' + dish.emoji + " " + escapeHtml(dish.name) + "</a>") : "Noch kein Gericht";
+  const lockedCls = isLocked ? " locked" : "";
+  const restCls = isRestDay ? " rest-day" : "";
+  const detailLine = dish ? '<span class="week-portion-price">⏱ ' + dish.minutes + ' Min. · ≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
+  const dishLabel = dish
+    ? '<a class="week-recipe-link" href="#recipe" data-recipe-name="' + escapeHtml(dish.name) + '">' + dish.emoji + " " + escapeHtml(dish.name) + "</a>"
+    : (isRestDay ? "🥡 Restetag / Reste essen" : "Noch kein Gericht");
   const checkboxDisabled = (!dish || confirmed) ? " disabled" : "";
   const checkboxChecked = confirmed ? " checked" : "";
-  const photoBtnHtml = (dish && tier === "premium" && !confirmed) ? '<button type="button" class="week-photo-btn" data-day="' + day + '">📸</button>' : "";
-  const rollClearHtml = confirmed ? "" :
-    '<button type="button" class="week-roll-btn" data-day="' + day + '">🎲</button>' +
-    '<button type="button" class="week-clear-btn' + (dish ? "" : " hidden") + '" data-day="' + day + '">✕</button>';
-  return '<div class="week-row' + premiumTint + confirmedCls + '" data-day="' + day + '">' +
+  const photoBtnHtml = (dish && tier === "premium" && !confirmed) ? '<button type="button" class="week-photo-btn" data-day="' + day + '" aria-label="Kochfoto aufnehmen">📸</button>' : "";
+  const lockBtnHtml = dishName && !confirmed
+    ? '<button type="button" class="week-lock-btn' + (isLocked ? " active" : "") + '" data-day="' + day + '" aria-label="' + (isLocked ? "Tag entsperren" : "Tag sperren") + '" aria-pressed="' + (isLocked ? "true" : "false") + '">' + (isLocked ? "🔒" : "🔓") + "</button>"
+    : "";
+  const editHtml = confirmed ? "" :
+    '<button type="button" class="week-roll-btn" data-day="' + day + '" aria-label="Gericht neu würfeln"' + (isLocked ? " disabled" : "") + '>🎲</button>' +
+    '<button type="button" class="week-clear-btn' + (dishName ? "" : " hidden") + '" data-day="' + day + '" aria-label="Tag leeren">✕</button>';
+  return '<div class="week-row' + premiumTint + confirmedCls + lockedCls + restCls + '" data-day="' + day + '">' +
     '<input type="checkbox" class="week-check" data-day="' + day + '"' + checkboxDisabled + checkboxChecked + '>' +
     '<span class="week-day-label">' + day + '</span>' +
-    '<span class="week-dish-info"><span class="week-dish">' + dishLabel + '</span>' + priceLine + '</span>' +
-    photoBtnHtml + rollClearHtml +
+    '<span class="week-dish-info"><span class="week-dish">' + dishLabel + '</span>' + detailLine + '</span>' +
+    photoBtnHtml + lockBtnHtml + editHtml +
   "</div>";
 }
 
@@ -2388,6 +2661,8 @@ function wireRowButtons(rowEl, day) {
   if (roll) roll.addEventListener("click", function(){ rollDayDish(day); });
   const clear = rowEl.querySelector(".week-clear-btn");
   if (clear) clear.addEventListener("click", function(){ clearDayDish(day); });
+  const lock = rowEl.querySelector(".week-lock-btn");
+  if (lock) lock.addEventListener("click", function(){ toggleWeekDayLock(day); });
   const check = rowEl.querySelector(".week-check");
   if (check) check.addEventListener("change", function(){ if (check.checked) confirmWeekDay(day, null); });
   const photoBtn = rowEl.querySelector(".week-photo-btn");
@@ -2400,7 +2675,7 @@ function refreshSingleRow(day) {
   const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
   if (!rowEl) return;
   const dishName = profile.weekPlan[day];
-  const dish = dishName ? dishByName(dishName) : null;
+  const dish = dishName && dishName !== REST_DAY ? dishByName(dishName) : null;
   const wrap = document.createElement("div");
   wrap.innerHTML = weekRowHTML(day, dish);
   const replacement = wrap.firstElementChild;
@@ -2411,8 +2686,8 @@ function refreshSingleRow(day) {
 function updateRowContent(rowEl, dish, suppressPremiumTint) {
   if (!rowEl) return;
   const dishInfo = rowEl.querySelector(".week-dish-info");
-  const priceLine = dish ? '<span class="week-portion-price">≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
-  dishInfo.innerHTML = '<span class="week-dish">' + (dish ? (dish.emoji + " " + dish.name) : "Noch kein Gericht") + '</span>' + priceLine;
+  const detailLine = dish ? '<span class="week-portion-price">⏱ ' + dish.minutes + ' Min. · ≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
+  dishInfo.innerHTML = '<span class="week-dish">' + (dish ? (dish.emoji + " " + escapeHtml(dish.name)) : "Noch kein Gericht") + '</span>' + detailLine;
   if (!suppressPremiumTint) rowEl.classList.toggle("dish-premium", !!(dish && dish.premium));
 }
 
@@ -2431,15 +2706,11 @@ function spinDayRow(day, pool, onComplete) {
   let delay = 60;
   function tickRow() {
     const isLast = ticks === maxTicks - 1;
-    if (isLast) {
-      refreshSingleRow(day);
-    } else {
-      const randomDish = pool[Math.floor(Math.random() * pool.length)];
-      updateRowContent(rowEl, randomDish, true);
-    }
+    if (isLast) refreshSingleRow(day);
+    else updateRowContent(rowEl, pool[Math.floor(Math.random() * pool.length)], true);
     ticks++;
     if (ticks < maxTicks) { delay *= 1.16; setTimeout(tickRow, delay); }
-    else { if (onComplete) onComplete(); }
+    else if (onComplete) onComplete();
   }
   tickRow();
 }
@@ -2448,24 +2719,27 @@ function updateAddWeekButton() {
   const missing = getWeekMissingIngredients();
   addWeekToCartBtn.disabled = missing.length === 0;
   addWeekToCartBtn.textContent = missing.length > 0 ? ("Wochenliste aktualisieren (" + missing.length + " Zutaten)") : "Ganze Woche in den Warenkorb";
+  renderWeekShoppingPreview();
 }
 
 function refreshRowPrices() {
   weekDayRowsEl.querySelectorAll(".week-row").forEach(function(rowEl){
     const day = rowEl.dataset.day;
     const dishName = profile.weekPlan[day];
-    const dish = dishName ? dishByName(dishName) : null;
+    const dish = dishName && dishName !== REST_DAY ? dishByName(dishName) : null;
     const priceEl = rowEl.querySelector(".week-portion-price");
-    if (dish && priceEl) priceEl.textContent = "≈" + formatEuro(dishPricePerPortion(dish)) + "/Portion";
+    if (dish && priceEl) priceEl.textContent = "⏱ " + dish.minutes + " Min. · ≈" + formatEuro(dishPricePerPortion(dish)) + "/Portion";
   });
 }
 
 function confirmWeekDay(day, photoDataUrl) {
   const dishName = profile.weekPlan[day];
-  if (!dishName || profile.weekConfirmed[day]) return;
+  if (!dishName || dishName === REST_DAY || profile.weekConfirmed[day]) return;
   const dish = dishByName(dishName);
   if (!dish) return;
   profile.weekConfirmed[day] = true;
+  lockedDays.delete(day);
+  profile.weekLockedDays = Array.from(lockedDays);
   const nowIso = new Date().toISOString();
   profile.cookLog.push({ name: dish.name, ts: nowIso, mode: state.ingredientMode, hasPhoto: !!photoDataUrl });
   if (photoDataUrl) {
@@ -2479,7 +2753,19 @@ function confirmWeekDay(day, photoDataUrl) {
   refreshSingleRow(day);
 }
 
+function toggleWeekDayLock(day) {
+  if (!profile.weekPlan[day] || profile.weekConfirmed[day]) return;
+  if (lockedDays.has(day)) lockedDays.delete(day);
+  else lockedDays.add(day);
+  profile.weekLockedDays = Array.from(lockedDays);
+  saveProfile();
+  refreshSingleRow(day);
+  showToast(lockedDays.has(day) ? day + " ist geschützt 🔒" : day + " ist wieder offen");
+}
+
 function rollDayDish(day) {
+  if (lockedDays.has(day)) { showToast(day + " ist geschützt."); return; }
+  if (profile.weekConfirmed[day]) { showToast(day + " wurde bereits als gekocht markiert."); return; }
   const pool = getWeekPool();
   if (pool.length === 0) { showToast("Keine Gerichte für die aktuellen Wochen-Filter."); return; }
   const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
@@ -2494,10 +2780,39 @@ function rollDayDish(day) {
 function clearDayDish(day) {
   profile.weekPlan[day] = null;
   profile.weekConfirmed[day] = false;
+  lockedDays.delete(day);
+  profile.weekLockedDays = Array.from(lockedDays);
   saveProfile();
   refreshSingleRow(day);
   updateAddWeekButton();
   renderBudgetSummary();
+}
+
+function addRestDay() {
+  const day = weekDays.find(function(candidate) {
+    return selectedDays.has(candidate) && !profile.weekPlan[candidate] && !lockedDays.has(candidate);
+  });
+  if (!day) { showToast("Leere zuerst einen ausgewählten Tag für den Restetag."); return; }
+  profile.weekPlan[day] = REST_DAY;
+  profile.weekConfirmed[day] = false;
+  saveProfile();
+  refreshSingleRow(day);
+  updateAddWeekButton();
+  renderBudgetSummary();
+  showToast("Restetag für " + day + " eingeplant 🥡");
+}
+
+function startNewWeek() {
+  const hasPlan = weekDays.some(function(day){ return !!profile.weekPlan[day]; });
+  if (hasPlan && !window.confirm("Den aktuellen Wochenplan leeren und eine neue Woche starten?")) return;
+  profile.weekPlan = {};
+  profile.weekConfirmed = {};
+  lockedDays.clear();
+  profile.weekLockedDays = [];
+  saveProfile();
+  renderWeekRows();
+  renderBudgetSummary();
+  showToast("Neue Woche ist bereit");
 }
 
 function rollWholeWeek() {
@@ -2510,12 +2825,13 @@ function rollWholeWeek() {
     renderWeekDayChips();
     renderWeekRows();
   }
-  const activeDays = weekDays.filter(function(d){ return selectedDays.has(d); });
-  if (activeDays.length === 0) return;
+  const activeDays = weekDays.filter(function(d){
+    return selectedDays.has(d) && !lockedDays.has(d) && !profile.weekConfirmed[d];
+  });
+  if (activeDays.length === 0) { showToast("Alle gewählten Tage sind geschützt oder schon gekocht."); return; }
 
   weekSpinning = true;
   rollWeekBtn.disabled = true;
-
   let i = 0;
   function next() {
     if (i >= activeDays.length) {
@@ -2524,7 +2840,7 @@ function rollWholeWeek() {
       saveProfile();
       updateAddWeekButton();
       renderBudgetSummary();
-      showToast("🎲 Ganze Woche gewürfelt!");
+      showToast("🎲 Offene Tage neu gewürfelt!");
       return;
     }
     const day = activeDays[i];
@@ -2551,21 +2867,22 @@ function renderWeekRows() {
   } else {
     weekDayRowsEl.innerHTML = active.map(function(day){
       const dishName = profile.weekPlan[day];
-      const dish = dishName ? dishByName(dishName) : null;
+      const dish = dishName && dishName !== REST_DAY ? dishByName(dishName) : null;
       return weekRowHTML(day, dish);
     }).join("");
     active.forEach(function(day){
-      const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
-      wireRowButtons(rowEl, day);
+      wireRowButtons(weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]'), day);
     });
   }
   updateAddWeekButton();
 }
 
 function renderBudgetSummary() {
-  const missing = getWeekMissingIngredients();
-  const rawTotal = missing.reduce(function(sum, id){ return sum + (ingredientVocab[id].buyPrice || 0); }, 0);
-  const scaledTotal = rawTotal * (peopleCount / 4);
+  const entries = getWeekShoppingEntries();
+  const scaledTotal = entries.reduce(function(sum, entry) {
+    const meta = ingredientVocab[entry.id];
+    return sum + ((meta.usePrice || 0) * (entry.amount / Math.max(1, meta.amount || entry.amount)));
+  }, 0);
   const totalStr = formatEuro(scaledTotal);
   if (typeof profile.weekBudget === "number") {
     const budgetStr = formatEuro(profile.weekBudget);
@@ -2610,6 +2927,8 @@ document.querySelectorAll("#weekDayChips .chip").forEach(function(btn){
 });
 
 rollWeekBtn.addEventListener("click", rollWholeWeek);
+addRestDayBtn.addEventListener("click", addRestDay);
+newWeekBtn.addEventListener("click", startNewWeek);
 
 peopleMinusBtn.addEventListener("click", function(){
   if (peopleCount <= 1) return;
@@ -2619,6 +2938,7 @@ peopleMinusBtn.addEventListener("click", function(){
   renderPeopleCount();
   refreshRowPrices();
   renderBudgetSummary();
+  updateAddWeekButton();
   renderCart();
   if (currentDish) { renderPortionPrice(currentDish); renderResultIngredients(currentDish); }
 });
@@ -2630,6 +2950,7 @@ peoplePlusBtn.addEventListener("click", function(){
   renderPeopleCount();
   refreshRowPrices();
   renderBudgetSummary();
+  updateAddWeekButton();
   renderCart();
   if (currentDish) { renderPortionPrice(currentDish); renderResultIngredients(currentDish); }
 });
@@ -2642,8 +2963,7 @@ budgetInputEl.addEventListener("input", function(){
 });
 
 addWeekToCartBtn.addEventListener("click", function(){
-  const missing = getWeekMissingIngredients();
-  if (missing.length === 0) return;
+  if (getWeekMissingIngredients().length === 0) return;
   rebuildWeekCart();
   showToast("Wochenliste mit Mengen aktualisiert 🛒");
 });
@@ -2789,6 +3109,8 @@ function renderAccountState() {
 function applyProfileToUi() {
   selectedDays.clear();
   (profile.weekSelectedDays || []).forEach(function(day){ selectedDays.add(day); });
+  lockedDays.clear();
+  (profile.weekLockedDays || []).forEach(function(day){ if (weekDays.indexOf(day) !== -1) lockedDays.add(day); });
   peopleCount = typeof profile.peopleCount === "number" ? profile.peopleCount : 4;
   budgetInputEl.value = typeof profile.weekBudget === "number" ? profile.weekBudget : "";
   applyAccentColor(profile.accentColor || "blue");
@@ -3170,6 +3492,7 @@ resetProgressBtn.addEventListener("click", async function(){
   if (!window.confirm("Wirklich deinen ganzen Fortschritt (XP, Abzeichen, Fotos, Wochenplan) löschen?")) return;
   profile = defaultProfile();
   selectedDays.clear();
+  lockedDays.clear();
   cartMap.clear();
   cartWasComplete = false;
   peopleCount = 4;
