@@ -2795,6 +2795,8 @@ function addRestDay() {
   if (!day) { showToast("Leere zuerst einen ausgewählten Tag für den Restetag."); return; }
   profile.weekPlan[day] = REST_DAY;
   profile.weekConfirmed[day] = false;
+  lockedDays.add(day);
+  profile.weekLockedDays = Array.from(lockedDays);
   saveProfile();
   refreshSingleRow(day);
   updateAddWeekButton();
@@ -2826,7 +2828,7 @@ function rollWholeWeek() {
     renderWeekRows();
   }
   const activeDays = weekDays.filter(function(d){
-    return selectedDays.has(d) && !lockedDays.has(d) && !profile.weekConfirmed[d];
+    return selectedDays.has(d) && profile.weekPlan[d] !== REST_DAY && !lockedDays.has(d) && !profile.weekConfirmed[d];
   });
   if (activeDays.length === 0) { showToast("Alle gewählten Tage sind geschützt oder schon gekocht."); return; }
 
