@@ -1929,7 +1929,8 @@ function openRecipe(dish, trigger) {
   }
   document.body.classList.add("recipe-modal-open");
   recipeOverlay.style.display = "flex";
-  requestAnimationFrame(function(){ recipeClose.focus(); });
+  recipeClose.focus({ preventScroll: true });
+  requestAnimationFrame(function(){ recipeClose.focus({ preventScroll: true }); });
 }
 
 function closeRecipe() {
