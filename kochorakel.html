@@ -270,6 +270,8 @@ body.recipe-modal-open { overflow: hidden; }
 .week-check:disabled { cursor: default; opacity: .55; }
 .cart-item label { min-width: 0; flex: 1; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 14.5px; cursor: pointer; color: var(--ink); }
 .cart-item-amount { flex-shrink: 0; font-size: 12px; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+.cart-item-remove { flex-shrink: 0; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--ink-tertiary); font-size: 16px; cursor: pointer; }
+.cart-item-remove:hover { color: var(--red); background: var(--red-bg); }
 .cart-item.checked label { text-decoration: line-through; color: var(--ink-tertiary); }
 .cart-item.checked .cart-item-amount { color: var(--ink-tertiary); }
 .cart-empty { font-size: 13px; color: var(--ink-secondary); margin: 0; }
@@ -363,7 +365,7 @@ body.recipe-modal-open { overflow: hidden; }
 .xp-toast.show { opacity: 1; transform: translateY(0); }
 
 /* generic bottom sheet (settings menu + cart) */
-.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: flex-end; justify-content: center; z-index: 100; overscroll-behavior: none; }
+.sheet-overlay { position: fixed; inset: 0; padding-top: max(8px, calc(env(safe-area-inset-top) + 8px)); background: rgba(0,0,0,.4); display: none; align-items: flex-end; justify-content: center; z-index: 100; overscroll-behavior: none; }
 body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden; }
 #cartOverlay { padding-top: max(8px, calc(env(safe-area-inset-top) + 8px)); }
 #cartOverlay .sheet {
@@ -382,7 +384,7 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
   #cartOverlay .sheet { max-height: min(760px, 88vh); border-radius: 24px; }
 }
 @keyframes sheetUp { from { transform: translateY(30px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
-.sheet { background: var(--bg); width: 100%; max-width: 540px; border-radius: 20px 20px 0 0; max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 18px 26px; animation: sheetUp .25s ease-out; }
+.sheet { background: var(--bg); width: 100%; max-width: 540px; border-radius: 20px 20px 0 0; max-height: calc(100vh - env(safe-area-inset-top) - 10px); max-height: min(85dvh, calc(100dvh - env(safe-area-inset-top) - 10px)); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 18px calc(26px + env(safe-area-inset-bottom)); animation: sheetUp .25s ease-out; }
 .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 2px 14px; position: sticky; top: 0; background: var(--bg); }
 .sheet-title { font-size: 20px; font-weight: 800; margin: 0; color: var(--ink); display: flex; align-items: center; gap: 8px; }
 .sheet-close { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--fill-track); font-size: 13px; cursor: pointer; color: var(--ink-secondary); }
@@ -672,9 +674,9 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
 </div>
 
 <div class="sheet-overlay" id="favoritesOverlay">
-  <div class="sheet">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="favoritesTitle" tabindex="-1">
     <div class="sheet-header">
-      <h2 class="sheet-title">Favoriten <span class="cart-count" id="favoritesCount" style="display:none;">0</span></h2>
+      <h2 class="sheet-title" id="favoritesTitle">Favoriten <span class="cart-count" id="favoritesCount" style="display:none;">0</span></h2>
       <button class="sheet-close" id="favoritesClose" type="button" aria-label="Schließen">✕</button>
     </div>
     <div class="card">
@@ -691,7 +693,7 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
       <button class="sheet-close" id="cartClose" type="button" aria-label="Schließen">✕</button>
     </div>
     <div class="card">
-      <div class="cart-clear-row"><button class="cart-clear" id="cartClear" style="display:none;">Liste leeren</button></div>
+      <div class="cart-clear-row"><button class="cart-clear" id="cartClear" type="button" style="display:none;">Liste leeren</button></div>
       <p class="cart-empty" id="cartEmpty">Noch nichts auf der Liste. Klick beim Ergebnis auf „Fehlendes in den Warenkorb", dann landet's hier.</p>
       <ul class="cart-list" id="cartList"></ul>
     </div>
@@ -739,9 +741,9 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
 </div>
 
 <div class="sheet-overlay" id="menuOverlay">
-  <div class="sheet">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
     <div class="sheet-header">
-      <h2 class="sheet-title">Einstellungen</h2>
+      <h2 class="sheet-title" id="settingsTitle">Einstellungen</h2>
       <button class="sheet-close" id="menuClose" type="button" aria-label="Schließen">✕</button>
     </div>
     <div class="card">
@@ -781,7 +783,7 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
       </div>
       <p class="menu-hint" id="subscriptionHint">Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.</p>
     </div>
-    <p class="app-version">Kochorakel · Version 0.1.0</p>
+    <p class="app-version">Kochorakel · Version 0.1.1</p>
   </div>
 </div>
 
@@ -1071,7 +1073,7 @@ const dishes = [
   { name: "Rote Grütze", emoji: "🍮", time: "normal", diet: "vegan", type: "süß", ingredients: ["apfel","zucker","zimt"], premium: true },
   { name: "Poutine", emoji: "🍟", time: "normal", diet: "vegetarisch", type: "herzhaft", ingredients: ["kartoffeln","reibekaese","bruehe"], premium: true },
   { name: "Piroggen", emoji: "🥟", time: "aufwendig", diet: "vegetarisch", type: "herzhaft", ingredients: ["mehl","kartoffeln","zwiebeln","quark"], premium: true },
-  { name: "Borschtsch", emoji: "🍲", time: "aufwendig", diet: "vegan", type: "herzhaft", ingredients: ["rotkohl","karotten","kartoffeln","zwiebeln"], premium: true },
+  { name: "Borschtsch", emoji: "🍲", time: "aufwendig", diet: "alles", type: "herzhaft", ingredients: ["rotkohl","karotten","kartoffeln","zwiebeln"], premium: true },
   { name: "Apfelstrudel", emoji: "🥧", time: "aufwendig", diet: "vegetarisch", type: "süß", ingredients: ["mehl","apfel","zimt","butter"], premium: true },
   { name: "Falscher Hase", emoji: "🍖", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["hackfleisch","eier","zwiebeln","toast"], premium: true },
   { name: "Paprikahähnchen", emoji: "🍗", time: "normal", diet: "alles", type: "herzhaft", ingredients: ["haehnchen","paprikapulver","sahne","zwiebeln"], premium: true },
@@ -1242,9 +1244,9 @@ const recipeIngredientCorrections = {
   "Crème brûlée": ["sahne","eier","zucker","vanille"],
   "Schokopudding": ["milch","zucker","kakao","speisestaerke","schokolade"],
   "Vanillepudding": ["milch","zucker","vanille","speisestaerke"],
-  "Pizza Margherita": ["mehl","hefe","dosentomaten","mozzarella","basilikum","olivenoel"],
+  "Selbstgemachte Pizza": ["mehl","hefe","dosentomaten","mozzarella","basilikum","olivenoel"],
   "Focaccia": ["mehl","hefe","olivenoel","rosmarin"],
-  "Croissants": ["mehl","hefe","butter","milch","zucker"],
+  "Croissant": ["mehl","hefe","butter","milch","zucker"],
   "Zimtschnecken": ["mehl","hefe","milch","butter","zucker","zimt"],
   "Baklava": ["filoteig","butter","mandeln","zucker","honig"],
   "Cannoli": ["mehl","ricotta","zucker","schokolade"],
@@ -1253,9 +1255,9 @@ const recipeIngredientCorrections = {
   "Labskaus": ["kartoffeln","rindfleisch","rotebete","gewuerzgurken","eier","zwiebeln"],
   "Borschtsch": ["rotebete","rotkohl","kartoffeln","karotten","rindfleisch","bruehe"],
   "Rote Grütze": ["beeren","zucker","speisestaerke"],
-  "Bagel mit Frischkäse": ["bagel","frischkaese","gurke"],
-  "Baba Ganoush": ["aubergine","fladenbrot","sesam","zitrone","knoblauch","olivenoel"],
-  "Tzatziki": ["joghurt","gurke","knoblauch","zitrone","fladenbrot"],
+  "Bagel mit Lachs und Quark": ["bagel","lachs","quark","gurke"],
+  "Baba Ganoush mit Fladenbrot": ["aubergine","fladenbrot","sesam","zitrone","knoblauch","olivenoel"],
+  "Tzatziki mit Fladenbrot": ["joghurt","gurke","knoblauch","zitrone","fladenbrot"],
   "Käsefondue": ["reibekaese","weisswein","knoblauch","baguette","speisestaerke"],
   "Frühlingsrollen": ["fruehlingsrollenteig","karotten","rotkohl","sojasauce"],
   "Gyoza": ["gyozateig","hackfleisch","rotkohl","ingwer","sojasauce"],
@@ -1286,10 +1288,10 @@ function defaultRecipeAmount(dish, id) {
 function recipeTiming(dish) {
   const name = dish.name.toLowerCase();
   const special = [
-    [/tiramisu|panna cotta|mousse|eis/, [30, 240]],
+    [/tiramisu|panna cotta|mousse|\beis\b/, [30, 240]],
     [/croissant/, [45, 150]],
     [/rouladen|gulasch|cassoulet|braten|ragout/, [30, 120]],
-    [/brot|focaccia|pizza|zimtschnecken/, [30, 75]],
+    [/bananenbrot|focaccia|pizza|zimtschnecken/, [30, 75]],
     [/eintopf|borschtsch|pho|biryani|lasagne|moussaka/, [25, 60]]
   ].find(function(entry){ return entry[0].test(name); });
   if (special) return { prep: special[1][0], cook: special[1][1] };
@@ -1402,10 +1404,16 @@ dishes.forEach(function(dish) {
     if (!dish.amounts[id] || !ingredientVocab[id]) dish.amounts[id] = defaultRecipeAmount(dish, id);
   });
   dish.steps = dish.steps && dish.steps.length >= 4 ? dish.steps : generatedRecipeSteps(dish);
+  const stepCount = Math.max(1, dish.steps.length);
+  const totalMinutes = Math.max(stepCount, dish.minutes);
+  const firstStepMinutes = Math.max(1, Math.min(dish.prepMinutes, totalMinutes - (stepCount - 1)));
+  const remainingMinutes = totalMinutes - firstStepMinutes;
+  const remainingSteps = Math.max(1, stepCount - 1);
+  const baseStepMinutes = Math.floor(remainingMinutes / remainingSteps);
+  const extraMinutes = remainingMinutes % remainingSteps;
   dish.stepMinutes = dish.steps.map(function(_, index) {
-    if (index === 0) return Math.max(5, Math.round(dish.prepMinutes / 5) * 5);
-    if (index === dish.steps.length - 1) return Math.max(5, dish.cookMinutes - Math.max(0, dish.steps.length - 2) * 5);
-    return 5;
+    if (index === 0) return firstStepMinutes;
+    return baseStepMinutes + (index <= extraMinutes ? 1 : 0);
   });
 });
 
@@ -1580,33 +1588,59 @@ const newPassword = document.getElementById("newPassword");
 const newPasswordRepeat = document.getElementById("newPasswordRepeat");
 
 function defaultProfile() {
-  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, cartItems: [], badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekLockedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], localTier: "free" };
+  return { xp: 0, dishesSeen: [], cookLog: [], cartCompletions: 0, cartItems: [], rewardedCartChecks: [], rewardedCartCompletions: [], rewardedCookEvents: [], badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekLockedDays: [], weekConfirmed: {}, weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], localTier: "free" };
 }
 function normalizeProfile(p) {
   const d = defaultProfile();
+  p = p && typeof p === "object" && !Array.isArray(p) ? p : {};
+  const validDishNames = new Set(dishes.map(function(dish){ return dish.name; }));
+  const uniqueDishNames = function(value) {
+    return Array.from(new Set((Array.isArray(value) ? value : []).filter(function(name){ return typeof name === "string" && validDishNames.has(name); })));
+  };
+  const cookLog = (Array.isArray(p.cookLog) ? p.cookLog : []).filter(function(entry){
+    return entry && typeof entry.name === "string" && validDishNames.has(entry.name) && typeof entry.ts === "string" && !isNaN(Date.parse(entry.ts));
+  }).map(function(entry){
+    return { name: entry.name, ts: entry.ts, mode: ["egal","strict","buy2","week"].indexOf(entry.mode) !== -1 ? entry.mode : "egal", hasPhoto: !!entry.hasPhoto };
+  });
+  const dishesSeen = uniqueDishNames((Array.isArray(p.dishesSeen) ? p.dishesSeen : []).concat(cookLog.map(function(entry){ return entry.name; })));
+  const weekPlan = {};
+  const rawWeekPlan = p.weekPlan && typeof p.weekPlan === "object" && !Array.isArray(p.weekPlan) ? p.weekPlan : {};
+  weekDays.forEach(function(day){
+    const name = rawWeekPlan[day];
+    if (name === REST_DAY || validDishNames.has(name)) weekPlan[day] = name;
+  });
+  const weekConfirmed = {};
+  const rawWeekConfirmed = p.weekConfirmed && typeof p.weekConfirmed === "object" && !Array.isArray(p.weekConfirmed) ? p.weekConfirmed : {};
+  weekDays.forEach(function(day){ if (rawWeekConfirmed[day] === true && weekPlan[day] && weekPlan[day] !== REST_DAY) weekConfirmed[day] = true; });
+  const safeStringList = function(value, limit) {
+    return Array.from(new Set((Array.isArray(value) ? value : []).filter(function(item){ return typeof item === "string" && item.length <= 120; }))).slice(-limit);
+  };
   return {
-    xp: typeof p.xp === "number" ? p.xp : d.xp,
-    dishesSeen: p.dishesSeen || d.dishesSeen,
-    cookLog: p.cookLog || d.cookLog,
-    cartCompletions: typeof p.cartCompletions === "number" ? p.cartCompletions : d.cartCompletions,
+    xp: typeof p.xp === "number" && isFinite(p.xp) && p.xp >= 0 ? Math.floor(p.xp) : d.xp,
+    dishesSeen: dishesSeen,
+    cookLog: cookLog,
+    cartCompletions: typeof p.cartCompletions === "number" && isFinite(p.cartCompletions) && p.cartCompletions >= 0 ? Math.floor(p.cartCompletions) : d.cartCompletions,
     cartItems: Array.isArray(p.cartItems) ? p.cartItems.filter(function(item){ return item && typeof item.id === "string" && ingredientVocab[item.id]; }).map(function(item){
       const contributions = Array.isArray(item.contributions) ? item.contributions.filter(function(part){
         return part && typeof part.source === "string" && typeof part.amount === "number" && isFinite(part.amount) && part.amount >= 0 && typeof part.unit === "string";
       }).map(function(part){ return { source: part.source, amount: part.amount, unit: part.unit }; }) : [];
       return { id: item.id, checked: !!item.checked, manual: typeof item.manual === "boolean" ? item.manual : contributions.length === 0, contributions: contributions };
     }) : d.cartItems,
-    badgesUnlocked: p.badgesUnlocked || d.badgesUnlocked,
-    photos: p.photos || d.photos,
-    weekPlan: p.weekPlan || d.weekPlan,
-    weekSelectedDays: p.weekSelectedDays || d.weekSelectedDays,
-    weekLockedDays: Array.isArray(p.weekLockedDays) ? p.weekLockedDays : d.weekLockedDays,
-    weekConfirmed: p.weekConfirmed || d.weekConfirmed,
-    weekBudget: typeof p.weekBudget === "number" ? p.weekBudget : d.weekBudget,
-    peopleCount: typeof p.peopleCount === "number" ? p.peopleCount : d.peopleCount,
-    accentColor: p.accentColor || d.accentColor,
-    appIcon: p.appIcon || d.appIcon,
-    theme: p.theme || d.theme,
-    favorites: p.favorites || d.favorites,
+    rewardedCartChecks: safeStringList(p.rewardedCartChecks, 1000),
+    rewardedCartCompletions: safeStringList(p.rewardedCartCompletions, 104),
+    rewardedCookEvents: safeStringList(p.rewardedCookEvents, 1000),
+    badgesUnlocked: safeStringList(p.badgesUnlocked, badgeDefs.length).filter(function(id){ return badgeDefs.some(function(badge){ return badge.id === id; }); }),
+    photos: (Array.isArray(p.photos) ? p.photos : []).filter(function(photo){ return photo && typeof photo.dataUrl === "string" && /^data:image\/(?:jpeg|png|webp);base64,/.test(photo.dataUrl) && validDishNames.has(photo.name); }).slice(0, 20),
+    weekPlan: weekPlan,
+    weekSelectedDays: safeStringList(p.weekSelectedDays, weekDays.length).filter(function(day){ return weekDays.indexOf(day) !== -1; }),
+    weekLockedDays: safeStringList(p.weekLockedDays, weekDays.length).filter(function(day){ return weekDays.indexOf(day) !== -1 && weekPlan[day] && !weekConfirmed[day]; }),
+    weekConfirmed: weekConfirmed,
+    weekBudget: typeof p.weekBudget === "number" && isFinite(p.weekBudget) && p.weekBudget >= 0 ? p.weekBudget : d.weekBudget,
+    peopleCount: typeof p.peopleCount === "number" && isFinite(p.peopleCount) ? Math.max(1, Math.min(12, Math.round(p.peopleCount))) : d.peopleCount,
+    accentColor: Object.prototype.hasOwnProperty.call(accentColors, p.accentColor) ? p.accentColor : d.accentColor,
+    appIcon: ["🍳","🍲","🎲","🥘","🍜","🧑‍🍳"].indexOf(p.appIcon) !== -1 ? p.appIcon : d.appIcon,
+    theme: p.theme === "dark" ? "dark" : d.theme,
+    favorites: uniqueDishNames(p.favorites),
     localTier: p.localTier === "premium" ? "premium" : d.localTier
   };
 }
@@ -1709,7 +1743,7 @@ function renderFavoritesSheet() {
     return '<li class="favorite-item"><span class="fav-emoji">' + dish.emoji + '</span><button type="button" class="fav-name" data-name="' + escapeHtml(name) + '">' + escapeHtml(dish.name) + '</button><button type="button" class="fav-remove" data-name="' + escapeHtml(name) + '">✕</button></li>';
   }).join("");
   favoritesListEl.querySelectorAll(".fav-name").forEach(function(btn){
-    btn.addEventListener("click", function(){ favoritesOverlay.style.display = "none"; openRecipe(dishByName(btn.dataset.name), favoritesBtn); });
+    btn.addEventListener("click", function(){ closeAppSheet(favoritesOverlay, favoritesBtn, false); openRecipe(dishByName(btn.dataset.name), favoritesBtn); });
   });
   favoritesListEl.querySelectorAll(".fav-remove").forEach(function(btn){
     btn.addEventListener("click", function(){ toggleFavorite(btn.dataset.name); });
@@ -1824,6 +1858,48 @@ async function saveProfile() {
 }
 function addXp(amount) { profile.xp += amount; }
 
+function localDateKey(date) {
+  const value = date || new Date();
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return year + "-" + month + "-" + day;
+}
+
+function isoWeekKey(date) {
+  const value = date || new Date();
+  const utc = new Date(Date.UTC(value.getFullYear(), value.getMonth(), value.getDate()));
+  const dayNumber = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() + 4 - dayNumber);
+  const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+  const weekNumber = Math.ceil((((utc - yearStart) / 86400000) + 1) / 7);
+  return utc.getUTCFullYear() + "-W" + String(weekNumber).padStart(2, "0");
+}
+
+function claimProfileReward(listName, key, limit) {
+  if (!Array.isArray(profile[listName])) profile[listName] = [];
+  if (profile[listName].indexOf(key) !== -1) return false;
+  profile[listName].push(key);
+  if (profile[listName].length > limit) profile[listName] = profile[listName].slice(-limit);
+  return true;
+}
+
+function markDishSeen(dish, notify) {
+  if (!dish || profile.dishesSeen.indexOf(dish.name) !== -1) return false;
+  profile.dishesSeen.push(dish.name);
+  addXp(15);
+  if (notify) showToast("+15 XP · Neu entdeckt: " + dish.name);
+  return true;
+}
+
+function rewardCook(dish, photoDataUrl) {
+  const rewardKey = localDateKey(new Date()) + "|" + dish.name;
+  if (!claimProfileReward("rewardedCookEvents", rewardKey, 1000)) return 0;
+  const amount = photoDataUrl ? 15 : 10;
+  addXp(amount);
+  return amount;
+}
+
 function getLevelInfo(xp) {
   let current = levels[0], idx = 0;
   for (let i = 0; i < levels.length; i++) { if (xp >= levels[i].min) { current = levels[i]; idx = i; } }
@@ -1856,8 +1932,8 @@ function renderDex() {
     const cooked = cookedSet.has(d.name);
     const locked = !seen && d.premium && tier !== "premium";
     const cls = cooked ? "cooked" : (seen ? "seen" : (locked ? "locked" : "unseen"));
-    const content = seen ? d.emoji : (locked ? "🔒" : "?");
-    const title = seen ? d.name : (locked ? d.name + " (Premium)" : "???");
+    const content = (seen || cooked) ? d.emoji : (locked ? "🔒" : "?");
+    const title = (seen || cooked) ? d.name : (locked ? d.name + " (Premium)" : "???");
     return '<div class="dex-cell ' + cls + '" title="' + title + '">' + content + "</div>";
   }).join("");
 }
@@ -1928,15 +2004,16 @@ function afterProgressUpdate() {
 }
 
 function computePool(filterState, ignoreTier) {
+  const ingredientMode = filterState.ingredientMode || "egal";
   return dishes.filter(function(d){
     if (filterState.time !== "egal" && d.time !== filterState.time) return false;
     if (filterState.diet === "vegan" && d.diet !== "vegan") return false;
     if (filterState.diet === "vegetarisch" && !(d.diet === "vegetarisch" || d.diet === "vegan")) return false;
     if (filterState.type !== "egal" && d.type !== filterState.type) return false;
-    if (state.ingredientMode !== "egal") {
+    if (ingredientMode !== "egal") {
       const missing = d.ingredients.filter(function(id){ return !have.has(id); }).length;
-      if (state.ingredientMode === "strict" && missing !== 0) return false;
-      if (state.ingredientMode === "buy2" && missing > 2) return false;
+      if (ingredientMode === "strict" && missing !== 0) return false;
+      if (ingredientMode === "buy2" && missing > 2) return false;
     }
     if (!ignoreTier && d.premium && tier !== "premium") return false;
     return true;
@@ -2175,6 +2252,7 @@ function renderRecipeSheet() {
 }
 
 let lockedPageScrollY = 0;
+const sheetReturnFocus = new WeakMap();
 
 function lockPageScroll() {
   if (document.body.classList.contains("overlay-scroll-locked")) return;
@@ -2188,6 +2266,57 @@ function unlockPageScroll() {
   document.body.classList.remove("overlay-scroll-locked");
   document.body.style.top = "";
   window.scrollTo(0, lockedPageScrollY);
+}
+
+function setAppModalState(active) {
+  const app = document.querySelector(".app");
+  if (!app) return;
+  if (active) {
+    app.setAttribute("inert", "");
+    app.setAttribute("aria-hidden", "true");
+  } else {
+    app.removeAttribute("inert");
+    app.removeAttribute("aria-hidden");
+  }
+}
+
+function openAppSheet(overlay, closeButton, trigger) {
+  sheetReturnFocus.set(overlay, trigger || document.activeElement);
+  setAppModalState(true);
+  lockPageScroll();
+  overlay.style.display = "flex";
+  closeButton.focus({ preventScroll: true });
+}
+
+function closeAppSheet(overlay, fallback, restoreFocus) {
+  overlay.style.display = "none";
+  setAppModalState(false);
+  unlockPageScroll();
+  const target = sheetReturnFocus.get(overlay) || fallback;
+  sheetReturnFocus.delete(overlay);
+  if (restoreFocus === false) return;
+  if (target && document.contains(target) && target.offsetParent !== null) target.focus({ preventScroll: true });
+}
+
+function trapAppSheetFocus(event, overlay, closeHandler) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeHandler();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusable = Array.from(overlay.querySelectorAll('button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function(el){
+    return el.offsetParent !== null;
+  });
+  if (focusable.length === 0) return;
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function openRecipe(dish, trigger) {
@@ -2362,8 +2491,9 @@ function confirmCook(dish, photoDataUrl, btn, skipBtn) {
     profile.photos.unshift({ id: Date.now() + "-" + Math.random().toString(36).slice(2), name: dish.name, ts: nowIso, dataUrl: photoDataUrl });
     if (profile.photos.length > 20) profile.photos.length = 20;
   }
-  addXp(photoDataUrl ? 15 : 10);
-  showToast((photoDataUrl ? "+15" : "+10") + " XP · Gekocht: " + dish.name);
+  const discoveredNow = markDishSeen(dish, false);
+  const earnedXp = rewardCook(dish, photoDataUrl) + (discoveredNow ? 15 : 0);
+  showToast(earnedXp ? ("+" + earnedXp + " XP · Gekocht: " + dish.name) : ("Gekocht gespeichert · heute bereits belohnt"));
   if (btn) { btn.disabled = true; btn.textContent = photoDataUrl ? "📸 Bestätigt ✓" : "✅ Bestätigt ✓"; }
   if (skipBtn) { skipBtn.disabled = true; skipBtn.style.display = "none"; }
   afterProgressUpdate();
@@ -2401,7 +2531,6 @@ function restoreCartFromProfile() {
 function cartHasSource(id, source) {
   const item = cartMap.get(id);
   if (!item) return false;
-  if (item.manual) return true;
   return (item.contributions || []).some(function(part){ return part.source === source; });
 }
 
@@ -2426,7 +2555,7 @@ function addToCart(ids, options) {
       item.manual = true;
       return;
     }
-    if (item.manual || cartHasSource(id, opts.source)) return;
+    if (cartHasSource(id, opts.source)) return;
     const quantity = scaledRecipeQuantity(opts.dish, id, opts.portions || peopleCount);
     item.contributions.push({ source: opts.source, amount: quantity.amount, unit: quantity.unit });
     item.checked = false;
@@ -2444,9 +2573,13 @@ function checkCartCompletion() {
   const allChecked = items.length > 0 && items.every(function(it){ return it.checked; });
   if (allChecked && !cartWasComplete) {
     cartWasComplete = true;
-    profile.cartCompletions = (profile.cartCompletions || 0) + 1;
-    addXp(10);
-    showToast("Warenkorb komplett! +10 XP 🎉");
+    if (claimProfileReward("rewardedCartCompletions", isoWeekKey(new Date()), 104)) {
+      profile.cartCompletions = (profile.cartCompletions || 0) + 1;
+      addXp(10);
+      showToast("Warenkorb komplett! +10 XP 🎉");
+    } else {
+      showToast("Warenkorb komplett · diese Woche bereits belohnt");
+    }
   } else if (!allChecked) { cartWasComplete = false; }
 }
 
@@ -2461,15 +2594,27 @@ function renderCart() {
   cartEmptyEl.style.display = "none";
   cartListEl.innerHTML = items.map(function(entry){
     const id = entry[0], item = entry[1];
-    return '<li class="cart-item' + (item.checked ? " checked" : "") + '"><input type="checkbox" id="cart-' + id + '" ' + (item.checked ? "checked" : "") + '><label for="cart-' + id + '"><span>' + escapeHtml(ingredientVocab[id].label) + '</span><span class="cart-item-amount">' + escapeHtml(cartQuantityText(id, item)) + "</span></label></li>";
+    return '<li class="cart-item' + (item.checked ? " checked" : "") + '"><input type="checkbox" id="cart-' + id + '" ' + (item.checked ? "checked" : "") + '><label for="cart-' + id + '"><span>' + escapeHtml(ingredientVocab[id].label) + '</span><span class="cart-item-amount">' + escapeHtml(cartQuantityText(id, item)) + '</span></label><button class="cart-item-remove" type="button" data-id="' + escapeHtml(id) + '" aria-label="' + escapeHtml(ingredientVocab[id].label) + ' entfernen">×</button></li>';
   }).join("");
   items.forEach(function(entry){
     const id = entry[0];
     document.getElementById("cart-" + id).addEventListener("change", function(e){
       cartMap.get(id).checked = e.target.checked;
-      if (profileLoaded && e.target.checked) addXp(2);
+      if (profileLoaded && e.target.checked) {
+        const rewardKey = isoWeekKey(new Date()) + "|" + id;
+        if (claimProfileReward("rewardedCartChecks", rewardKey, 1000)) addXp(2);
+      }
       renderCart();
       if (profileLoaded) { checkCartCompletion(); syncCartToProfile(); afterProgressUpdate(); }
+    });
+  });
+  cartListEl.querySelectorAll(".cart-item-remove").forEach(function(button){
+    button.addEventListener("click", function(){
+      cartMap.delete(button.dataset.id);
+      cartWasComplete = false;
+      syncCartToProfile();
+      renderCart();
+      saveProfile();
     });
   });
 }
@@ -2514,10 +2659,7 @@ function finish(dish) {
   }
 
   if (profileLoaded) {
-    const wasNew = profile.dishesSeen.indexOf(dish.name) === -1;
-    if (wasNew) { profile.dishesSeen.push(dish.name); addXp(15); showToast("+15 XP · Neu entdeckt: " + dish.name); }
-    else { addXp(3); }
-    afterProgressUpdate();
+    if (markDishSeen(dish, true)) afterProgressUpdate();
   }
   updatePoolCount();
 }
@@ -2696,6 +2838,7 @@ function spinDayRow(day, pool, onComplete) {
   const finalDish = pickDayCandidate(pool);
   profile.weekPlan[day] = finalDish.name;
   profile.weekConfirmed[day] = false;
+  if (profileLoaded && markDishSeen(finalDish, false)) afterProgressUpdate();
   if (!rowEl || prefersReducedMotion) {
     refreshSingleRow(day);
     if (onComplete) onComplete();
@@ -2741,14 +2884,15 @@ function confirmWeekDay(day, photoDataUrl) {
   lockedDays.delete(day);
   profile.weekLockedDays = Array.from(lockedDays);
   const nowIso = new Date().toISOString();
-  profile.cookLog.push({ name: dish.name, ts: nowIso, mode: state.ingredientMode, hasPhoto: !!photoDataUrl });
+  profile.cookLog.push({ name: dish.name, ts: nowIso, mode: "week", hasPhoto: !!photoDataUrl });
   if (photoDataUrl) {
     profile.photos = profile.photos || [];
     profile.photos.unshift({ id: Date.now() + "-" + Math.random().toString(36).slice(2), name: dish.name, ts: nowIso, dataUrl: photoDataUrl });
     if (profile.photos.length > 20) profile.photos.length = 20;
   }
-  addXp(photoDataUrl ? 15 : 10);
-  showToast((photoDataUrl ? "+15" : "+10") + " XP · Gekocht: " + dish.name);
+  const discoveredNow = markDishSeen(dish, false);
+  const earnedXp = rewardCook(dish, photoDataUrl) + (discoveredNow ? 15 : 0);
+  showToast(earnedXp ? ("+" + earnedXp + " XP · Gekocht: " + dish.name) : ("Gekocht gespeichert · heute bereits belohnt"));
   afterProgressUpdate();
   refreshSingleRow(day);
 }
@@ -2959,7 +3103,8 @@ peoplePlusBtn.addEventListener("click", function(){
 
 budgetInputEl.addEventListener("input", function(){
   const val = parseFloat(budgetInputEl.value);
-  profile.weekBudget = isNaN(val) ? null : val;
+  profile.weekBudget = isNaN(val) ? null : Math.max(0, val);
+  if (!isNaN(val) && val < 0) budgetInputEl.value = "0";
   saveProfile();
   renderBudgetSummary();
 });
@@ -3277,7 +3422,7 @@ async function signOut() {
     await saveProfile();
     await supabaseClient.auth.signOut();
     await switchToGuest();
-    accountOverlay.style.display = "none";
+    closeAccountOverlay();
     showToast("Abgemeldet – Gastmodus aktiv");
   } finally {
     signOutBtn.disabled = false;
@@ -3360,7 +3505,7 @@ async function initializeAuth() {
     if (event === "PASSWORD_RECOVERY") {
       passwordRecoveryActive = true;
       passwordRecoveryBox.classList.remove("hidden");
-      accountOverlay.style.display = "flex";
+      if (accountOverlay.style.display !== "flex") openAppSheet(accountOverlay, accountClose, accountBtn);
     } else if (event === "SIGNED_OUT" && currentSession) {
       setTimeout(function(){ switchToGuest(); }, 0);
     } else if (event === "SIGNED_IN" && session && (!currentSession || currentSession.user.id !== session.user.id)) {
@@ -3410,45 +3555,40 @@ recipeAddMissing.addEventListener("click", function(){
   if (currentDish && currentDish.name === currentRecipeDish.name) renderResultIngredients(currentDish);
 });
 
-favoritesBtn.addEventListener("click", function(){ renderFavoritesSheet(); favoritesOverlay.style.display = "flex"; });
-favoritesClose.addEventListener("click", function(){ favoritesOverlay.style.display = "none"; });
-favoritesOverlay.addEventListener("click", function(e){ if (e.target === favoritesOverlay) favoritesOverlay.style.display = "none"; });
+function openFavoritesOverlay() { renderFavoritesSheet(); openAppSheet(favoritesOverlay, favoritesClose, favoritesBtn); }
+function closeFavoritesOverlay() { closeAppSheet(favoritesOverlay, favoritesBtn); }
+favoritesBtn.addEventListener("click", openFavoritesOverlay);
+favoritesClose.addEventListener("click", closeFavoritesOverlay);
+favoritesOverlay.addEventListener("click", function(e){ if (e.target === favoritesOverlay) closeFavoritesOverlay(); });
+favoritesOverlay.addEventListener("keydown", function(e){ trapAppSheetFocus(e, favoritesOverlay, closeFavoritesOverlay); });
 
 function openCartOverlay() {
-  const app = document.querySelector(".app");
-  if (app) {
-    app.setAttribute("inert", "");
-    app.setAttribute("aria-hidden", "true");
-  }
-  lockPageScroll();
-  cartOverlay.style.display = "flex";
-  cartClose.focus({ preventScroll: true });
+  openAppSheet(cartOverlay, cartClose, cartIconBtn);
 }
 
 function closeCartOverlay() {
-  cartOverlay.style.display = "none";
-  unlockPageScroll();
-  const app = document.querySelector(".app");
-  if (app) {
-    app.removeAttribute("inert");
-    app.removeAttribute("aria-hidden");
-  }
-  cartIconBtn.focus({ preventScroll: true });
+  closeAppSheet(cartOverlay, cartIconBtn);
 }
 
 cartIconBtn.addEventListener("click", openCartOverlay);
 cartClose.addEventListener("click", closeCartOverlay);
 cartOverlay.addEventListener("click", function(e){ if (e.target === cartOverlay) closeCartOverlay(); });
-cartOverlay.addEventListener("keydown", function(e){ if (e.key === "Escape") { e.preventDefault(); closeCartOverlay(); } });
+cartOverlay.addEventListener("keydown", function(e){ trapAppSheetFocus(e, cartOverlay, closeCartOverlay); });
 
-menuBtn.addEventListener("click", function(){ menuOverlay.style.display = "flex"; });
-menuClose.addEventListener("click", function(){ menuOverlay.style.display = "none"; });
-menuOverlay.addEventListener("click", function(e){ if (e.target === menuOverlay) menuOverlay.style.display = "none"; });
+function openMenuOverlay() { openAppSheet(menuOverlay, menuClose, menuBtn); }
+function closeMenuOverlay() { closeAppSheet(menuOverlay, menuBtn); }
+menuBtn.addEventListener("click", openMenuOverlay);
+menuClose.addEventListener("click", closeMenuOverlay);
+menuOverlay.addEventListener("click", function(e){ if (e.target === menuOverlay) closeMenuOverlay(); });
+menuOverlay.addEventListener("keydown", function(e){ trapAppSheetFocus(e, menuOverlay, closeMenuOverlay); });
 
-accountBtn.addEventListener("click", function(){ renderAccountState(); accountOverlay.style.display = "flex"; });
-accountClose.addEventListener("click", function(){ accountOverlay.style.display = "none"; });
-accountOverlay.addEventListener("click", function(e){ if (e.target === accountOverlay) accountOverlay.style.display = "none"; });
-continueGuestBtn.addEventListener("click", function(){ accountOverlay.style.display = "none"; });
+function openAccountOverlay() { renderAccountState(); openAppSheet(accountOverlay, accountClose, accountBtn); }
+function closeAccountOverlay() { closeAppSheet(accountOverlay, accountBtn); }
+accountBtn.addEventListener("click", openAccountOverlay);
+accountClose.addEventListener("click", closeAccountOverlay);
+accountOverlay.addEventListener("click", function(e){ if (e.target === accountOverlay) closeAccountOverlay(); });
+accountOverlay.addEventListener("keydown", function(e){ trapAppSheetFocus(e, accountOverlay, closeAccountOverlay); });
+continueGuestBtn.addEventListener("click", closeAccountOverlay);
 document.querySelectorAll("[data-auth-mode]").forEach(function(btn){
   btn.addEventListener("click", function(){ setAuthMode(btn.dataset.authMode); });
 });
@@ -3458,12 +3598,14 @@ profileForm.addEventListener("submit", updateDisplayName);
 signOutBtn.addEventListener("click", signOut);
 passwordRecoveryForm.addEventListener("submit", updatePassword);
 openAdminBtn.addEventListener("click", function(){
-  accountOverlay.style.display = "none";
-  adminOverlay.style.display = "flex";
+  closeAppSheet(accountOverlay, accountBtn, false);
+  openAppSheet(adminOverlay, adminClose, openAdminBtn);
   loadAdminUsers();
 });
-adminClose.addEventListener("click", function(){ adminOverlay.style.display = "none"; });
-adminOverlay.addEventListener("click", function(e){ if (e.target === adminOverlay) adminOverlay.style.display = "none"; });
+function closeAdminOverlay() { closeAppSheet(adminOverlay, accountBtn); }
+adminClose.addEventListener("click", closeAdminOverlay);
+adminOverlay.addEventListener("click", function(e){ if (e.target === adminOverlay) closeAdminOverlay(); });
+adminOverlay.addEventListener("keydown", function(e){ trapAppSheetFocus(e, adminOverlay, closeAdminOverlay); });
 
 colorRowEl.querySelectorAll(".color-swatch").forEach(function(btn){
   btn.addEventListener("click", function(){
@@ -3491,21 +3633,25 @@ themeToggleEl.querySelectorAll(".tier-btn").forEach(function(btn){
 cartClearBtn.addEventListener("click", function(){ cartMap.clear(); cartWasComplete = false; syncCartToProfile(); renderCart(); saveProfile(); });
 
 resetProgressBtn.addEventListener("click", async function(){
-  if (!window.confirm("Wirklich deinen ganzen Fortschritt (XP, Abzeichen, Fotos, Wochenplan) löschen?")) return;
+  if (!window.confirm("XP, Abzeichen, Entdeckungen, Kochhistorie, Fotos und Wochenplan löschen? Favoriten, Warenkorb und Einstellungen bleiben erhalten.")) return;
+  const preserved = {
+    cartItems: profile.cartItems,
+    favorites: profile.favorites,
+    peopleCount: profile.peopleCount,
+    weekBudget: profile.weekBudget,
+    accentColor: profile.accentColor,
+    appIcon: profile.appIcon,
+    theme: profile.theme,
+    localTier: profile.localTier
+  };
   profile = defaultProfile();
+  Object.assign(profile, preserved);
   selectedDays.clear();
   lockedDays.clear();
-  cartMap.clear();
-  cartWasComplete = false;
-  peopleCount = 4;
   await saveProfile();
   afterProgressUpdate();
   renderWeekTab();
-  renderCart();
-  applyAccentColor("blue");
-  applyTheme("light");
-  appIconTileEl.textContent = "🍳";
-  iconRowEl.querySelectorAll(".icon-swatch").forEach(function(b){ b.classList.toggle("selected", b.dataset.icon === "🍳"); });
+  restoreCartFromProfile();
   updateFavoritesBadge();
   showToast("Fortschritt zurückgesetzt");
 });
