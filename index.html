@@ -2,10 +2,533 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1C1C1E">
-<title>Kochorakel</title>
-<script>location.replace("./kochorakel.html" + location.search + location.hash);</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kochorakel">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Kochorakel">
+<meta name="description" content="Das Kochorakel findet dein nächstes Gericht und plant deine Woche.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+<title>Kochorakel – Was gibt's heute?</title>
+<link rel="stylesheet" href="./src/styles.css">
 </head>
-<body><p><a href="./kochorakel.html">Kochorakel öffnen</a></p></body>
+<body>
+<div class="app">
+  <div class="top-row">
+    <div class="brand">
+      <span class="app-icon-tile" id="appIconTile">🍳</span>
+      <span class="eyebrow">Kochorakel</span>
+    </div>
+    <div class="header-actions">
+      <button class="header-icon-btn" id="favoritesBtn" type="button" aria-label="Favoriten">
+        🤍<span class="header-badge" id="favoritesBadge" style="display:none;">0</span>
+      </button>
+      <button class="header-icon-btn" id="cartIconBtn" type="button" aria-label="Warenkorb">
+        🛒<span class="header-badge" id="cartIconBadge" style="display:none;">0</span>
+      </button>
+      <button class="header-icon-btn" id="accountBtn" type="button" aria-label="Konto">
+        👤<span class="account-dot" id="accountDot"></span>
+      </button>
+      <button class="header-icon-btn" id="menuBtn" type="button" aria-label="Menü">☰</button>
+    </div>
+  </div>
+  <h1>Was gibt's heute?</h1>
+  <p class="subline">Filter setzen, Hebel ziehen, Bauch entscheiden lassen.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" id="tabKochen" data-tab="kochen" type="button" role="tab" aria-controls="panelKochen" aria-selected="true">🎲 Kochen</button>
+    <button class="tab-btn" id="tabWoche" data-tab="woche" type="button" role="tab" aria-controls="panelWoche" aria-selected="false" tabindex="-1">📅 Woche</button>
+    <button class="tab-btn" id="tabRezepte" data-tab="rezepte" type="button" role="tab" aria-controls="panelRezepte" aria-selected="false" tabindex="-1">📖 Rezepte</button>
+    <button class="tab-btn" id="tabFortschritt" data-tab="fortschritt" type="button" role="tab" aria-controls="panelFortschritt" aria-selected="false" tabindex="-1">🏅 Fortschritt <span class="tab-count" id="tabBadgeCount"></span></button>
+  </div>
+
+  <div class="tab-panel active" id="panelKochen" role="tabpanel" aria-labelledby="tabKochen">
+    <div class="xp-strip" id="xpStrip" role="button" tabindex="0" aria-label="Fortschritt öffnen">
+      <span class="xp-strip-label" id="xpStripLabel">Lvl 1 · Kochlehrling</span>
+      <div class="xp-strip-track"><div class="xp-strip-fill" id="xpStripFill"></div></div>
+      <span class="xp-strip-arrow">Fortschritt ›</span>
+    </div>
+
+    <div class="filters">
+      <div class="filter-group" data-group="time">
+        <span class="filter-label">Zeit</span>
+        <button class="chip active" data-value="egal">Egal</button>
+        <button class="chip" data-value="schnell">Schnell</button>
+        <button class="chip" data-value="normal">Normal</button>
+        <button class="chip" data-value="aufwendig">Aufwendig</button>
+      </div>
+      <div class="filter-group" data-group="diet">
+        <span class="filter-label">Ernährung</span>
+        <button class="chip active" data-value="egal">Egal</button>
+        <button class="chip" data-value="vegetarisch">Vegetarisch</button>
+        <button class="chip" data-value="vegan">Vegan</button>
+      </div>
+      <div class="filter-group" data-group="type">
+        <span class="filter-label">Lust auf</span>
+        <button class="chip active" data-value="egal">Egal</button>
+        <button class="chip" data-value="herzhaft">Herzhaft</button>
+        <button class="chip" data-value="süß">Süß</button>
+      </div>
+    </div>
+
+    <details class="panel">
+      <summary>Weitere Filter &amp; Vorrat <span style="opacity:.55;font-weight:400;text-transform:none;">(optional)</span></summary>
+      <div class="panel-body">
+        <div>
+          <p class="section-label">Modus</p>
+          <div class="filter-group" data-group="ingredientMode">
+            <button class="chip chip-sm active" data-value="egal">Egal</button>
+            <button class="chip chip-sm" data-value="strict">Nur was ich hab</button>
+            <button class="chip chip-sm" data-value="buy2">+ 2 einkaufen</button>
+            <button class="chip chip-sm" data-value="reste">Reste retten</button>
+          </div>
+        </div>
+        <div class="subgroup"><p class="section-label">Grundnahrungsmittel</p><div class="ing-chips" data-cat="grund"></div></div>
+        <div class="subgroup"><p class="section-label">Vorrat &amp; Saucen</p><div class="ing-chips" data-cat="vorrat"></div></div>
+        <div class="subgroup"><p class="section-label">Milchprodukte &amp; Eier</p><div class="ing-chips" data-cat="milchprodukte"></div></div>
+        <div class="subgroup"><p class="section-label">Fleisch, Wurst &amp; Fisch</p><div class="ing-chips" data-cat="fleisch"></div></div>
+        <div class="subgroup"><p class="section-label">Gemüse</p><div class="ing-chips" data-cat="gemuese"></div></div>
+        <div class="subgroup"><p class="section-label">Obst</p><div class="ing-chips" data-cat="obst"></div></div>
+        <div class="subgroup"><p class="section-label">Gewürze &amp; Sonstiges</p><div class="ing-chips" data-cat="gewuerze"></div></div>
+      </div>
+    </details>
+
+    <p class="pool-count" id="poolCount"></p>
+    <p class="empty-msg" id="emptyMsg" style="display:none;"></p>
+
+    <div class="reel-wrap">
+      <div class="reel-card">
+        <button type="button" class="favorite-btn" id="favoriteBtn" aria-label="Zu Favoriten hinzufügen" aria-pressed="false" style="display:none;">🤍</button>
+        <div class="reel-inner" id="reelInner">
+          <span class="reel-emoji" id="reelEmoji">❓</span>
+          <p class="reel-name" id="reelName">???</p>
+          <div class="reel-tags" id="reelTags"></div>
+          <div class="portion-price" id="portionPrice"></div>
+          <div class="ingredient-line" id="ingredientLine"></div>
+          <a class="recipe-link" id="recipeLink" href="#recipe" style="display:none;">Rezept anzeigen</a>
+          <div id="cartAction"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="roll-btn" id="rollBtn" disabled>Gericht auslosen</button>
+      <div class="confirm-row" id="confirmRow"></div>
+      <p class="helper" id="helperText">Lade deinen Fortschritt …</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panelRezepte" role="tabpanel" aria-labelledby="tabRezepte" aria-hidden="true">
+    <div class="card recipe-library-controls">
+      <div class="recipe-search-wrap">
+        <input class="recipe-search" id="recipeSearch" type="search" placeholder="Gericht oder Zutat suchen …" autocomplete="off" aria-label="Rezepte durchsuchen">
+        <button class="recipe-search-clear" id="recipeSearchClear" type="button" aria-label="Suche leeren">✕</button>
+      </div>
+      <div class="recipe-library-selects">
+        <select class="recipe-library-select" id="recipeLibraryDiet" aria-label="Ernährungsweise filtern">
+          <option value="egal">Alle Ernährungsarten</option>
+          <option value="vegetarisch">Vegetarisch</option>
+          <option value="vegan">Vegan</option>
+        </select>
+        <select class="recipe-library-select" id="recipeLibraryTime" aria-label="Zeitaufwand filtern">
+          <option value="egal">Jeder Zeitaufwand</option>
+          <option value="schnell">Schnell</option>
+          <option value="normal">Normal</option>
+          <option value="aufwendig">Aufwendig</option>
+        </select>
+        <select class="recipe-library-select" id="recipeLibraryType" aria-label="Gerichtstyp filtern">
+          <option value="egal">Herzhaft &amp; süß</option>
+          <option value="herzhaft">Herzhaft</option>
+          <option value="süß">Süß</option>
+        </select>
+      </div>
+      <p class="recipe-library-summary" id="recipeLibrarySummary"></p>
+    </div>
+    <div class="recipe-library-grid" id="recipeLibraryGrid"></div>
+    <p class="recipe-library-empty" id="recipeLibraryEmpty">Keine passenden Rezepte gefunden.</p>
+  </div>
+
+  <div class="tab-panel" id="panelWoche" role="tabpanel" aria-labelledby="tabWoche" aria-hidden="true">
+    <div class="card" id="weekLocked" style="display:none;">
+      <p class="locked-msg">🔒 Der Wochenplaner ist ein Premium-Feature — öffne das Menü oben rechts, um Premium zu aktivieren.</p>
+    </div>
+    <div id="weekContent">
+      <div class="card week-plan-primary">
+        <p class="section-label">Dein Plan</p>
+        <p class="week-period" id="weekPeriodLabel"></p>
+        <p class="week-plan-hint">🔒 schützt ein Gericht beim nächsten Würfeln. Tippe auf den Namen für das Rezept.</p>
+        <div id="weekDayRows"></div>
+      </div>
+      <details class="panel week-config">
+        <summary>Woche anpassen</summary>
+        <div class="panel-body">
+          <div class="week-config-section">
+            <p class="section-label">Filter</p>
+            <div class="filters">
+              <div class="filter-group week-filter-group" data-group="time">
+                <span class="filter-label">Zeit</span>
+                <button class="chip active" data-value="egal">Egal</button>
+                <button class="chip" data-value="schnell">Schnell</button>
+                <button class="chip" data-value="normal">Normal</button>
+                <button class="chip" data-value="aufwendig">Aufwendig</button>
+              </div>
+              <div class="filter-group week-filter-group" data-group="diet">
+                <span class="filter-label">Ernährung</span>
+                <button class="chip active" data-value="egal">Egal</button>
+                <button class="chip" data-value="vegetarisch">Vegetarisch</button>
+                <button class="chip" data-value="vegan">Vegan</button>
+              </div>
+              <div class="filter-group week-filter-group" data-group="type">
+                <span class="filter-label">Lust auf</span>
+                <button class="chip active" data-value="egal">Egal</button>
+                <button class="chip" data-value="herzhaft">Herzhaft</button>
+                <button class="chip" data-value="süß">Süß</button>
+              </div>
+            </div>
+            <p class="pool-count" id="weekPoolCount"></p>
+          </div>
+          <div class="week-config-section">
+            <p class="section-label">Wochentage</p>
+            <div class="filter-group day-picker" id="weekDayChips">
+              <button class="chip" data-day="Mo" type="button">Mo</button>
+              <button class="chip" data-day="Di" type="button">Di</button>
+              <button class="chip" data-day="Mi" type="button">Mi</button>
+              <button class="chip" data-day="Do" type="button">Do</button>
+              <button class="chip" data-day="Fr" type="button">Fr</button>
+              <button class="chip" data-day="Sa" type="button">Sa</button>
+              <button class="chip" data-day="So" type="button">So</button>
+            </div>
+            <button type="button" class="roll-week-btn" id="rollWeekBtn">🎲 Offene Tage würfeln</button>
+            <div class="week-actions">
+              <button type="button" class="week-secondary-btn" id="addRestDayBtn">🥡 Restetag</button>
+              <button type="button" class="week-secondary-btn" id="newWeekBtn">↻ Neue Woche</button>
+            </div>
+          </div>
+          <div class="week-config-section week-setup-grid">
+            <div class="week-setup-block">
+              <p class="section-label">Personen</p>
+              <div class="people-row">
+                <button type="button" class="people-btn" id="peopleMinus" aria-label="Eine Person weniger">−</button>
+                <span class="people-count" id="peopleCountDisplay">4</span>
+                <button type="button" class="people-btn" id="peoplePlus" aria-label="Eine Person mehr">+</button>
+              </div>
+            </div>
+            <div class="week-setup-block">
+              <p class="section-label">Budget</p>
+              <div class="budget-row">
+                <span class="budget-euro">€</span>
+                <input type="number" id="budgetInput" min="0" step="1" placeholder="z. B. 50" inputmode="decimal" aria-label="Wochenbudget in Euro">
+              </div>
+              <div id="budgetSummary"></div>
+              <p class="budget-hint">Ungefähre Einkaufskosten.</p>
+            </div>
+          </div>
+        </div>
+      </details>
+      <details class="panel week-shopping-panel">
+        <summary>Einkaufsvorschau</summary>
+        <div class="panel-body">
+          <div class="week-shopping-list" id="weekShoppingPreview"></div>
+        </div>
+      </details>
+      <button class="roll-btn" id="addWeekToCartBtn" type="button">Ganze Woche in den Warenkorb</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panelFortschritt" role="tabpanel" aria-labelledby="tabFortschritt" aria-hidden="true">
+    <div class="card">
+      <div class="xp-top">
+        <span class="xp-level" id="xpLevel">Lvl 1 · Kochlehrling</span>
+        <span class="xp-label" id="xpLabel">0 XP</span>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+    </div>
+    <div class="card">
+      <p class="section-label">Abzeichen</p>
+      <div class="badge-grid" id="badgeGrid"></div>
+    </div>
+    <details class="panel" id="dexDetails">
+      <summary>Gerichte-Dex <span class="tab-count" id="dexStats"></span></summary>
+      <div class="panel-body">
+        <div class="dex-grid" id="dexGrid"></div>
+      </div>
+    </details>
+    <div class="card">
+      <p class="section-label">Kochtagebuch</p>
+      <div id="galleryBody"></div>
+    </div>
+    <button class="reset-link" id="resetProgress" type="button">Fortschritt zurücksetzen</button>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="favoritesOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="favoritesTitle" tabindex="-1">
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="favoritesTitle">Favoriten <span class="cart-count" id="favoritesCount" style="display:none;">0</span></h2>
+      <button class="sheet-close" id="favoritesClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+    <div class="card">
+      <p class="cart-empty" id="favoritesEmpty">Noch keine Favoriten. Tippe beim Ergebnis aufs Herz, um ein Gericht zu merken.</p>
+      <ul class="cart-list" id="favoritesList"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="cartOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="cartTitle">Warenkorb <span class="cart-count" id="cartCount" style="display:none;">0</span></h2>
+      <button class="sheet-close" id="cartClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+    <div class="card">
+      <div class="cart-clear-row"><span class="cart-status" id="cartStatus"></span><div class="cart-clear-actions"><button class="cart-clear" id="cartRemoveChecked" type="button" style="display:none;">Erledigte entfernen</button><button class="cart-clear" id="cartClear" type="button" style="display:none;">Liste leeren</button></div></div>
+      <p class="cart-empty" id="cartEmpty">Noch nichts auf der Liste. Klick beim Ergebnis auf „Fehlendes in den Warenkorb", dann landet's hier.</p>
+      <ul class="cart-list" id="cartList"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="recipeOverlay">
+  <div class="sheet recipe-sheet" role="dialog" aria-modal="true" aria-labelledby="recipeSheetTitle" tabindex="-1">
+    <div class="recipe-grabber" id="recipeGrabber" aria-hidden="true"></div>
+    <div class="recipe-topbar">
+      <button class="recipe-icon-btn recipe-favorite-btn" id="recipeFavoriteBtn" type="button" aria-label="Zu Favoriten hinzufügen" aria-pressed="false">♡</button>
+      <button class="recipe-icon-btn recipe-close-btn" id="recipeClose" type="button" aria-label="Rezept schließen">✕</button>
+    </div>
+    <div class="recipe-hero">
+      <div class="recipe-hero-main">
+        <span class="recipe-hero-emoji" id="recipeEmoji" aria-hidden="true">🍽️</span>
+        <h2 class="recipe-title" id="recipeSheetTitle">Rezept</h2>
+      </div>
+      <div class="recipe-meta" id="recipeMeta"></div>
+      <div class="recipe-stepper" role="group" aria-label="Portionen">
+        <button class="recipe-portion-btn" id="recipePeopleMinus" type="button" aria-label="Eine Portion weniger">−</button>
+        <span class="recipe-portion-count" id="recipePeopleCount" aria-live="polite">4 Portionen</span>
+        <button class="recipe-portion-btn" id="recipePeoplePlus" type="button" aria-label="Eine Portion mehr">+</button>
+      </div>
+    </div>
+    <section class="recipe-panel" aria-labelledby="recipeIngredientsTitle">
+      <div class="recipe-section-head">
+        <h3 class="recipe-section-title" id="recipeIngredientsTitle">Zutaten</h3>
+        <span class="recipe-section-summary" id="recipeIngredientSummary"></span>
+      </div>
+      <ul class="recipe-ingredient-list" id="recipeIngredientList"></ul>
+    </section>
+    <section class="recipe-panel" aria-labelledby="recipeStepsTitle">
+      <div class="recipe-section-head">
+        <h3 class="recipe-section-title" id="recipeStepsTitle">Zubereitung</h3>
+      </div>
+      <ol class="recipe-steps" id="recipeSteps"></ol>
+      <p class="recipe-note" id="recipeNote"></p>
+    </section>
+    <div class="recipe-actions">
+      <button class="recipe-cook-btn" id="recipeStartCooking" type="button">👨‍🍳 Kochmodus starten</button>
+      <button class="recipe-cart-btn" id="recipeAddMissing" type="button">Zutaten hinzufügen</button>
+      <a class="recipe-external" id="recipeExternalLink" href="#" target="_blank" rel="noopener">Alternatives Rezept im Web</a>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="cookingOverlay" aria-hidden="true">
+  <div class="cooking-mode" role="dialog" aria-modal="true" aria-labelledby="cookingTitle">
+    <div class="cooking-topbar">
+      <span class="cooking-kicker">Kochmodus</span>
+      <button class="cooking-close" id="cookingClose" type="button" aria-label="Kochmodus schließen">✕</button>
+    </div>
+    <h2 class="cooking-title" id="cookingTitle">Gericht</h2>
+    <p class="cooking-progress-label" id="cookingProgressLabel"></p>
+    <div class="cooking-progress" aria-hidden="true"><div class="cooking-progress-fill" id="cookingProgressFill"></div></div>
+    <div class="cooking-active-timers" id="cookingActiveTimers" aria-live="polite"></div>
+    <div class="cooking-step-card">
+      <span class="cooking-step-number" id="cookingStepNumber"></span>
+      <p class="cooking-step-text" id="cookingStepText"></p>
+      <div class="cooking-timer">
+        <span class="cooking-timer-display" id="cookingTimerDisplay" aria-live="polite">00:00</span>
+        <span class="cooking-timer-context" id="cookingTimerContext"></span>
+        <div class="cooking-timer-actions">
+          <button class="cooking-timer-btn" id="cookingTimerToggle" type="button">Timer starten</button>
+          <button class="cooking-timer-btn" id="cookingTimerReset" type="button">Zurücksetzen</button>
+        </div>
+      </div>
+    </div>
+    <div class="cooking-nav">
+      <button class="cooking-nav-btn" id="cookingPrev" type="button">← Zurück</button>
+      <button class="cooking-nav-btn primary" id="cookingNext" type="button">Weiter →</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="menuOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="settingsTitle">Einstellungen</h2>
+      <button class="sheet-close" id="menuClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+    <div class="card">
+      <p class="section-label">Darstellung</p>
+      <div class="tier-toggle" id="themeToggle">
+        <button class="tier-btn active" data-theme-choice="light" type="button">☀️ Hell</button>
+        <button class="tier-btn" data-theme-choice="dark" type="button">🌙 Dunkel</button>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-label">App-Farbe</p>
+      <div class="color-row" id="colorRow">
+        <button class="color-swatch" data-color="blue" style="background:#007AFF;" type="button" aria-label="Blau"></button>
+        <button class="color-swatch" data-color="purple" style="background:#AF52DE;" type="button" aria-label="Lila"></button>
+        <button class="color-swatch" data-color="pink" style="background:#FF375F;" type="button" aria-label="Pink"></button>
+        <button class="color-swatch" data-color="indigo" style="background:#5856D6;" type="button" aria-label="Indigo"></button>
+        <button class="color-swatch" data-color="teal" style="background:#30B0C7;" type="button" aria-label="Türkis"></button>
+        <button class="color-swatch" data-color="yellow" style="background:#FFCC00;" type="button" aria-label="Gelb"></button>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-label">Symbol in der App</p>
+      <div class="icon-row" id="iconRow">
+        <button class="icon-swatch" data-icon="🍳" type="button">🍳</button>
+        <button class="icon-swatch" data-icon="🍲" type="button">🍲</button>
+        <button class="icon-swatch" data-icon="🎲" type="button">🎲</button>
+        <button class="icon-swatch" data-icon="🥘" type="button">🥘</button>
+        <button class="icon-swatch" data-icon="🍜" type="button">🍜</button>
+        <button class="icon-swatch" data-icon="🧑‍🍳" type="button">🧑‍🍳</button>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-label">Abonnement</p>
+      <div class="tier-toggle" id="tierToggle" role="group" aria-label="Free oder Premium">
+        <button class="tier-btn active" data-tier="free" type="button">Free</button>
+        <button class="tier-btn" data-tier="premium" type="button">Premium</button>
+      </div>
+      <p class="menu-hint" id="subscriptionHint">Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.</p>
+    </div>
+    <p class="app-version">Kochorakel · Version 0.2.0</p>
+  </div>
+</div>
+
+
+<div class="sheet-overlay" id="accountOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="accountTitle">Konto</h2>
+      <button class="sheet-close" id="accountClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+
+    <div id="authLoggedOut">
+      <div class="card">
+        <div class="auth-status">
+          <div class="auth-avatar">👤</div>
+          <div class="auth-status-copy">
+            <span class="auth-status-title">Gastprofil</span>
+            <span class="auth-status-subtitle">Deine Daten bleiben auf diesem Gerät.</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="auth-tabs" role="tablist" aria-label="Anmelden oder registrieren">
+          <button class="auth-tab active" id="loginTabBtn" data-auth-mode="login" type="button">Anmelden</button>
+          <button class="auth-tab" id="registerTabBtn" data-auth-mode="register" type="button">Registrieren</button>
+        </div>
+        <form class="auth-form" id="authForm">
+          <div class="auth-field hidden" id="displayNameField">
+            <label for="authDisplayName">Anzeigename</label>
+            <input class="auth-input" id="authDisplayName" name="displayName" maxlength="50" autocomplete="nickname" placeholder="Dein Name">
+          </div>
+          <div class="auth-field">
+            <label for="authEmail">E-Mail-Adresse</label>
+            <input class="auth-input" id="authEmail" name="email" type="email" autocomplete="email" required placeholder="name@beispiel.de">
+          </div>
+          <div class="auth-field">
+            <label for="authPassword">Passwort</label>
+            <input class="auth-input" id="authPassword" name="password" type="password" minlength="8" autocomplete="current-password" required placeholder="Mindestens 8 Zeichen">
+          </div>
+          <div class="auth-field hidden" id="passwordRepeatField">
+            <label for="authPasswordRepeat">Passwort wiederholen</label>
+            <input class="auth-input" id="authPasswordRepeat" name="passwordRepeat" type="password" minlength="8" autocomplete="new-password" placeholder="Passwort erneut eingeben">
+          </div>
+          <button class="auth-primary" id="authSubmitBtn" type="submit">Anmelden</button>
+          <button class="auth-link" id="forgotPasswordBtn" type="button">Passwort vergessen?</button>
+        </form>
+        <div class="auth-message" id="authMessage" aria-live="polite"></div>
+      </div>
+      <button class="auth-secondary" id="continueGuestBtn" type="button">Als Gast weitermachen</button>
+    </div>
+
+    <div id="authLoggedIn" class="hidden">
+      <div class="card">
+        <div class="auth-status">
+          <div class="auth-avatar" id="accountAvatar">🧑‍🍳</div>
+          <div class="auth-status-copy">
+            <span class="auth-status-title" id="accountDisplayName">Kochorakel-Konto</span>
+            <span class="auth-status-subtitle" id="accountEmail"></span>
+          </div>
+        </div>
+        <div class="account-badges">
+          <span class="account-badge" id="accountRoleBadge">Nutzer</span>
+          <span class="account-badge" id="accountTierBadge">Free</span>
+        </div>
+        <p class="sync-state" id="syncState">Mit der Cloud synchronisiert.</p>
+      </div>
+      <div class="card">
+        <p class="section-label">Profil</p>
+        <form class="auth-form" id="profileForm">
+          <div class="auth-field">
+            <label for="profileDisplayName">Anzeigename</label>
+            <input class="auth-input" id="profileDisplayName" maxlength="50" autocomplete="nickname">
+          </div>
+          <button class="auth-primary" type="submit">Namen speichern</button>
+        </form>
+      </div>
+      <div class="account-actions">
+        <button class="auth-secondary hidden" id="openAdminBtn" type="button">Adminbereich öffnen</button>
+        <button class="auth-danger" id="signOutBtn" type="button">Abmelden</button>
+      </div>
+    </div>
+
+    <div id="passwordRecoveryBox" class="card hidden">
+      <p class="section-label">Neues Passwort</p>
+      <form class="auth-form" id="passwordRecoveryForm">
+        <div class="auth-field">
+          <label for="newPassword">Neues Passwort</label>
+          <input class="auth-input" id="newPassword" type="password" minlength="8" autocomplete="new-password" required>
+        </div>
+        <div class="auth-field">
+          <label for="newPasswordRepeat">Passwort wiederholen</label>
+          <input class="auth-input" id="newPasswordRepeat" type="password" minlength="8" autocomplete="new-password" required>
+        </div>
+        <button class="auth-primary" type="submit">Passwort speichern</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="adminOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+    <div class="sheet-header">
+      <h2 class="sheet-title" id="adminTitle">Administration</h2>
+      <button class="sheet-close" id="adminClose" type="button" aria-label="Schließen">✕</button>
+    </div>
+    <div class="card">
+      <div class="auth-status">
+        <div class="auth-avatar">🛡️</div>
+        <div class="auth-status-copy">
+          <span class="auth-status-title">Nutzer verwalten</span>
+          <span class="auth-status-subtitle">Premium vergeben und Konten sperren.</span>
+        </div>
+      </div>
+    </div>
+    <div class="admin-list" id="adminUserList">
+      <p class="admin-empty">Nutzer werden geladen …</p>
+    </div>
+  </div>
+</div>
+
+<input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;">
+<div class="toast-container" id="toastContainer"></div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
 </html>
