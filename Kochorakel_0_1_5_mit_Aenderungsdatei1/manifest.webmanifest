@@ -1,0 +1,27 @@
+{
+  "name": "Kochorakel",
+  "short_name": "Kochorakel",
+  "description": "Gerichte finden, Rezepte kochen und die Woche planen.",
+  "id": "./kochorakel.html",
+  "start_url": "./kochorakel.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F2F2F7",
+  "theme_color": "#1C1C1E",
+  "lang": "de-DE",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
