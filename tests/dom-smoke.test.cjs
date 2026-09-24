@@ -4,11 +4,13 @@ const vm = require("vm");
 
 const root = path.resolve(__dirname, "..");
 const file = path.join(root, "index.html");
-const expectedVersion = "0.2.0";
+const expectedVersion = "0.2.2";
 const html = fs.readFileSync(file, "utf8");
 const recipesModule = fs.readFileSync(path.join(root, "src/data/recipes.js"), "utf8");
+const newRecipesModule = fs.readFileSync(path.join(root, "src/data/new-recipes-0.2.1.js"), "utf8");
+const curatedRecipesModule = fs.readFileSync(path.join(root, "src/data/curated-recipes-0.2.2.js"), "utf8");
 const mainModule = fs.readFileSync(path.join(root, "src/main.js"), "utf8");
-const source = recipesModule.replace(/^export\s+/gm, "") + "\n" + mainModule.replace(/^import .*$/gm, "");
+const source = newRecipesModule.replace(/^export\s+/gm, "") + "\n" + curatedRecipesModule.replace(/^export\s+/gm, "") + "\n" + recipesModule.replace(/^import .*$/gm, "").replace(/^export\s+/gm, "") + "\n" + mainModule.replace(/^import .*$/gm, "");
 
 class ClassList {
   constructor() { this.values = new Set(); }
@@ -222,7 +224,7 @@ vm.createContext(context);
     };
   `, context, { timeout: 5000 });
   const result = context.__smokeResult;
-  if (!result.profileLoaded || result.dishCount !== 224 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.versionPresent) {
+  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.versionPresent) {
     throw new Error("Smoke-Test fehlgeschlagen: " + JSON.stringify(result));
   }
   console.log(JSON.stringify({ file, status:"ok", ...result }, null, 2));

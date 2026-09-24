@@ -1,3 +1,6 @@
+import { newRecipes021 } from "./new-recipes-0.2.1.js";
+import { curatedRecipes022 } from "./curated-recipes-0.2.2.js";
+
 export const dishes = [
   { name: "Spaghetti Aglio e Olio", emoji: "🍝", time: "schnell", diet: "vegan", type: "herzhaft", ingredients: ["nudeln","knoblauch","olivenoel","chili"] },
   { name: "Rührei mit Speck", emoji: "🍳", time: "schnell", diet: "alles", type: "herzhaft", ingredients: ["eier","speck","butter"] },
@@ -247,7 +250,7 @@ export const dishes = [
     tip: "Ein Spritzer Zitronensaft am Ende macht die Tomatensauce deutlich frischer."
   },
   {
-    name: "Cremige Paprika-Gnocchi", emoji: "🫑", time: "normal", diet: "vegetarisch", type: "herzhaft", premium: true,
+    name: "Cremige Paprika-Gnocchi", emoji: "🫑", time: "schnell", diet: "vegetarisch", type: "herzhaft", premium: true,
     ingredients: ["gnocchi","paprika","frischkaese","bruehe","parmesan","knoblauch"], prepMinutes: 10, cookMinutes: 20, difficulty: "Einfach",
     amounts: { gnocchi:[800,"g"], paprika:[3,"Stück"], frischkaese:[200,"g"], bruehe:[250,"ml"], parmesan:[60,"g"], knoblauch:[2,"Zehen"] },
     steps: ["Paprika in schmale Streifen schneiden und Knoblauch fein hacken.","Gnocchi in einer großen Pfanne mit wenig Öl rundherum goldbraun anbraten und herausnehmen.","Paprika in derselben Pfanne sechs Minuten braten und den Knoblauch kurz mitrösten.","Brühe und Frischkäse einrühren, Gnocchi zurückgeben und fünf Minuten sanft köcheln lassen.","Parmesan unterheben, abschmecken und die Sauce kurz eindicken lassen."],
@@ -505,8 +508,34 @@ Object.assign(ingredientVocab, {
   cheddar: { label: "Cheddar", cat: "milchprodukte", buyPrice: 2.79, usePrice: 2.2, amount: 150, unit: "g" },
   erbsen: { label: "Erbsen", cat: "gemuese", buyPrice: 1.79, usePrice: 1.2, amount: 300, unit: "g" },
   butterkekse: { label: "Butterkekse", cat: "grund", buyPrice: 1.49, usePrice: 0.9, amount: 150, unit: "g" },
-  birne: { label: "Birnen", cat: "obst", buyPrice: 2.49, usePrice: 1.2, amount: 4, unit: "Stück" }
+  birne: { label: "Birnen", cat: "obst", buyPrice: 2.49, usePrice: 1.2, amount: 4, unit: "Stück" },
+  tomatenmark: { label: "Tomatenmark", cat: "vorrat", buyPrice: 1.29, usePrice: 0.35, amount: 2, unit: "EL" },
+  thymian: { label: "Thymian", cat: "gewuerze", buyPrice: 1.49, usePrice: 0.2, amount: 2, unit: "TL" },
+  kuemmel: { label: "Kümmel", cat: "gewuerze", buyPrice: 1.49, usePrice: 0.1, amount: 1, unit: "TL" },
+  fruehlingszwiebeln: { label: "Frühlingszwiebeln", cat: "gemuese", buyPrice: 1.19, usePrice: 0.9, amount: 3, unit: "Stück" },
+  dill: { label: "Dill", cat: "gewuerze", buyPrice: 1.29, usePrice: 0.9, amount: 15, unit: "g" },
+  vanillezucker: { label: "Vanillezucker", cat: "grund", buyPrice: 0.79, usePrice: 0.15, amount: 1, unit: "Päckchen" }
 });
+
+Object.assign(ingredientVocab, {
+  currypaste: { label: "Currypaste", cat: "gewuerze", buyPrice: 2.49, usePrice: 0.75, amount: 3, unit: "EL" },
+  rotwein: { label: "Trockener Rotwein", cat: "vorrat", buyPrice: 4.99, usePrice: 1.8, amount: 300, unit: "ml" },
+  safran: { label: "Safran", cat: "gewuerze", buyPrice: 2.49, usePrice: 2.49, amount: 1, unit: "Päckchen" },
+  salbei: { label: "Salbei", cat: "gewuerze", buyPrice: 1.49, usePrice: 1.0, amount: 15, unit: "g" },
+  reisnudeln: { label: "Reisnudeln", cat: "grund", buyPrice: 2.29, usePrice: 2.29, amount: 400, unit: "g" },
+  miso: { label: "Misopaste", cat: "vorrat", buyPrice: 3.49, usePrice: 1.4, amount: 80, unit: "g" },
+  weisskohl: { label: "Weißkohl", cat: "gemuese", buyPrice: 1.99, usePrice: 1.2, amount: 500, unit: "g" },
+  paneer: { label: "Paneer", cat: "milchprodukte", buyPrice: 3.49, usePrice: 3.49, amount: 400, unit: "g" },
+  fischsauce: { label: "Fischsauce", cat: "vorrat", buyPrice: 2.49, usePrice: 0.35, amount: 2, unit: "EL" },
+  kimchi: { label: "Kimchi", cat: "gemuese", buyPrice: 3.49, usePrice: 3.49, amount: 350, unit: "g" },
+  nori: { label: "Nori-Blätter", cat: "vorrat", buyPrice: 2.49, usePrice: 1.0, amount: 4, unit: "Blätter" },
+  burgerbroetchen: { label: "Burgerbrötchen", cat: "grund", buyPrice: 2.49, usePrice: 2.49, amount: 4, unit: "Stück" },
+  gruenkohl: { label: "Grünkohl", cat: "gemuese", buyPrice: 2.49, usePrice: 2.49, amount: 800, unit: "g" },
+  udonnudeln: { label: "Udon-Nudeln", cat: "grund", buyPrice: 2.49, usePrice: 2.49, amount: 400, unit: "g" },
+  raeucherlachs: { label: "Räucherlachs", cat: "fleisch", buyPrice: 5.99, usePrice: 5.99, amount: 350, unit: "g" }
+});
+
+dishes.push(...newRecipes021);
 
 const recipeIngredientCorrections = {
   "Mango Sticky Rice": ["reis","kokosmilch","zucker","mango"],
@@ -712,13 +741,15 @@ const curatedRecipeCorrections = {
 };
 
 dishes.forEach(function(dish) {
+  const detailedRecipe = curatedRecipes022[dish.name];
+  if (detailedRecipe) Object.assign(dish, detailedRecipe, { amounts: Object.assign({}, detailedRecipe.amounts), ingredients: detailedRecipe.ingredients.slice(), steps: detailedRecipe.steps.slice() });
   const correction = curatedRecipeCorrections[dish.name];
   if (correction) {
     dish.steps = correction.steps.slice();
     dish.tip = correction.tip;
   }
   dish.recipeIsGenerated = !(Array.isArray(dish.steps) && dish.steps.length >= 4);
-  if (recipeIngredientCorrections[dish.name]) dish.ingredients = recipeIngredientCorrections[dish.name].slice();
+  if (!detailedRecipe && recipeIngredientCorrections[dish.name]) dish.ingredients = recipeIngredientCorrections[dish.name].slice();
   const timing = recipeTiming(dish);
   dish.prepMinutes = timing.prep;
   dish.cookMinutes = timing.cook;

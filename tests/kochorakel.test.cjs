@@ -7,6 +7,8 @@ const file = path.join(root, "index.html");
 const indexHtml = fs.readFileSync(file, "utf8");
 const styles = fs.readFileSync(path.join(root, "src/styles.css"), "utf8");
 const recipesModule = fs.readFileSync(path.join(root, "src/data/recipes.js"), "utf8");
+const newRecipesModule = fs.readFileSync(path.join(root, "src/data/new-recipes-0.2.1.js"), "utf8");
+const curatedRecipesModule = fs.readFileSync(path.join(root, "src/data/curated-recipes-0.2.2.js"), "utf8");
 const mainModule = fs.readFileSync(path.join(root, "src/main.js"), "utf8");
 const html = indexHtml + "\n<style>" + styles + "</style>\n<script>" + mainModule + "</script>";
 const failures = [];
@@ -19,7 +21,8 @@ function check(condition, message) {
 
 check(/<script type="module" src="\.\/src\/main\.js"><\/script>/.test(indexHtml), "Vite-Modul als App-Einstieg");
 check(/import \{ dishes, ingredientVocab \} from "\.\/data\/recipes\.js";/.test(mainModule), "Rezeptdaten als eigenes Modul eingebunden");
-const source = recipesModule
+const source = newRecipesModule.replace(/^export\s+/gm, "") + "\n" + curatedRecipesModule.replace(/^export\s+/gm, "") + "\n" + recipesModule
+  .replace(/^import .*$/gm, "")
   .replace(/^export\s+/gm, "") + "\n" + mainModule.replace(/^import .*$/gm, "");
 try {
   new vm.Script(source, { filename: file });
@@ -28,7 +31,7 @@ try {
   failures.push("JavaScript-Syntax: " + error.message);
 }
 
-const dataStart = source.indexOf("const dishes = [");
+const dataStart = source.indexOf("function recipe(");
 const dataEnd = source.indexOf("const REST_DAY", dataStart);
 check(dataStart >= 0 && dataEnd > dataStart, "Rezeptdatenblock auffindbar");
 
@@ -49,12 +52,24 @@ if (dataStart >= 0 && dataEnd > dataStart) {
   }
 }
 
-check(dishes.length === 224, "224 Gerichte vorhanden");
-check(Object.keys(ingredientVocab).length === 118, "118 Zutaten im Verzeichnis vorhanden");
+check(dishes.length === 324, "324 Gerichte vorhanden");
+check(Object.keys(ingredientVocab).length === 139, "139 Zutaten im Verzeichnis vorhanden");
 check(new Set(dishes.map((dish) => dish.name)).size === dishes.length, "Gerichtenamen eindeutig");
-check(dishes.filter((dish) => !dish.premium).length === 75, "75 Free-Gerichte vorhanden");
-check(dishes.filter((dish) => dish.premium).length === 149, "149 Premium-Gerichte vorhanden");
-check(dishes.filter((dish) => dish.recipeIsGenerated).length === 170, "170 Basisrezepte und 54 redaktionell ausgearbeitete Rezepte");
+check(dishes.filter((dish) => !dish.premium).length === 100, "100 Free-Gerichte vorhanden");
+check(dishes.filter((dish) => dish.premium).length === 224, "224 Premium-Gerichte vorhanden");
+check(dishes.filter((dish) => dish.recipeIsGenerated).length === 0, "keine automatisch erzeugten Basisrezepte mehr vorhanden");
+check(dishes.every((dish) => !dish.recipeIsGenerated && dish.steps.length === 5), "alle 324 Rezepte redaktionell mit fünf Schritten");
+
+const release021Recipes = dishes.filter((dish) => dish.release === "0.2.1");
+check(release021Recipes.length === 100, "100 neue Rezepte in Version 0.2.1");
+check(release021Recipes.filter((dish) => !dish.premium).length === 25, "25 neue Free-Rezepte in Version 0.2.1");
+check(release021Recipes.filter((dish) => dish.premium).length === 75, "75 neue Premium-Rezepte in Version 0.2.1");
+check(release021Recipes.every((dish) => !dish.recipeIsGenerated && dish.steps.length === 5), "alle neuen Rezepte redaktionell mit fünf Schritten");
+check(release021Recipes.every((dish) => typeof dish.tip === "string" && dish.tip.trim().length > 0), "alle neuen Rezepte mit Praxistipp");
+
+const release022Recipes = dishes.filter((dish) => dish.release === "0.2.2");
+check(release022Recipes.length === 194, "194 ältere Rezepte in Version 0.2.2 vereinheitlicht");
+check(release022Recipes.every((dish) => dish.steps.length === 5 && !dish.recipeIsGenerated), "alle 0.2.2-Rezepte vollständig redaktionell");
 
 const allowedTimes = new Set(["schnell", "normal", "aufwendig"]);
 const allowedDiets = new Set(["alles", "vegetarisch", "vegan"]);
@@ -63,11 +78,11 @@ const animalProducts = new Set([
   "eier", "milch", "butter", "sahne", "joghurt", "quark", "mozzarella", "feta", "reibekaese",
   "parmesan", "gorgonzola", "mascarpone", "ricotta", "halloumi", "cheddar", "honig", "gelatine",
   "speck", "schinken", "wurst", "hackfleisch", "haehnchen", "schweinefleisch", "rindfleisch",
-  "kalbfleisch", "lamm", "fisch", "lachs", "garnelen"
+  "kalbfleisch", "lamm", "fisch", "lachs", "raeucherlachs", "garnelen", "fischsauce", "paneer"
 ]);
 const meatOrFish = new Set([
   "speck", "schinken", "wurst", "hackfleisch", "haehnchen", "schweinefleisch", "rindfleisch",
-  "kalbfleisch", "lamm", "fisch", "lachs", "garnelen", "gelatine"
+  "kalbfleisch", "lamm", "fisch", "lachs", "raeucherlachs", "garnelen", "fischsauce", "gelatine"
 ]);
 
 for (const dish of dishes) {
@@ -84,7 +99,11 @@ for (const dish of dishes) {
   check(Number.isFinite(dish.prepMinutes) && dish.prepMinutes > 0, "Vorbereitungszeit: " + dish.name);
   check(Number.isFinite(dish.cookMinutes) && dish.cookMinutes > 0, "Garzeit: " + dish.name);
   check(dish.minutes === dish.prepMinutes + dish.cookMinutes, "Gesamtzeit: " + dish.name);
-  check(Array.isArray(dish.steps) && dish.steps.length >= 4 && dish.steps.every((step) => typeof step === "string" && step.trim()), "Rezeptschritte: " + dish.name);
+  const expectedTimeClass = dish.minutes <= 30 ? "schnell" : dish.minutes >= 60 ? "aufwendig" : "normal";
+  check(dish.time === expectedTimeClass, "Zeitklasse passt zur Gesamtzeit: " + dish.name);
+  check(Object.keys(dish.amounts || {}).length === dish.ingredients.length, "Mengenliste entspricht Zutatenliste: " + dish.name);
+  check(Array.isArray(dish.steps) && dish.steps.length === 5 && dish.steps.every((step) => typeof step === "string" && step.trim().length >= 25), "fünf ausführliche Rezeptschritte: " + dish.name);
+  check(typeof dish.tip === "string" && dish.tip.trim().length >= 25, "ausführlicher Praxistipp: " + dish.name);
   check(Array.isArray(dish.stepMinutes) && dish.stepMinutes.length === dish.steps.length && dish.stepMinutes.reduce((a, b) => a + b, 0) === dish.minutes, "Schrittzeiten: " + dish.name);
   if (dish.diet === "vegan") check(!dish.ingredients.some((id) => animalProducts.has(id)), "Vegan-Kennzeichnung: " + dish.name);
   if (dish.diet === "vegetarisch") check(!dish.ingredients.some((id) => meatOrFish.has(id)), "Vegetarisch-Kennzeichnung: " + dish.name);
@@ -140,7 +159,7 @@ const referencedElementIds = Array.from(source.matchAll(/getElementById\("([^"]+
 check(referencedElementIds.every((id) => idSet.has(id)), "alle JavaScript-Elementreferenzen existieren im HTML");
 const ariaTargets = Array.from(html.matchAll(/aria-(?:controls|labelledby)="([^"]+)"/g), (match) => match[1]).flatMap((value) => value.split(/\s+/));
 check(ariaTargets.every((id) => idSet.has(id)), "alle ARIA-Ziele existieren");
-check(/Kochorakel\s*·\s*Version 0\.2\.0/.test(html), "Versionsnummer 0.2.0 sichtbar");
+check(/Kochorakel\s*·\s*Version 0\.2\.2/.test(html), "Versionsnummer 0.2.2 sichtbar");
 check(!/Version 0\.1\.[0-4]/.test(html), "keine alte sichtbare Versionsnummer");
 check(/id="accountBtn"/.test(html) && /id="accountOverlay"/.test(html) && /id="authForm"/.test(html), "Konto und Anmeldung vorhanden");
 check(/import \{ createClient \} from "@supabase\/supabase-js";/.test(mainModule) && /createClient\(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY\)/.test(mainModule), "Supabase wird als gebündeltes Modul geladen");

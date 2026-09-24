@@ -1,6 +1,7 @@
-# Kochorakel 0.2.0
+# Kochorakel 0.2.2
 
-Technische Testversion auf Basis von Kochorakel 0.1.5.
+Technische Testversion mit 324 vollständig ausgearbeiteten Rezepten. Jedes Rezept
+enthält Mengen für vier Portionen, Zeiten, fünf Schritte und einen Praxistipp.
 
 ## Lokal starten
 
@@ -35,6 +36,8 @@ gebaut und veröffentlicht.
 - `src/styles.css`: vollständiges Design
 - `src/main.js`: Anwendungslogik
 - `src/data/recipes.js`: Rezept- und Zutatendaten
+- `src/data/new-recipes-0.2.1.js`: 100 neue Rezepte aus Version 0.2.1
+- `src/data/curated-recipes-0.2.2.js`: vollständige Überarbeitung der älteren Rezepte
 - `public`: PWA-Dateien und App-Symbole
 
 ## Wichtig

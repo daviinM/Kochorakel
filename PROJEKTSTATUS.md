@@ -2,16 +2,16 @@
 
 ## Aktueller Stand
 
-- Version: 0.2.0
+- Version: 0.2.2
 - Status: technische Migration / Testversion
 - Basis: vollständig geprüfte Version 0.1.5
-- Funktionsumfang: gegenüber 0.1.5 unverändert
+- Rezeptbestand: 324 Gerichte (100 Free, 224 Premium)
+- Rezeptqualität: 324 von 324 Rezepten vollständig ausgearbeitet
 
 ## Ziel dieser Version
 
-Die bisherige Einzeldatei wurde in ein Vite-Projekt überführt. Oberfläche,
-Rezepte und Anwendungslogik sind jetzt getrennt. Dadurch können kommende
-Funktionen gezielter entwickelt und getestet werden.
+Alle Rezepte enthalten vollständige Mengen für vier Portionen, Vorbereitungs- und
+Garzeit, fünf konkrete Arbeitsschritte, Schwierigkeitsgrad und einen Praxistipp.
 
 ## Nächste Schritte
 

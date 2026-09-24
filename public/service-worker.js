@@ -1,4 +1,4 @@
-const CACHE_NAME = "kochorakel-v0.2.0";
+const CACHE_NAME = "kochorakel-v0.2.2";
 const APP_FILES = [
   "./",
   "./index.html",
