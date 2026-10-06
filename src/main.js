@@ -81,6 +81,9 @@ let cookingTimerStepIndex = 0;
 let cookingSessionRecorded = false;
 let detachedCookingTimers = [];
 let detachedCookingTimerInterval = null;
+let timerDragState = null;
+let suppressTimerBubbleClickUntil = 0;
+const ACTIVE_TIMERS_STORAGE_KEY = "kochorakel-active-timers-v1";
 const prefersReducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
 const reelInner = document.getElementById("reelInner");
@@ -116,6 +119,7 @@ const cookingProgressFill = document.getElementById("cookingProgressFill");
 const cookingActiveTimers = document.getElementById("cookingActiveTimers");
 const cookingStepNumber = document.getElementById("cookingStepNumber");
 const cookingStepText = document.getElementById("cookingStepText");
+const cookingTimerBlock = document.getElementById("cookingTimerBlock");
 const cookingTimerDisplay = document.getElementById("cookingTimerDisplay");
 const cookingTimerContext = document.getElementById("cookingTimerContext");
 const cookingTimerToggle = document.getElementById("cookingTimerToggle");
@@ -227,8 +231,30 @@ const passwordRecoveryForm = document.getElementById("passwordRecoveryForm");
 const newPassword = document.getElementById("newPassword");
 const newPasswordRepeat = document.getElementById("newPasswordRepeat");
 
-const dishIndex = new Map(dishes.map(function(dish){ return [dish.name, dish]; }));
-const dishNameSet = new Set(dishIndex.keys());
+const dishIndexByName = new Map(dishes.map(function(dish){ return [dish.name, dish]; }));
+const dishIndexById = new Map(dishes.map(function(dish){ return [dish.id, dish]; }));
+const dishNameSet = new Set(dishIndexByName.keys());
+const dishIdSet = new Set(dishIndexById.keys());
+
+function dishByRef(ref) { return dishIndexById.get(ref) || dishIndexByName.get(ref) || null; }
+function dishIdFromRef(ref) { const dish = dishByRef(ref); return dish ? dish.id : null; }
+function uniqueDishIds(value) {
+  return Array.from(new Set((Array.isArray(value) ? value : []).map(dishIdFromRef).filter(Boolean)));
+}
+
+function normalizeCartSource(source) {
+  if (typeof source !== "string") return "";
+  if (source.indexOf("recipe:") === 0) {
+    const dishId = dishIdFromRef(source.slice(7));
+    return dishId ? "recipe:" + dishId : source.slice(0, 120);
+  }
+  const weekMatch = /^week:([^:]+):(.+)$/.exec(source);
+  if (weekMatch) {
+    const dishId = dishIdFromRef(weekMatch[2]);
+    return dishId ? "week:" + weekMatch[1] + ":" + dishId : source.slice(0, 120);
+  }
+  return source.slice(0, 120);
+}
 
 function defaultProfile() {
   return { xp: 0, dishesSeen: [], cookLog: [], recentPicks: [], cartCompletions: 0, cartItems: [], pantryItems: [], rewardedCartChecks: [], rewardedCartCompletions: [], rewardedCookEvents: [], badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekLockedDays: [], weekConfirmed: {}, weekConfirmations: {}, weekKey: isoWeekKey(new Date()), weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], localTier: "free" };
@@ -236,20 +262,19 @@ function defaultProfile() {
 function normalizeProfile(p) {
   const d = defaultProfile();
   p = p && typeof p === "object" && !Array.isArray(p) ? p : {};
-  const uniqueDishNames = function(value) {
-    return Array.from(new Set((Array.isArray(value) ? value : []).filter(function(name){ return typeof name === "string" && dishNameSet.has(name); })));
-  };
   const cookLog = (Array.isArray(p.cookLog) ? p.cookLog : []).filter(function(entry){
-    return entry && typeof entry.name === "string" && dishNameSet.has(entry.name) && typeof entry.ts === "string" && !isNaN(Date.parse(entry.ts));
+    return entry && dishByRef(entry.dishId || entry.name) && typeof entry.ts === "string" && !isNaN(Date.parse(entry.ts));
   }).map(function(entry){
-    return { id: typeof entry.id === "string" ? entry.id.slice(0, 120) : "", name: entry.name, ts: entry.ts, mode: ["egal","strict","buy2","reste","week","recipe"].indexOf(entry.mode) !== -1 ? entry.mode : "egal", hasPhoto: !!entry.hasPhoto };
+    const dish = dishByRef(entry.dishId || entry.name);
+    return { id: typeof entry.id === "string" ? entry.id.slice(0, 120) : "", dishId: dish.id, name: dish.name, ts: entry.ts, mode: ["egal","strict","buy2","reste","week","recipe"].indexOf(entry.mode) !== -1 ? entry.mode : "egal", hasPhoto: !!entry.hasPhoto };
   });
-  const dishesSeen = uniqueDishNames((Array.isArray(p.dishesSeen) ? p.dishesSeen : []).concat(cookLog.map(function(entry){ return entry.name; })));
+  const dishesSeen = uniqueDishIds((Array.isArray(p.dishesSeen) ? p.dishesSeen : []).concat(cookLog.map(function(entry){ return entry.dishId; })));
   const weekPlan = {};
   const rawWeekPlan = p.weekPlan && typeof p.weekPlan === "object" && !Array.isArray(p.weekPlan) ? p.weekPlan : {};
   weekDays.forEach(function(day){
-    const name = rawWeekPlan[day];
-    if (name === REST_DAY || dishNameSet.has(name)) weekPlan[day] = name;
+    const ref = rawWeekPlan[day];
+    const dishId = dishIdFromRef(ref);
+    if (ref === REST_DAY || dishId) weekPlan[day] = ref === REST_DAY ? REST_DAY : dishId;
   });
   const weekConfirmed = {};
   const rawWeekConfirmed = p.weekConfirmed && typeof p.weekConfirmed === "object" && !Array.isArray(p.weekConfirmed) ? p.weekConfirmed : {};
@@ -260,7 +285,8 @@ function normalizeProfile(p) {
     const item = rawWeekConfirmations[day];
     if (!weekConfirmed[day] || !item || typeof item !== "object") return;
     weekConfirmations[day] = {
-      dishName: typeof item.dishName === "string" ? item.dishName : weekPlan[day],
+      dishId: dishIdFromRef(item.dishId || item.dishName || weekPlan[day]) || weekPlan[day],
+      dishName: (dishByRef(item.dishId || item.dishName || weekPlan[day]) || {}).name || "",
       logId: typeof item.logId === "string" ? item.logId.slice(0, 120) : "",
       photoId: typeof item.photoId === "string" ? item.photoId.slice(0, 120) : "",
       rewardKey: typeof item.rewardKey === "string" ? item.rewardKey.slice(0, 160) : "",
@@ -274,12 +300,12 @@ function normalizeProfile(p) {
     xp: typeof p.xp === "number" && isFinite(p.xp) && p.xp >= 0 ? Math.floor(p.xp) : d.xp,
     dishesSeen: dishesSeen,
     cookLog: cookLog,
-    recentPicks: uniqueDishNames(p.recentPicks).slice(-8),
+    recentPicks: uniqueDishIds(p.recentPicks).slice(-8),
     cartCompletions: typeof p.cartCompletions === "number" && isFinite(p.cartCompletions) && p.cartCompletions >= 0 ? Math.floor(p.cartCompletions) : d.cartCompletions,
     cartItems: Array.isArray(p.cartItems) ? p.cartItems.filter(function(item){ return item && typeof item.id === "string" && ingredientVocab[item.id]; }).map(function(item){
       const contributions = Array.isArray(item.contributions) ? item.contributions.filter(function(part){
         return part && typeof part.source === "string" && typeof part.amount === "number" && isFinite(part.amount) && part.amount >= 0 && typeof part.unit === "string";
-      }).map(function(part){ return { source: part.source, amount: part.amount, unit: part.unit }; }) : [];
+      }).map(function(part){ return { source: normalizeCartSource(part.source), amount: part.amount, unit: part.unit }; }) : [];
       return { id: item.id, checked: !!item.checked, manual: typeof item.manual === "boolean" ? item.manual : contributions.length === 0, contributions: contributions };
     }) : d.cartItems,
     pantryItems: safeStringList(p.pantryItems, Object.keys(ingredientVocab).length).filter(function(id){ return !!ingredientVocab[id]; }),
@@ -287,7 +313,7 @@ function normalizeProfile(p) {
     rewardedCartCompletions: safeStringList(p.rewardedCartCompletions, 104),
     rewardedCookEvents: safeStringList(p.rewardedCookEvents, 1000),
     badgesUnlocked: safeStringList(p.badgesUnlocked, badgeDefs.length).filter(function(id){ return badgeDefs.some(function(badge){ return badge.id === id; }); }),
-    photos: (Array.isArray(p.photos) ? p.photos : []).filter(function(photo){ return photo && typeof photo.dataUrl === "string" && /^data:image\/(?:jpeg|png|webp);base64,/.test(photo.dataUrl) && dishNameSet.has(photo.name); }).map(function(photo){ return { id: typeof photo.id === "string" ? photo.id : String(Date.now()) + "-" + Math.random().toString(36).slice(2), name: photo.name, ts: typeof photo.ts === "string" ? photo.ts : new Date().toISOString(), dataUrl: photo.dataUrl }; }).slice(0, 20),
+    photos: (Array.isArray(p.photos) ? p.photos : []).filter(function(photo){ return photo && typeof photo.dataUrl === "string" && /^data:image\/(?:jpeg|png|webp);base64,/.test(photo.dataUrl) && dishByRef(photo.dishId || photo.name); }).map(function(photo){ const dish = dishByRef(photo.dishId || photo.name); return { id: typeof photo.id === "string" ? photo.id : String(Date.now()) + "-" + Math.random().toString(36).slice(2), dishId: dish.id, name: dish.name, ts: typeof photo.ts === "string" ? photo.ts : new Date().toISOString(), dataUrl: photo.dataUrl }; }).slice(0, 20),
     weekPlan: weekPlan,
     weekSelectedDays: safeStringList(p.weekSelectedDays, weekDays.length).filter(function(day){ return weekDays.indexOf(day) !== -1; }),
     weekLockedDays: safeStringList(p.weekLockedDays, weekDays.length).filter(function(day){ return weekDays.indexOf(day) !== -1 && weekPlan[day] && !weekConfirmed[day]; }),
@@ -299,16 +325,16 @@ function normalizeProfile(p) {
     accentColor: Object.prototype.hasOwnProperty.call(accentColors, p.accentColor) ? p.accentColor : d.accentColor,
     appIcon: ["🍳","🍲","🎲","🥘","🍜","🧑‍🍳"].indexOf(p.appIcon) !== -1 ? p.appIcon : d.appIcon,
     theme: p.theme === "dark" ? "dark" : d.theme,
-    favorites: uniqueDishNames(p.favorites),
+    favorites: uniqueDishIds(p.favorites),
     localTier: p.localTier === "premium" ? "premium" : d.localTier
   };
 }
 
-function dishByName(name) { return dishIndex.get(name) || null; }
-function distinctCookedNames() { return new Set(profile.cookLog.map(function(e){ return e.name; })); }
-function cookCountsMap() { const m = {}; profile.cookLog.forEach(function(e){ m[e.name] = (m[e.name] || 0) + 1; }); return m; }
-function dietsCooked() { const s = new Set(); profile.cookLog.forEach(function(e){ const d = dishByName(e.name); if (d) s.add(d.diet); }); return s; }
-function sweetDistinctCount() { const s = new Set(); profile.cookLog.forEach(function(e){ const d = dishByName(e.name); if (d && d.type === "süß") s.add(e.name); }); return s.size; }
+function dishByName(name) { return dishByRef(name); }
+function distinctCookedNames() { return new Set(profile.cookLog.map(function(e){ return e.dishId || dishIdFromRef(e.name); }).filter(Boolean)); }
+function cookCountsMap() { const m = {}; profile.cookLog.forEach(function(e){ const key = e.dishId || dishIdFromRef(e.name); if (key) m[key] = (m[key] || 0) + 1; }); return m; }
+function dietsCooked() { const s = new Set(); profile.cookLog.forEach(function(e){ const dish = dishByRef(e.dishId || e.name); if (dish) s.add(dish.diet); }); return s; }
+function sweetDistinctCount() { const s = new Set(); profile.cookLog.forEach(function(e){ const dish = dishByRef(e.dishId || e.name); if (dish && dish.type === "süß") s.add(dish.id); }); return s.size; }
 function nightCookExists() { return profile.cookLog.some(function(e){ return new Date(e.ts).getHours() < 5; }); }
 function strictCookCount() { return profile.cookLog.filter(function(e){ return e.mode === "strict"; }).length; }
 function recipeBaseQuantity(dish, id) {
@@ -369,7 +395,7 @@ function updateFavoritesBadge() {
 }
 
 function renderFavoriteBtn(dish) {
-  const isFav = profile.favorites.indexOf(dish.name) !== -1;
+  const isFav = profile.favorites.indexOf(dish.id) !== -1;
   favoriteBtnEl.textContent = isFav ? "❤️" : "🤍";
   favoriteBtnEl.classList.toggle("active", isFav);
   favoriteBtnEl.setAttribute("aria-pressed", isFav ? "true" : "false");
@@ -377,13 +403,15 @@ function renderFavoriteBtn(dish) {
   favoriteBtnEl.style.display = "flex";
 }
 
-function toggleFavorite(name) {
-  const idx = profile.favorites.indexOf(name);
-  if (idx === -1) { profile.favorites.push(name); showToast("❤️ Zu Favoriten hinzugefügt"); }
+function toggleFavorite(ref) {
+  const dish = dishByRef(ref);
+  if (!dish) return;
+  const idx = profile.favorites.indexOf(dish.id);
+  if (idx === -1) { profile.favorites.push(dish.id); showToast("❤️ Zu Favoriten hinzugefügt"); }
   else { profile.favorites.splice(idx, 1); showToast("Favorit entfernt"); }
   saveProfile();
   updateFavoritesBadge();
-  if (currentDish && currentDish.name === name) renderFavoriteBtn(currentDish);
+  if (currentDish && currentDish.id === dish.id) renderFavoriteBtn(currentDish);
   if (favoritesOverlay.style.display === "flex") renderFavoritesSheet();
   refreshRecipeLibrary();
 }
@@ -408,7 +436,7 @@ function getRecipeLibraryPool() {
     }
     return searchable.indexOf(query) !== -1;
   }).sort(function(a, b){
-    const favoriteDifference = Number(favoriteSet.has(b.name)) - Number(favoriteSet.has(a.name));
+    const favoriteDifference = Number(favoriteSet.has(b.id)) - Number(favoriteSet.has(a.id));
     return favoriteDifference || a.name.localeCompare(b.name, "de");
   });
 }
@@ -426,16 +454,16 @@ function renderRecipeLibrary() {
   recipeLibraryEmptyEl.style.display = pool.length ? "none" : "block";
   recipeLibraryGridEl.innerHTML = pool.map(function(dish){
     const locked = dish.premium && tier !== "premium";
-    const favorite = favoriteSet.has(dish.name);
+    const favorite = favoriteSet.has(dish.id);
     const dietText = { alles: "Alles", vegetarisch: "Vegetarisch", vegan: "Vegan" }[dish.diet];
     const timeText = { schnell: "Schnell", normal: "Normal", aufwendig: "Aufwendig" }[dish.time];
-    return '<button class="recipe-library-card' + (locked ? " locked" : "") + '" type="button" data-recipe-name="' + escapeHtml(dish.name) + '" aria-label="' + escapeHtml(dish.name + (locked ? ", Premium-Rezept" : ", Rezept öffnen")) + '">' +
+    return '<button class="recipe-library-card' + (locked ? " locked" : "") + '" type="button" data-recipe-id="' + escapeHtml(dish.id) + '" aria-label="' + escapeHtml(dish.name + (locked ? ", Premium-Rezept" : ", Rezept öffnen")) + '">' +
       '<span class="recipe-library-fav" aria-hidden="true">' + (favorite ? "❤️" : "") + '</span>' +
       '<span class="recipe-library-emoji" aria-hidden="true">' + dish.emoji + '</span>' +
       '<span class="recipe-library-name">' + escapeHtml(dish.name) + '</span>' +
       '<span class="recipe-library-tags"><span class="recipe-library-tag">' + timeText + '</span><span class="recipe-library-tag">' + dietText + '</span>' +
       (dish.premium ? '<span class="recipe-library-tag premium">' + (locked ? "🔒 Premium" : "✨ Premium") + '</span>' : "") + '</span>' +
-      '<span class="recipe-library-meta">' + dish.minutes + ' Min. · ca. ' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span></button>';
+      '<span class="recipe-library-meta">' + escapeHtml(formatDuration(dish.minutes)) + ' · ca. ' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span></button>';
   }).join("");
   recipeLibraryGridEl.dataset.ready = "true";
 }
@@ -455,10 +483,10 @@ function renderFavoritesSheet() {
     return;
   }
   favoritesEmptyEl.style.display = "none";
-  favoritesListEl.innerHTML = favs.map(function(name){
-    const dish = dishByName(name);
+  favoritesListEl.innerHTML = favs.map(function(ref){
+    const dish = dishByRef(ref);
     if (!dish) return "";
-    return '<li class="favorite-item"><span class="fav-emoji">' + dish.emoji + '</span><button type="button" class="fav-name" data-name="' + escapeHtml(name) + '">' + escapeHtml(dish.name) + '</button><button type="button" class="fav-remove" data-name="' + escapeHtml(name) + '" aria-label="' + escapeHtml(dish.name) + ' aus Favoriten entfernen">✕</button></li>';
+    return '<li class="favorite-item"><span class="fav-emoji">' + dish.emoji + '</span><button type="button" class="fav-name" data-name="' + escapeHtml(dish.id) + '">' + escapeHtml(dish.name) + '</button><button type="button" class="fav-remove" data-name="' + escapeHtml(dish.id) + '" aria-label="' + escapeHtml(dish.name) + ' aus Favoriten entfernen">✕</button></li>';
   }).join("");
 }
 
@@ -470,7 +498,7 @@ favoritesListEl.addEventListener("click", function(event){
     return;
   }
   closeAppSheet(favoritesOverlay, favoritesBtn, false);
-  openRecipe(dishByName(button.dataset.name), favoritesBtn);
+  openRecipe(dishByRef(button.dataset.name), favoritesBtn);
 });
 
 function photoStorageKey(ownerId) { return "kochorakel-device-photos:" + (ownerId || "guest"); }
@@ -536,6 +564,8 @@ function mergeProfiles(remoteValue, localValue) {
   const merged = Object.assign({}, remote, local);
   merged.xp = Math.max(remote.xp, local.xp);
   merged.dishesSeen = mergeUnique(remote.dishesSeen, local.dishesSeen);
+  merged.favorites = mergeUnique(remote.favorites, local.favorites);
+  merged.pantryItems = mergeUnique(remote.pantryItems, local.pantryItems);
   merged.cookLog = mergeUnique(remote.cookLog, local.cookLog, function(entry){ return entry.id || (entry.ts + "|" + entry.name + "|" + entry.mode); });
   merged.recentPicks = mergeUnique(remote.recentPicks, local.recentPicks).slice(-8);
   merged.rewardedCartChecks = mergeUnique(remote.rewardedCartChecks, local.rewardedCartChecks);
@@ -752,15 +782,18 @@ function claimProfileReward(listName, key, limit) {
 }
 
 function markDishSeen(dish, notify) {
-  if (!dish || profile.dishesSeen.indexOf(dish.name) !== -1) return false;
-  profile.dishesSeen.push(dish.name);
+  if (!dish || profile.dishesSeen.indexOf(dish.id) !== -1) return false;
+  profile.dishesSeen.push(dish.id);
   addXp(15);
   if (notify) showToast("+15 XP · Neu entdeckt: " + dish.name);
   return true;
 }
 
 function rewardCook(dish, photoDataUrl) {
-  const rewardKey = localDateKey(new Date()) + "|" + dish.name;
+  const dayKey = localDateKey(new Date());
+  const rewardKey = dayKey + "|" + dish.id;
+  const legacyRewardKey = dayKey + "|" + dish.name;
+  if ((profile.rewardedCookEvents || []).indexOf(legacyRewardKey) !== -1) return 0;
   if (!claimProfileReward("rewardedCookEvents", rewardKey, 1000)) return 0;
   const amount = photoDataUrl ? 15 : 10;
   addXp(amount);
@@ -798,8 +831,8 @@ function renderDex(force) {
   dexRenderDirty = true;
   if (!force && dexDetailsEl && !dexDetailsEl.open) return;
   dexGridEl.innerHTML = dishes.map(function(d){
-    const seen = seenSet.has(d.name);
-    const cooked = cookedSet.has(d.name);
+    const seen = seenSet.has(d.id);
+    const cooked = cookedSet.has(d.id);
     const locked = !seen && d.premium && tier !== "premium";
     const cls = cooked ? "cooked" : (seen ? "seen" : (locked ? "locked" : "unseen"));
     const content = (seen || cooked) ? d.emoji : (locked ? "🔒" : "?");
@@ -1000,8 +1033,23 @@ function renderPortionPrice(dish) {
   portionPriceEl.textContent = "≈ " + formatEuro(dishPricePerPortion(dish)) + " pro Portion";
 }
 
+function formatDuration(minutes) {
+  const value = Math.max(0, Math.round(Number(minutes) || 0));
+  if (value >= 1440) {
+    const days = Math.floor(value / 1440);
+    const hours = Math.round((value % 1440) / 60);
+    return days + " " + (days === 1 ? "Tag" : "Tage") + (hours ? " " + hours + " Std." : "");
+  }
+  if (value >= 60) {
+    const hours = Math.floor(value / 60);
+    const rest = value % 60;
+    return hours + " Std." + (rest ? " " + rest + " Min." : "");
+  }
+  return value + " Min.";
+}
+
 function recipeTimeText(dish) {
-  if (typeof dish.minutes === "number") return "ca. " + dish.minutes + " Min.";
+  if (typeof dish.minutes === "number") return "ca. " + formatDuration(dish.minutes);
   return { schnell: "ca. 20 Min.", normal: "ca. 40 Min.", aufwendig: "ca. 75 Min." }[dish.time] || "Nach Aufwand";
 }
 
@@ -1120,7 +1168,7 @@ function fallbackRecipeSteps(dish) {
 }
 
 function recipeSource(dish) {
-  return "recipe:" + dish.name;
+  return "recipe:" + dish.id;
 }
 
 function renderRecipeSheet() {
@@ -1129,7 +1177,7 @@ function renderRecipeSheet() {
   const dietText = { alles: "Mit Fleisch/Fisch", vegetarisch: "Vegetarisch", vegan: "Vegan" }[dish.diet] || dish.diet;
   recipeSheetTitle.textContent = dish.name;
   recipeEmoji.textContent = dish.emoji;
-  const isFavorite = profile.favorites.indexOf(dish.name) !== -1;
+  const isFavorite = profile.favorites.indexOf(dish.id) !== -1;
   recipeFavoriteBtn.textContent = isFavorite ? "♥" : "♡";
   recipeFavoriteBtn.classList.toggle("active", isFavorite);
   recipeFavoriteBtn.setAttribute("aria-pressed", isFavorite ? "true" : "false");
@@ -1137,7 +1185,8 @@ function renderRecipeSheet() {
   recipeMeta.innerHTML = '<span class="recipe-meta-pill">⏱ ' + recipeTimeText(dish) + '</span>' +
     '<span class="recipe-meta-pill">↗ ' + escapeHtml(dish.difficulty) + '</span>' +
     '<span class="recipe-meta-pill">≈ ' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' +
-    '<span class="recipe-meta-secondary">' + dish.prepMinutes + ' Min. Vorbereitung · ' + dish.cookMinutes + ' Min. weitere Zeit · ' + escapeHtml(dietText) + (dish.premium ? ' · ✨ Premium' : '') + '</span>';
+    '<span class="recipe-meta-secondary">' + formatDuration(dish.prepMinutes) + ' Arbeitszeit · ' + formatDuration(dish.cookMinutes) + ' Gar-/Wartezeit' + (dish.restMinutes ? ' · ' + formatDuration(dish.restMinutes) + ' Ruhezeit' : '') + ' · ' + escapeHtml(dietText) + (dish.premium ? ' · ✨ Premium' : '') + '</span>' +
+    '<span class="recipe-meta-secondary recipe-allergens">' + (dish.allergens.length ? 'Enthält: ' + escapeHtml(dish.allergens.map(function(id){ return ({ gluten:"Gluten", milch:"Milch", laktose:"Laktose", eier:"Eier", nuesse:"Nüsse", erdnuesse:"Erdnüsse", soja:"Soja", fisch:"Fisch", schalentiere:"Schalentiere", sesam:"Sesam", sellerie:"Sellerie", senf:"Senf" })[id] || id; }).join(', ')) : 'Keine der hinterlegten Hauptallergene erkannt') + '</span>';
   recipePeopleCount.textContent = recipePeopleCountValue + (recipePeopleCountValue === 1 ? " Portion" : " Portionen");
   recipePeopleMinus.disabled = recipePeopleCountValue <= 1;
   recipePeoplePlus.disabled = recipePeopleCountValue >= 12;
@@ -1154,10 +1203,11 @@ function renderRecipeSheet() {
 
   const steps = dish.steps || fallbackRecipeSteps(dish);
   recipeSteps.innerHTML = steps.map(function(step, index){
-    const duration = dish.stepMinutes && dish.stepMinutes[index] ? '<span class="recipe-step-time">ca. ' + dish.stepMinutes[index] + ' Min.</span>' : "";
+    const timerMinutes = dish.stepTimers && dish.stepTimers[index];
+    const duration = timerMinutes ? '<span class="recipe-step-time">⏱ ' + escapeHtml(formatDuration(timerMinutes)) + '</span>' : '<span class="recipe-step-time no-timer">Kein Timer nötig</span>';
     return "<li>" + escapeHtml(step) + "<br>" + duration + "</li>";
   }).join("");
-  recipeNote.textContent = "Tipp: " + dish.tip + " Mengen sind Richtwerte; Salz, Pfeffer und Wasser zählen zum Grundvorrat." + (dish.recipeIsGenerated ? " Dieses Basisrezept wird noch redaktionell verfeinert; Garzeit und Gargrad bitte am Lebensmittel prüfen." : "");
+  recipeNote.textContent = "Tipp: " + dish.tip + " Mengen sind Richtwerte; Salz, Pfeffer und Wasser zählen zum Grundvorrat. Allergenangaben aus Produktverpackungen gehen immer vor.";
 
   const missing = dish.ingredients.filter(function(id){ return !have.has(id); });
   const source = recipeSource(dish);
@@ -1281,8 +1331,10 @@ function updateRecipePortions(delta) {
 
 function formatCookingTimer(seconds) {
   const safe = Math.max(0, Math.floor(seconds));
-  const minutes = Math.floor(safe / 60);
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
   const rest = safe % 60;
+  if (hours > 0) return hours + ":" + String(minutes).padStart(2, "0") + ":" + String(rest).padStart(2, "0");
   return String(minutes).padStart(2, "0") + ":" + String(rest).padStart(2, "0");
 }
 
@@ -1298,6 +1350,37 @@ function stopDetachedCookingTimerLoop() {
   detachedCookingTimerInterval = null;
 }
 
+function saveDetachedCookingTimers() {
+  try {
+    localStorage.setItem(ACTIVE_TIMERS_STORAGE_KEY, JSON.stringify(detachedCookingTimers));
+  } catch (error) {}
+}
+
+function restoreDetachedCookingTimers() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ACTIVE_TIMERS_STORAGE_KEY) || "[]");
+    const now = Date.now();
+    detachedCookingTimers = (Array.isArray(parsed) ? parsed : []).filter(function(timer){
+      return timer && typeof timer.id === "string" && dishByRef(timer.recipeId) && Number.isFinite(timer.stepIndex) && Number.isFinite(timer.end) && timer.end > now;
+    }).map(function(timer){
+      const dish = dishByRef(timer.recipeId);
+      return {
+        id: timer.id.slice(0, 120),
+        recipeId: dish.id,
+        recipeName: dish.name,
+        emoji: dish.emoji,
+        stepIndex: Math.max(0, Math.min(dish.steps.length - 1, Math.floor(timer.stepIndex))),
+        end: timer.end,
+        initialSeconds: Math.max(1, Number(timer.initialSeconds) || Math.ceil((timer.end - now) / 1000))
+      };
+    });
+  } catch (error) {
+    detachedCookingTimers = [];
+  }
+  if (detachedCookingTimers.length && !detachedCookingTimerInterval) detachedCookingTimerInterval = setInterval(updateDetachedCookingTimers, 1000);
+  renderDetachedCookingTimers();
+}
+
 function renderDetachedCookingTimers() {
   if (!cookingActiveTimers) return;
   if (!detachedCookingTimers.length) {
@@ -1305,25 +1388,80 @@ function renderDetachedCookingTimers() {
     cookingActiveTimers.innerHTML = "";
     return;
   }
+  if (timerDragState && !timerDragState.pending) return;
   const now = Date.now();
   cookingActiveTimers.style.display = "flex";
   cookingActiveTimers.innerHTML = detachedCookingTimers.map(function(timer){
     const remaining = Math.max(0, Math.ceil((timer.end - now) / 1000));
-    return '<div class="cooking-active-timer" data-timer-id="' + timer.id + '">' +
-      '<span>⏱ Aktiver Timer · Schritt ' + (timer.stepIndex + 1) + '</span>' +
+    const progress = Math.max(0, Math.min(100, (remaining / Math.max(1, timer.initialSeconds)) * 100));
+    return '<div class="cooking-active-timer" data-timer-id="' + escapeHtml(timer.id) + '" style="--timer-progress:' + progress + '%" role="button" tabindex="0" aria-label="' + escapeHtml(timer.recipeName) + ', Schritt ' + (timer.stepIndex + 1) + ', noch ' + formatCookingTimer(remaining) + '. Antippen zum Öffnen, lange drücken zum Verschieben.">' +
+      '<span class="cooking-active-timer-ring"><span class="cooking-active-timer-emoji" aria-hidden="true">' + timer.emoji + '</span><span class="cooking-active-timer-step">' + (timer.stepIndex + 1) + '</span></span>' +
       '<span class="cooking-active-timer-time">' + formatCookingTimer(remaining) + '</span>' +
-      '<button class="cooking-active-timer-cancel" type="button" aria-label="Timer aus Schritt ' + (timer.stepIndex + 1) + ' beenden">✕</button></div>';
+      '<button class="cooking-active-timer-cancel" type="button" aria-label="Timer aus ' + escapeHtml(timer.recipeName) + ' beenden">✕</button></div>';
   }).join("");
 }
 
 cookingActiveTimers.addEventListener("click", function(event){
   const button = event.target.closest(".cooking-active-timer-cancel");
-  if (!button || !cookingActiveTimers.contains(button)) return;
-  const row = button.closest("[data-timer-id]");
-  detachedCookingTimers = detachedCookingTimers.filter(function(timer){ return !row || timer.id !== row.dataset.timerId; });
-  if (!detachedCookingTimers.length) stopDetachedCookingTimerLoop();
-  renderDetachedCookingTimers();
+  const bubble = event.target.closest(".cooking-active-timer");
+  if (!bubble || !cookingActiveTimers.contains(bubble)) return;
+  if (Date.now() < suppressTimerBubbleClickUntil) return;
+  if (button) {
+    event.stopPropagation();
+    detachedCookingTimers = detachedCookingTimers.filter(function(timer){ return timer.id !== bubble.dataset.timerId; });
+    if (!detachedCookingTimers.length) stopDetachedCookingTimerLoop();
+    saveDetachedCookingTimers();
+    renderDetachedCookingTimers();
+    return;
+  }
+  openDetachedCookingTimer(bubble.dataset.timerId);
 });
+
+cookingActiveTimers.addEventListener("keydown", function(event){
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const bubble = event.target.closest(".cooking-active-timer");
+  if (!bubble || event.target.closest(".cooking-active-timer-cancel")) return;
+  event.preventDefault();
+  openDetachedCookingTimer(bubble.dataset.timerId);
+});
+
+cookingActiveTimers.addEventListener("pointerdown", function(event){
+  const bubble = event.target.closest(".cooking-active-timer");
+  if (!bubble || event.target.closest(".cooking-active-timer-cancel")) return;
+  const pointerId = event.pointerId;
+  const hold = setTimeout(function(){
+    timerDragState = { bubble: bubble, pointerId: pointerId };
+    bubble.classList.add("dragging");
+    bubble.setPointerCapture(pointerId);
+    if (navigator.vibrate) navigator.vibrate(25);
+  }, 350);
+  timerDragState = { bubble: bubble, pointerId: pointerId, hold: hold, pending: true };
+});
+
+cookingActiveTimers.addEventListener("pointermove", function(event){
+  if (!timerDragState || timerDragState.pointerId !== event.pointerId || timerDragState.pending) return;
+  event.preventDefault();
+  const target = document.elementFromPoint(event.clientX, event.clientY);
+  const over = target && target.closest(".cooking-active-timer");
+  if (!over || over === timerDragState.bubble || !cookingActiveTimers.contains(over)) return;
+  const bounds = over.getBoundingClientRect();
+  cookingActiveTimers.insertBefore(timerDragState.bubble, event.clientX < bounds.left + bounds.width / 2 ? over : over.nextSibling);
+});
+
+function finishTimerBubbleDrag(event) {
+  if (!timerDragState || timerDragState.pointerId !== event.pointerId) return;
+  if (timerDragState.hold) clearTimeout(timerDragState.hold);
+  if (!timerDragState.pending) {
+    timerDragState.bubble.classList.remove("dragging");
+    const order = Array.from(cookingActiveTimers.querySelectorAll(".cooking-active-timer")).map(function(node){ return node.dataset.timerId; });
+    detachedCookingTimers.sort(function(a, b){ return order.indexOf(a.id) - order.indexOf(b.id); });
+    saveDetachedCookingTimers();
+    suppressTimerBubbleClickUntil = Date.now() + 300;
+  }
+  timerDragState = null;
+}
+cookingActiveTimers.addEventListener("pointerup", finishTimerBubbleDrag);
+cookingActiveTimers.addEventListener("pointercancel", finishTimerBubbleDrag);
 
 function updateDetachedCookingTimers() {
   const now = Date.now();
@@ -1334,6 +1472,7 @@ function updateDetachedCookingTimers() {
     if (navigator.vibrate) navigator.vibrate([180, 100, 180]);
   }
   if (!detachedCookingTimers.length) stopDetachedCookingTimerLoop();
+  saveDetachedCookingTimers();
   renderDetachedCookingTimers();
 }
 
@@ -1341,11 +1480,15 @@ function detachRunningCookingTimer() {
   if (!cookingTimerRunning) return;
   const remaining = Math.max(0, Math.ceil((cookingTimerEnd - Date.now()) / 1000));
   if (remaining > 0) {
-    detachedCookingTimers = detachedCookingTimers.filter(function(timer){ return timer.stepIndex !== cookingTimerStepIndex; });
+    detachedCookingTimers = detachedCookingTimers.filter(function(timer){ return timer.recipeId !== cookingDish.id || timer.stepIndex !== cookingTimerStepIndex; });
     detachedCookingTimers.push({
       id: "timer-" + Date.now() + "-" + Math.random().toString(36).slice(2),
+      recipeId: cookingDish.id,
+      recipeName: cookingDish.name,
+      emoji: cookingDish.emoji,
       stepIndex: cookingTimerStepIndex,
-      end: cookingTimerEnd
+      end: cookingTimerEnd,
+      initialSeconds: cookingStepSeconds(cookingTimerStepIndex)
     });
   }
   stopCookingTimer();
@@ -1353,19 +1496,15 @@ function detachRunningCookingTimer() {
   if (detachedCookingTimers.length && !detachedCookingTimerInterval) {
     detachedCookingTimerInterval = setInterval(updateDetachedCookingTimers, 1000);
   }
+  saveDetachedCookingTimers();
   renderDetachedCookingTimers();
 }
 
-function clearDetachedCookingTimers() {
-  stopDetachedCookingTimerLoop();
-  detachedCookingTimers = [];
-  renderDetachedCookingTimers();
-}
-
-function cookingStepSeconds() {
+function cookingStepSeconds(stepIndex) {
   if (!cookingDish) return 0;
-  const minutes = cookingDish.stepMinutes && cookingDish.stepMinutes[cookingStepIndex] ? cookingDish.stepMinutes[cookingStepIndex] : 1;
-  return Math.max(60, Math.round(minutes * 60));
+  const index = Number.isInteger(stepIndex) ? stepIndex : cookingStepIndex;
+  const minutes = cookingDish.stepTimers && cookingDish.stepTimers[index];
+  return Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes * 60) : 0;
 }
 
 function updateCookingTimerDisplay() {
@@ -1400,8 +1539,13 @@ function renderCookingMode(resetTimer) {
   cookingTitle.textContent = cookingDish.name;
   cookingProgressLabel.textContent = "Schritt " + (cookingStepIndex + 1) + " von " + steps.length;
   cookingProgressFill.style.width = (((cookingStepIndex + 1) / steps.length) * 100) + "%";
-  cookingStepNumber.textContent = "Schritt " + (cookingStepIndex + 1) + " · ca. " + Math.round(cookingStepSeconds() / 60) + " Min.";
+  const timerSeconds = cookingStepSeconds();
+  cookingStepNumber.textContent = "Schritt " + (cookingStepIndex + 1) + (timerSeconds ? " · " + formatDuration(timerSeconds / 60) : "");
   cookingStepText.textContent = steps[cookingStepIndex];
+  cookingTimerBlock.classList.toggle("no-timer", !timerSeconds);
+  cookingTimerToggle.disabled = !timerSeconds;
+  cookingTimerReset.disabled = !timerSeconds;
+  if (!timerSeconds) cookingTimerContext.textContent = "Für diesen Schritt ist kein Timer nötig.";
   cookingPrev.disabled = cookingStepIndex === 0;
   cookingNext.textContent = cookingStepIndex === steps.length - 1 ? "Fertig ✓" : "Weiter →";
   updateCookingTimerDisplay();
@@ -1413,7 +1557,6 @@ function openCookingMode() {
   cookingStepIndex = 0;
   cookingTimerStepIndex = 0;
   cookingSessionRecorded = false;
-  clearDetachedCookingTimers();
   recipeOverlay.setAttribute("aria-hidden", "true");
   cookingOverlay.style.display = "flex";
   cookingOverlay.setAttribute("aria-hidden", "false");
@@ -1421,14 +1564,52 @@ function openCookingMode() {
   cookingClose.focus({ preventScroll: true });
 }
 
+function openDetachedCookingTimer(timerId) {
+  const index = detachedCookingTimers.findIndex(function(timer){ return timer.id === timerId; });
+  if (index === -1) return;
+  const timer = detachedCookingTimers[index];
+  const dish = dishByRef(timer.recipeId);
+  if (!dish) return;
+  if (cookingTimerRunning) detachRunningCookingTimer();
+  currentRecipeDish = dish;
+  recipePeopleCountValue = peopleCount;
+  renderRecipeSheet();
+  cookingDish = dish;
+  cookingStepIndex = Math.max(0, Math.min(dish.steps.length - 1, timer.stepIndex));
+  cookingTimerStepIndex = cookingStepIndex;
+  cookingSessionRecorded = false;
+  cookingTimerEnd = timer.end;
+  cookingTimerRemaining = Math.max(0, Math.ceil((timer.end - Date.now()) / 1000));
+  cookingTimerRunning = cookingTimerRemaining > 0;
+  detachedCookingTimers.splice(index, 1);
+  saveDetachedCookingTimers();
+  if (cookingTimerRunning) cookingTimerInterval = setInterval(updateCookingTimerDisplay, 1000);
+  [favoritesOverlay, cartOverlay, menuOverlay, accountOverlay, adminOverlay].forEach(function(overlay){
+    if (overlay.style.display === "flex") {
+      overlay.style.display = "none";
+      overlay.setAttribute("aria-hidden", "true");
+    }
+  });
+  recipeOverlay.style.display = "flex";
+  recipeOverlay.setAttribute("aria-hidden", "true");
+  cookingOverlay.style.display = "flex";
+  cookingOverlay.setAttribute("aria-hidden", "false");
+  const appRoot = document.querySelector(".app");
+  appRoot.setAttribute("aria-hidden", "true");
+  appRoot.inert = true;
+  renderCookingMode(false);
+  renderDetachedCookingTimers();
+  cookingClose.focus({ preventScroll: true });
+}
+
 function recordCookingCompletion(dish) {
   if (!dish || !profileLoaded || cookingSessionRecorded) return;
   cookingSessionRecorded = true;
   const nowIso = new Date().toISOString();
-  profile.cookLog.push({ id: "recipe-" + Date.now() + "-" + Math.random().toString(36).slice(2), name: dish.name, ts: nowIso, mode: "recipe", hasPhoto: false });
+  profile.cookLog.push({ id: "recipe-" + Date.now() + "-" + Math.random().toString(36).slice(2), dishId: dish.id, name: dish.name, ts: nowIso, mode: "recipe", hasPhoto: false });
   const discoveredNow = markDishSeen(dish, false);
   const earnedXp = rewardCook(dish, null) + (discoveredNow ? 15 : 0);
-  if (currentDish && currentDish.name === dish.name) {
+  if (currentDish && currentDish.id === dish.id) {
     confirmedForCurrentResult = true;
     renderConfirmRow(dish);
   }
@@ -1438,8 +1619,8 @@ function recordCookingCompletion(dish) {
 
 function closeCookingMode(finished) {
   const completedDish = cookingDish;
+  if (!finished) detachRunningCookingTimer();
   stopCookingTimer();
-  clearDetachedCookingTimers();
   cookingOverlay.style.display = "none";
   cookingOverlay.setAttribute("aria-hidden", "true");
   recipeOverlay.removeAttribute("aria-hidden");
@@ -1457,6 +1638,7 @@ function toggleCookingTimer() {
     return;
   }
   if (cookingTimerRemaining <= 0) cookingTimerRemaining = cookingStepSeconds();
+  if (cookingTimerRemaining <= 0) return;
   cookingTimerRunning = true;
   cookingTimerEnd = Date.now() + cookingTimerRemaining * 1000;
   cookingTimerInterval = setInterval(updateCookingTimerDisplay, 1000);
@@ -1610,10 +1792,10 @@ function confirmCook(dish, photoDataUrl, btn, skipBtn) {
   if (!profileLoaded || confirmedForCurrentResult) return;
   confirmedForCurrentResult = true;
   const nowIso = new Date().toISOString();
-  profile.cookLog.push({ id: "cook-" + Date.now() + "-" + Math.random().toString(36).slice(2), name: dish.name, ts: nowIso, mode: state.ingredientMode, hasPhoto: !!photoDataUrl });
+  profile.cookLog.push({ id: "cook-" + Date.now() + "-" + Math.random().toString(36).slice(2), dishId: dish.id, name: dish.name, ts: nowIso, mode: state.ingredientMode, hasPhoto: !!photoDataUrl });
   if (photoDataUrl) {
     profile.photos = profile.photos || [];
-    profile.photos.unshift({ id: Date.now() + "-" + Math.random().toString(36).slice(2), name: dish.name, ts: nowIso, dataUrl: photoDataUrl });
+    profile.photos.unshift({ id: Date.now() + "-" + Math.random().toString(36).slice(2), dishId: dish.id, name: dish.name, ts: nowIso, dataUrl: photoDataUrl });
     if (profile.photos.length > 20) profile.photos.length = 20;
   }
   const discoveredNow = markDishSeen(dish, false);
@@ -1790,17 +1972,17 @@ function pickFinal(pool) {
     candidates = pool.filter(function(dish){ return Math.abs(score(dish) - bestScore) < 0.000001; });
   }
   const recent = new Set(profile && Array.isArray(profile.recentPicks) ? profile.recentPicks : []);
-  if (candidates.length > 1 && lastPick) recent.add(lastPick.name);
-  const fresh = candidates.filter(function(d){ return !recent.has(d.name); });
+  if (candidates.length > 1 && lastPick) recent.add(lastPick.id);
+  const fresh = candidates.filter(function(d){ return !recent.has(d.id); });
   if (fresh.length) candidates = fresh;
-  else if (candidates.length > 1 && lastPick) candidates = candidates.filter(function(d){ return d.name !== lastPick.name; });
+  else if (candidates.length > 1 && lastPick) candidates = candidates.filter(function(d){ return d.id !== lastPick.id; });
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 function recordRecentPick(dish) {
   if (!profile || !dish) return;
-  profile.recentPicks = (profile.recentPicks || []).filter(function(name){ return name !== dish.name; });
-  profile.recentPicks.push(dish.name);
+  profile.recentPicks = (profile.recentPicks || []).filter(function(id){ return id !== dish.id; });
+  profile.recentPicks.push(dish.id);
   if (profile.recentPicks.length > 8) profile.recentPicks = profile.recentPicks.slice(-8);
 }
 
@@ -1931,7 +2113,7 @@ function rebuildWeekCart(deferSave) {
     addToCart(missing, {
       dish: dish,
       portions: peopleCount,
-      source: "week:" + day + ":" + dish.name,
+      source: "week:" + day + ":" + dish.id,
       defer: true
     });
   });
@@ -1966,8 +2148,8 @@ function syncWeekCartIfActive() {
 }
 
 function pickDayCandidate(pool) {
-  const usedNames = weekDays.map(function(d){ return profile.weekPlan[d]; }).filter(function(name){ return name && name !== REST_DAY; });
-  let candidates = pool.filter(function(d){ return usedNames.indexOf(d.name) === -1; });
+  const usedIds = weekDays.map(function(d){ return profile.weekPlan[d]; }).filter(function(id){ return id && id !== REST_DAY; });
+  let candidates = pool.filter(function(d){ return usedIds.indexOf(d.id) === -1; });
   if (candidates.length === 0) candidates = pool;
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
@@ -1981,9 +2163,9 @@ function weekRowHTML(day, dish) {
   const confirmedCls = confirmed ? " confirmed" : "";
   const lockedCls = isLocked ? " locked" : "";
   const restCls = isRestDay ? " rest-day" : "";
-  const detailLine = dish ? '<span class="week-portion-price">⏱ ' + dish.minutes + ' Min. · ≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
+  const detailLine = dish ? '<span class="week-portion-price">⏱ ' + escapeHtml(formatDuration(dish.minutes)) + ' · ≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
   const dishLabel = dish
-    ? '<a class="week-recipe-link" href="#recipe" data-recipe-name="' + escapeHtml(dish.name) + '">' + dish.emoji + " " + escapeHtml(dish.name) + "</a>"
+    ? '<a class="week-recipe-link" href="#recipe" data-recipe-id="' + escapeHtml(dish.id) + '">' + dish.emoji + " " + escapeHtml(dish.name) + "</a>"
     : (isRestDay ? "🥡 Restetag / Reste essen" : "Noch kein Gericht");
   const checkboxDisabled = (!dish || confirmed) ? " disabled" : "";
   const checkboxChecked = confirmed ? " checked" : "";
@@ -2017,7 +2199,7 @@ function refreshSingleRow(day) {
 function updateRowContent(rowEl, dish, suppressPremiumTint) {
   if (!rowEl) return;
   const dishInfo = rowEl.querySelector(".week-dish-info");
-  const detailLine = dish ? '<span class="week-portion-price">⏱ ' + dish.minutes + ' Min. · ≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
+  const detailLine = dish ? '<span class="week-portion-price">⏱ ' + escapeHtml(formatDuration(dish.minutes)) + ' · ≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
   dishInfo.innerHTML = '<span class="week-dish">' + (dish ? (dish.emoji + " " + escapeHtml(dish.name)) : "Noch kein Gericht") + '</span>' + detailLine;
   if (!suppressPremiumTint) rowEl.classList.toggle("dish-premium", !!(dish && dish.premium));
 }
@@ -2025,7 +2207,7 @@ function updateRowContent(rowEl, dish, suppressPremiumTint) {
 function spinDayRow(day, pool, onComplete) {
   const rowEl = weekDayRowsEl.querySelector('.week-row[data-day="' + day + '"]');
   const finalDish = pickDayCandidate(pool);
-  profile.weekPlan[day] = finalDish.name;
+  profile.weekPlan[day] = finalDish.id;
   profile.weekConfirmed[day] = false;
   if (profile.weekConfirmations) delete profile.weekConfirmations[day];
   const discoveredNow = profileLoaded && markDishSeen(finalDish, false);
@@ -2098,7 +2280,7 @@ function refreshRowPrices() {
     const dishName = profile.weekPlan[day];
     const dish = dishName && dishName !== REST_DAY ? dishByName(dishName) : null;
     const priceEl = rowEl.querySelector(".week-portion-price");
-    if (dish && priceEl) priceEl.textContent = "⏱ " + dish.minutes + " Min. · ≈" + formatEuro(dishPricePerPortion(dish)) + "/Portion";
+    if (dish && priceEl) priceEl.textContent = "⏱ " + formatDuration(dish.minutes) + " · ≈" + formatEuro(dishPricePerPortion(dish)) + "/Portion";
   });
 }
 
@@ -2115,16 +2297,16 @@ function confirmWeekDay(day, photoDataUrl) {
   const nowIso = new Date().toISOString();
   const eventId = "week-" + Date.now() + "-" + Math.random().toString(36).slice(2);
   const photoId = photoDataUrl ? "photo-" + Date.now() + "-" + Math.random().toString(36).slice(2) : "";
-  profile.cookLog.push({ id: eventId, name: dish.name, ts: nowIso, mode: "week", hasPhoto: !!photoDataUrl });
+  profile.cookLog.push({ id: eventId, dishId: dish.id, name: dish.name, ts: nowIso, mode: "week", hasPhoto: !!photoDataUrl });
   if (photoDataUrl) {
     profile.photos = profile.photos || [];
-    profile.photos.unshift({ id: photoId, name: dish.name, ts: nowIso, dataUrl: photoDataUrl });
+    profile.photos.unshift({ id: photoId, dishId: dish.id, name: dish.name, ts: nowIso, dataUrl: photoDataUrl });
     if (profile.photos.length > 20) profile.photos.length = 20;
   }
   const discoveredNow = markDishSeen(dish, false);
   const cookReward = rewardCook(dish, photoDataUrl);
   const earnedXp = cookReward + (discoveredNow ? 15 : 0);
-  profile.weekConfirmations[day] = { dishName: dish.name, logId: eventId, photoId: photoId, rewardKey: cookReward ? (localDateKey(new Date()) + "|" + dish.name) : "", earnedXp: earnedXp };
+  profile.weekConfirmations[day] = { dishId: dish.id, dishName: dish.name, logId: eventId, photoId: photoId, rewardKey: cookReward ? (localDateKey(new Date()) + "|" + dish.id) : "", earnedXp: earnedXp };
   showToast(earnedXp ? ("+" + earnedXp + " XP · Gekocht: " + dish.name) : ("Gekocht gespeichert · heute bereits belohnt"));
   afterProgressUpdate();
   refreshSingleRow(day);
@@ -2134,8 +2316,9 @@ function undoWeekDay(day) {
   if (!ensureCurrentWeekForEdit()) return;
   if (!profile.weekConfirmed[day]) return;
   const meta = profile.weekConfirmations && profile.weekConfirmations[day];
-  const dishName = profile.weekPlan[day];
-  if (!window.confirm("„" + dishName + "“ doch nicht als gekocht markieren?")) return;
+  const dishRef = profile.weekPlan[day];
+  const plannedDish = dishByRef(dishRef);
+  if (!window.confirm("„" + (plannedDish ? plannedDish.name : "Dieses Gericht") + "“ doch nicht als gekocht markieren?")) return;
   profile.weekConfirmed[day] = false;
   if (meta) {
     profile.cookLog = profile.cookLog.filter(function(entry){ return entry.id !== meta.logId; });
@@ -2144,7 +2327,7 @@ function undoWeekDay(day) {
     profile.xp = Math.max(0, profile.xp - (meta.earnedXp || 0));
     delete profile.weekConfirmations[day];
   } else {
-    const index = profile.cookLog.map(function(entry){ return entry.mode === "week" && entry.name === dishName; }).lastIndexOf(true);
+    const index = profile.cookLog.map(function(entry){ return entry.mode === "week" && (entry.dishId === dishRef || entry.name === dishRef); }).lastIndexOf(true);
     if (index !== -1) profile.cookLog.splice(index, 1);
   }
   revokeInvalidBadges();
@@ -2249,12 +2432,17 @@ function rollWholeWeek() {
 
   weekSpinning = true;
   rollWeekBtn.disabled = true;
+  const previousRollWeekLabel = rollWeekBtn.textContent;
+  rollWeekBtn.textContent = "Woche wird erstellt …";
+  rollWeekBtn.setAttribute("aria-busy", "true");
   let i = 0;
   let progressChanged = false;
   function next() {
     if (i >= activeDays.length) {
       weekSpinning = false;
       rollWeekBtn.disabled = false;
+      rollWeekBtn.textContent = previousRollWeekLabel;
+      rollWeekBtn.removeAttribute("aria-busy");
       syncWeekCartIfActive();
       if (progressChanged) afterProgressUpdate();
       else saveProfile();
@@ -2312,7 +2500,7 @@ weekDayRowsEl.addEventListener("click", function(event){
     photoInputEl.click();
   } else if (action.classList.contains("week-recipe-link")) {
     event.preventDefault();
-    openRecipe(dishByName(action.dataset.recipeName), action);
+    openRecipe(dishByRef(action.dataset.recipeId), action);
   }
 });
 
@@ -2893,9 +3081,9 @@ function switchTab(tabName) {
 }
 document.querySelectorAll(".tab-btn").forEach(function(btn){ btn.addEventListener("click", function(){ switchTab(btn.dataset.tab); }); });
 recipeLibraryGridEl.addEventListener("click", function(event){
-  const button = event.target.closest("[data-recipe-name]");
+  const button = event.target.closest("[data-recipe-id]");
   if (!button || !recipeLibraryGridEl.contains(button)) return;
-  const dish = dishByName(button.dataset.recipeName);
+  const dish = dishByRef(button.dataset.recipeId);
   if (!dish) return;
   if (dish.premium && tier !== "premium") {
     showToast("🔒 Dieses Rezept gehört zu Premium");
@@ -2931,7 +3119,7 @@ dexDetailsEl.addEventListener("toggle", function(){
   if (dexDetailsEl.open && dexRenderDirty) renderDex(true);
 });
 
-favoriteBtnEl.addEventListener("click", function(){ if (currentDish) toggleFavorite(currentDish.name); });
+favoriteBtnEl.addEventListener("click", function(){ if (currentDish) toggleFavorite(currentDish.id); });
 recipeLink.addEventListener("click", function(event){ event.preventDefault(); openRecipe(currentDish, recipeLink); });
 recipeClose.addEventListener("click", closeRecipe);
 recipeOverlay.addEventListener("click", function(event){ if (event.target === recipeOverlay) closeRecipe(); });
@@ -2948,7 +3136,7 @@ recipeGrabber.addEventListener("touchend", function(event){
 }, { passive: true });
 recipeFavoriteBtn.addEventListener("click", function(){
   if (!currentRecipeDish) return;
-  toggleFavorite(currentRecipeDish.name);
+  toggleFavorite(currentRecipeDish.id);
   renderRecipeSheet();
 });
 recipePeopleMinus.addEventListener("click", function(){ updateRecipePortions(-1); });
@@ -2982,7 +3170,7 @@ recipeAddMissing.addEventListener("click", function(){
   addToCart(missing, { dish: currentRecipeDish, portions: recipePeopleCountValue, source: source });
   showToast("Zutaten mit Mengen zum Warenkorb hinzugefügt 🛒");
   renderRecipeSheet();
-  if (currentDish && currentDish.name === currentRecipeDish.name) renderResultIngredients(currentDish);
+  if (currentDish && currentDish.id === currentRecipeDish.id) renderResultIngredients(currentDish);
 });
 
 function openFavoritesOverlay() { renderFavoritesSheet(); openAppSheet(favoritesOverlay, favoritesClose, favoritesBtn); }
@@ -3099,6 +3287,7 @@ resetProgressBtn.addEventListener("click", async function(){
 rollBtn.addEventListener("click", spin);
 
 (async function init(){
+  restoreDetachedCookingTimers();
   updatePoolCount();
   renderCart();
   setAuthMode("login");
@@ -3125,7 +3314,10 @@ window.addEventListener("online", function(){
     saveProfile();
   }
 });
-window.addEventListener("pagehide", flushBudgetSave);
+window.addEventListener("pagehide", function(){
+  if (cookingTimerRunning) detachRunningCookingTimer();
+  flushBudgetSave();
+});
 
 const canRegisterServiceWorker = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
 if ("serviceWorker" in navigator && canRegisterServiceWorker) {

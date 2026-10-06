@@ -4,13 +4,11 @@ const vm = require("vm");
 
 const root = path.resolve(__dirname, "..");
 const file = path.join(root, "index.html");
-const expectedVersion = "0.2.2";
+const expectedVersion = "0.2.3";
 const html = fs.readFileSync(file, "utf8");
 const recipesModule = fs.readFileSync(path.join(root, "src/data/recipes.js"), "utf8");
-const newRecipesModule = fs.readFileSync(path.join(root, "src/data/new-recipes-0.2.1.js"), "utf8");
-const curatedRecipesModule = fs.readFileSync(path.join(root, "src/data/curated-recipes-0.2.2.js"), "utf8");
 const mainModule = fs.readFileSync(path.join(root, "src/main.js"), "utf8");
-const source = newRecipesModule.replace(/^export\s+/gm, "") + "\n" + curatedRecipesModule.replace(/^export\s+/gm, "") + "\n" + recipesModule.replace(/^import .*$/gm, "").replace(/^export\s+/gm, "") + "\n" + mainModule.replace(/^import .*$/gm, "");
+const source = recipesModule.replace(/^export\s+/gm, "") + "\n" + mainModule.replace(/^import .*$/gm, "");
 
 class ClassList {
   constructor() { this.values = new Set(); }
@@ -48,7 +46,7 @@ class ElementStub {
     this.listeners.get(type).push(handler);
   }
   dispatch(type, extra) {
-    const event = Object.assign({ target: this, preventDefault(){}, key:"" }, extra || {});
+    const event = Object.assign({ target: this, preventDefault(){}, stopPropagation(){}, key:"" }, extra || {});
     (this.listeners.get(type) || []).forEach((handler) => handler.call(this, event));
   }
   setAttribute(name, value) { this.attributes.set(name, String(value)); }
@@ -60,6 +58,8 @@ class ElementStub {
   contains() { return true; }
   closest() { return null; }
   focus() {}
+  setPointerCapture() {}
+  getBoundingClientRect() { return { left:0, width:76 }; }
   remove() {}
   replaceWith() {}
 }
@@ -79,6 +79,7 @@ const documentStub = {
   getElementById: element,
   querySelectorAll() { return []; },
   querySelector(selector) { return selector === ".app" ? element("app") : null; },
+  elementFromPoint() { return null; },
   createElement() { return new ElementStub(""); },
   contains() { return true; }
 };
@@ -137,22 +138,28 @@ vm.createContext(context);
     const galleryDeferredAtStart = document.getElementById("galleryBody").innerHTML === "";
     switchTab("rezepte");
     const recipeLibraryRenderedOnDemand = document.getElementById("recipeLibraryGrid").innerHTML.length > 0;
-    openRecipe(dishes[0], document.getElementById("tabRezepte"));
+    const timerDish = dishes.find(dish => dish.stepTimers.some((value, index) => value && index < dish.steps.length - 1));
+    openRecipe(timerDish, document.getElementById("tabRezepte"));
     openCookingMode();
+    cookingStepIndex = cookingDish.stepTimers.findIndex((value, index) => value && index < cookingDish.steps.length - 1);
+    renderCookingMode(true);
     toggleCookingTimer();
     const timerEndBeforeStepChange = cookingTimerEnd;
+    const timerStepBeforeChange = cookingStepIndex;
     document.getElementById("cookingNext").dispatch("click");
-    const timerContinuesAcrossSteps = !cookingTimerRunning && detachedCookingTimers.length === 1 && detachedCookingTimers[0].end === timerEndBeforeStepChange && cookingStepIndex === 1 && cookingTimerRemaining === cookingStepSeconds();
+    const timerContinuesAcrossSteps = !cookingTimerRunning && detachedCookingTimers.length === 1 && detachedCookingTimers[0].end === timerEndBeforeStepChange && cookingStepIndex === timerStepBeforeChange + 1 && cookingTimerRemaining === cookingStepSeconds();
     const timerRow = { dataset:{ timerId:detachedCookingTimers[0].id } };
-    const timerCancel = { closest(selector){ return selector === ".cooking-active-timer-cancel" ? this : (selector === "[data-timer-id]" ? timerRow : null); } };
+    const timerCancel = { closest(selector){ return selector === ".cooking-active-timer-cancel" ? this : (selector === ".cooking-active-timer" ? timerRow : null); } };
     document.getElementById("cookingActiveTimers").dispatch("click", { target:timerCancel });
     const detachedTimerCanBeCancelled = detachedCookingTimers.length === 0;
     detachedCookingTimers = [
-      { id:"finished", stepIndex:0, end:Date.now() - 1 },
-      { id:"active", stepIndex:1, end:Date.now() + 60000 }
+      { id:"finished", recipeId:timerDish.id, recipeName:timerDish.name, emoji:timerDish.emoji, stepIndex:0, end:Date.now() - 1, initialSeconds:60 },
+      { id:"active", recipeId:timerDish.id, recipeName:timerDish.name, emoji:timerDish.emoji, stepIndex:1, end:Date.now() + 60000, initialSeconds:60 }
     ];
     updateDetachedCookingTimers();
     const finishedTimerRemovedIndependently = detachedCookingTimers.length === 1 && detachedCookingTimers[0].id === "active";
+    openDetachedCookingTimer("active");
+    const detachedTimerReturnsToStep = cookingDish.id === timerDish.id && cookingStepIndex === 1 && cookingTimerRunning && detachedCookingTimers.length === 0;
     closeCookingMode(false);
     openCookingMode();
     cookingStepIndex = cookingDish.steps.length - 1;
@@ -172,10 +179,10 @@ vm.createContext(context);
     document.getElementById("cartList").dispatch("change", { target:delegatedCheckbox });
     const delegatedCartChangeWorks = cartMap.get(checkedIngredient).checked === true;
     closeCartOverlay();
-    profile.favorites = [dishes[0].name];
+    profile.favorites = [dishes[0].id];
     renderFavoritesSheet();
     const delegatedFavorite = document.createElement("button");
-    delegatedFavorite.dataset.name = dishes[0].name;
+    delegatedFavorite.dataset.name = dishes[0].id;
     delegatedFavorite.classList.add("fav-name");
     delegatedFavorite.closest = function(selector){ return selector === ".fav-name, .fav-remove" ? this : null; };
     document.getElementById("favoritesList").dispatch("click", { target:delegatedFavorite });
@@ -192,7 +199,7 @@ vm.createContext(context);
     const delegatedGalleryDeleteWorks = profile.photos.length === 0;
     selectedDays.add("Mo");
     profile.weekSelectedDays = ["Mo"];
-    profile.weekPlan.Mo = dishes[1].name;
+    profile.weekPlan.Mo = dishes[1].id;
     const delegatedWeekClear = document.createElement("button");
     delegatedWeekClear.classList.add("week-clear-btn");
     delegatedWeekClear.dataset.day = "Mo";
@@ -200,6 +207,8 @@ vm.createContext(context);
     delegatedWeekClear.closest = function(selector){ return selector.indexOf(".week-clear-btn") !== -1 ? this : (selector === ".week-row" ? delegatedWeekRow : null); };
     document.getElementById("weekDayRows").dispatch("click", { target:delegatedWeekClear });
     const delegatedWeekActionWorks = profile.weekPlan.Mo === null;
+    const migratedLegacyProfile = normalizeProfile({ favorites:[dishes[0].name], dishesSeen:[dishes[1].name], weekPlan:{ Mo:dishes[2].name }, recentPicks:[dishes[3].name] });
+    const legacyProfileUsesStableIds = migratedLegacyProfile.favorites[0] === dishes[0].id && migratedLegacyProfile.dishesSeen[0] === dishes[1].id && migratedLegacyProfile.weekPlan.Mo === dishes[2].id && migratedLegacyProfile.recentPicks[0] === dishes[3].id;
     renderRecipeLibrary();
     renderWeekTab();
     __smokeResult = {
@@ -215,16 +224,18 @@ vm.createContext(context);
       timerContinuesAcrossSteps,
       detachedTimerCanBeCancelled,
       finishedTimerRemovedIndependently,
+      detachedTimerReturnsToStep,
       cookingFinishRecorded,
       delegatedCartChangeWorks,
       delegatedFavoriteOpenWorks,
       delegatedGalleryDeleteWorks,
       delegatedWeekActionWorks,
+      legacyProfileUsesStableIds,
       versionPresent:${JSON.stringify(html.includes("Version " + expectedVersion))}
     };
   `, context, { timeout: 5000 });
   const result = context.__smokeResult;
-  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.versionPresent) {
+  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.versionPresent) {
     throw new Error("Smoke-Test fehlgeschlagen: " + JSON.stringify(result));
   }
   console.log(JSON.stringify({ file, status:"ok", ...result }, null, 2));

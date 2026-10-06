@@ -14,10 +14,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 <title>Kochorakel – Was gibt's heute?</title>
-  <script type="module" crossorigin src="./assets/index-fryJKBpa.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/supabase-6zfZ93Oa.js">
-  <link rel="modulepreload" crossorigin href="./assets/recipes-Bu8IjsUc.js">
-  <link rel="stylesheet" crossorigin href="./assets/index-CRySe4FY.css">
+<link rel="stylesheet" href="./src/styles.css">
 </head>
 <body>
 <div class="app">
@@ -336,6 +333,8 @@
   </div>
 </div>
 
+<div class="cooking-active-timers" id="cookingActiveTimers" aria-live="polite" aria-label="Aktive Koch-Timer"></div>
+
 <div class="sheet-overlay" id="cookingOverlay" aria-hidden="true">
   <div class="cooking-mode" role="dialog" aria-modal="true" aria-labelledby="cookingTitle">
     <div class="cooking-topbar">
@@ -345,11 +344,10 @@
     <h2 class="cooking-title" id="cookingTitle">Gericht</h2>
     <p class="cooking-progress-label" id="cookingProgressLabel"></p>
     <div class="cooking-progress" aria-hidden="true"><div class="cooking-progress-fill" id="cookingProgressFill"></div></div>
-    <div class="cooking-active-timers" id="cookingActiveTimers" aria-live="polite"></div>
     <div class="cooking-step-card">
       <span class="cooking-step-number" id="cookingStepNumber"></span>
       <p class="cooking-step-text" id="cookingStepText"></p>
-      <div class="cooking-timer">
+      <div class="cooking-timer" id="cookingTimerBlock">
         <span class="cooking-timer-display" id="cookingTimerDisplay" aria-live="polite">00:00</span>
         <span class="cooking-timer-context" id="cookingTimerContext"></span>
         <div class="cooking-timer-actions">
@@ -408,7 +406,7 @@
       </div>
       <p class="menu-hint" id="subscriptionHint">Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.</p>
     </div>
-    <p class="app-version">Kochorakel · Version 0.2.2</p>
+    <p class="app-version">Kochorakel · Version 0.2.3</p>
   </div>
 </div>
 
@@ -532,5 +530,6 @@
 <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;">
 <div class="toast-container" id="toastContainer"></div>
 
+<script type="module" src="./src/main.js"></script>
 </body>
 </html>

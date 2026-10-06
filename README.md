@@ -1,7 +1,9 @@
-# Kochorakel 0.2.2
+# Kochorakel 0.2.3
 
 Technische Testversion mit 324 vollständig ausgearbeiteten Rezepten. Jedes Rezept
-enthält Mengen für vier Portionen, Zeiten, fünf Schritte und einen Praxistipp.
+enthält Mengen für vier Portionen, Arbeits-, Gar- und gegebenenfalls Ruhezeiten,
+vier bis acht konkrete Schritte, passende Schritt-Timer, Allergenhinweise und
+einen Praxistipp.
 
 ## Lokal starten
 
@@ -30,15 +32,20 @@ Das Projekt enthält einen automatischen Workflow. Im GitHub-Repository unter
 auswählen. Danach wird jeder erfolgreiche Stand auf `main` automatisch getestet,
 gebaut und veröffentlicht.
 
+Für ein Update müssen anschließend nur die entpackten Projektdateien ins
+Repository hochgeladen beziehungsweise per Git übertragen werden. Der Ordner
+`.github` muss mit hochgeladen werden; er enthält den Workflow.
+
 ## Aufbau
 
 - `index.html`: Oberfläche und Dialoge
 - `src/styles.css`: vollständiges Design
 - `src/main.js`: Anwendungslogik
-- `src/data/recipes.js`: Rezept- und Zutatendaten
-- `src/data/new-recipes-0.2.1.js`: 100 neue Rezepte aus Version 0.2.1
-- `src/data/curated-recipes-0.2.2.js`: vollständige Überarbeitung der älteren Rezepte
+- `src/data/recipes.js`: einzige kanonische Quelle für Rezepte und Zutaten
 - `public`: PWA-Dateien und App-Symbole
+- `scripts/sync-version.mjs`: gleicht sichtbare Version und PWA-Cache automatisch ab
+- `scripts/build-canonical-recipes.mjs`: Wartungsskript für Rezept-IDs, Timer und Allergene
+- `.github/workflows/deploy.yml`: automatischer GitHub-Pages-Build
 
 ## Wichtig
 
