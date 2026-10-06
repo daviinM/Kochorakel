@@ -59,7 +59,14 @@ class ElementStub {
   closest() { return null; }
   focus() {}
   setPointerCapture() {}
-  getBoundingClientRect() { return { left:0, width:76 }; }
+  getBoundingClientRect() {
+    return {
+      left: Number.parseFloat(this.style.left) || 0,
+      top: Number.parseFloat(this.style.top) || 140,
+      width: Number.parseFloat(this.style.width) || 76,
+      height: Number.parseFloat(this.style.height) || 86
+    };
+  }
   remove() {}
   replaceWith() {}
 }
@@ -162,6 +169,15 @@ vm.createContext(context);
     ];
     updateDetachedCookingTimers();
     const finishedTimerRemovedIndependently = detachedCookingTimers.length === 1 && detachedCookingTimers[0].id === "active";
+    const timerDock = document.getElementById("cookingActiveTimers");
+    const dragBubble = document.createElement("div");
+    dragBubble.dataset.timerId = "active";
+    dragBubble.closest = function(selector){ return selector === ".cooking-active-timer" ? this : null; };
+    timerDock.dispatch("pointerdown", { target:dragBubble, pointerId:7, clientX:20, clientY:150 });
+    timerDock.dispatch("pointermove", { target:dragBubble, pointerId:7, clientX:80, clientY:180 });
+    const timerDockCanBeDragged = Number.parseFloat(timerDock.style.left) > 8 && Number.parseFloat(timerDock.style.top) > 140;
+    timerDock.dispatch("pointerup", { target:dragBubble, pointerId:7, clientX:80, clientY:180 });
+    const timerDockPositionPersisted = Boolean(localStorage.getItem(TIMER_DOCK_POSITION_KEY));
     openDetachedCookingTimer("active");
     const detachedTimerReturnsToStep = cookingDish.id === timerDish.id && cookingStepIndex === 1 && cookingTimerRunning && detachedCookingTimers.length === 0;
     closeCookingMode(false);
@@ -229,6 +245,8 @@ vm.createContext(context);
       noTimerStepHidesField,
       detachedTimerCanBeCancelled,
       finishedTimerRemovedIndependently,
+      timerDockCanBeDragged,
+      timerDockPositionPersisted,
       detachedTimerReturnsToStep,
       cookingFinishRecorded,
       delegatedCartChangeWorks,
@@ -240,7 +258,7 @@ vm.createContext(context);
     };
   `, context, { timeout: 5000 });
   const result = context.__smokeResult;
-  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.versionPresent) {
+  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.versionPresent) {
     throw new Error("Smoke-Test fehlgeschlagen: " + JSON.stringify(result));
   }
   console.log(JSON.stringify({ file, status:"ok", ...result }, null, 2));

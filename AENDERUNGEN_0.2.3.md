@@ -9,9 +9,9 @@
 - Laufende Timer bleiben beim Wechsel zum nächsten Schritt aktiv.
 - Mehrere Timer erscheinen als kleine Kugeln nebeneinander, zeigen Gericht,
   Schritt und Restzeit und öffnen beim Antippen wieder den richtigen Kochschritt.
-- Die Timergruppe lässt sich durch langes Drücken im oberen Bildschirmdrittel
-  frei verschieben. Die Position und laufende Timer bleiben bei einem Neuladen
-  der App erhalten.
+- Die Timergruppe lässt sich durch direktes Ziehen im oberen Bildschirmdrittel
+  frei verschieben. Normales Antippen öffnet weiterhin den Timer. Die Position
+  und laufende Timer bleiben bei einem Neuladen der App erhalten.
 
 ## Rezepte und Daten
 
@@ -28,8 +28,8 @@
 
 - Der Wochenplan zeigt während der Auslosung „Woche wird erstellt …“ und blockiert
   Mehrfachklicks.
-- Ein kurzes Scrollen oder Wischen löst nicht versehentlich den Verschiebemodus
-  der Timer aus.
+- Erst nach einer kleinen Ziehbewegung wird der Verschiebemodus aktiviert; ein
+  normales Antippen öffnet zuverlässig den Timer.
 - Overlays sperren den Hintergrund einheitlich, melden ihren Zustand korrekt an
   Bedienungshilfen und alle statischen Buttons besitzen einen eindeutigen Typ.
 - Fehlende Zutaten zeigen ihren Auswahlkreis in hellem und dunklem Design wieder

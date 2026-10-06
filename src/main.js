@@ -1438,13 +1438,13 @@ function renderDetachedCookingTimers() {
     cookingActiveTimers.innerHTML = "";
     return;
   }
-  if (timerDragState && !timerDragState.pending) return;
+  if (timerDragState) return;
   const now = Date.now();
   cookingActiveTimers.style.display = "flex";
   cookingActiveTimers.innerHTML = detachedCookingTimers.map(function(timer){
     const remaining = Math.max(0, Math.ceil((timer.end - now) / 1000));
     const progress = Math.max(0, Math.min(100, (remaining / Math.max(1, timer.initialSeconds)) * 100));
-    return '<div class="cooking-active-timer" data-timer-id="' + escapeHtml(timer.id) + '" style="--timer-progress:' + progress + '%" role="button" tabindex="0" aria-label="' + escapeHtml(timer.recipeName) + ', Schritt ' + (timer.stepIndex + 1) + ', noch ' + formatCookingTimer(remaining) + '. Antippen zum Öffnen, lange drücken zum Verschieben.">' +
+    return '<div class="cooking-active-timer" data-timer-id="' + escapeHtml(timer.id) + '" style="--timer-progress:' + progress + '%" role="button" tabindex="0" aria-label="' + escapeHtml(timer.recipeName) + ', Schritt ' + (timer.stepIndex + 1) + ', noch ' + formatCookingTimer(remaining) + '. Antippen zum Öffnen oder ziehen zum Verschieben.">' +
       '<span class="cooking-active-timer-ring"><span class="cooking-active-timer-emoji" aria-hidden="true">' + timer.emoji + '</span><span class="cooking-active-timer-step">' + (timer.stepIndex + 1) + '</span></span>' +
       '<span class="cooking-active-timer-time">' + formatCookingTimer(remaining) + '</span>' +
       '<button class="cooking-active-timer-cancel" type="button" aria-label="Timer aus ' + escapeHtml(timer.recipeName) + ' beenden">✕</button></div>';
@@ -1479,36 +1479,28 @@ cookingActiveTimers.addEventListener("keydown", function(event){
 cookingActiveTimers.addEventListener("pointerdown", function(event){
   const bubble = event.target.closest(".cooking-active-timer");
   if (!bubble || event.target.closest(".cooking-active-timer-cancel")) return;
-  const pointerId = event.pointerId;
   const dockRect = cookingActiveTimers.getBoundingClientRect();
-  const startX = event.clientX;
-  const startY = event.clientY;
-  const hold = setTimeout(function(){
-    if (!timerDragState || timerDragState.pointerId !== pointerId || !timerDragState.pending) return;
-    timerDragState = {
-      bubble: bubble,
-      pointerId: pointerId,
-      startX: startX,
-      startY: startY,
-      startLeft: dockRect.left,
-      startTop: dockRect.top
-    };
-    bubble.classList.add("dragging");
-    cookingActiveTimers.classList.add("dragging");
-    bubble.setPointerCapture(pointerId);
-    if (navigator.vibrate) navigator.vibrate(25);
-  }, 350);
-  timerDragState = { bubble: bubble, pointerId: pointerId, hold: hold, pending: true, startX: startX, startY: startY };
+  timerDragState = {
+    bubble: bubble,
+    pointerId: event.pointerId,
+    pending: true,
+    startX: event.clientX,
+    startY: event.clientY,
+    startLeft: dockRect.left,
+    startTop: dockRect.top
+  };
+  try { bubble.setPointerCapture(event.pointerId); } catch (error) {}
 });
 
 cookingActiveTimers.addEventListener("pointermove", function(event){
   if (!timerDragState || timerDragState.pointerId !== event.pointerId) return;
   if (timerDragState.pending) {
-    if (Math.hypot(event.clientX - timerDragState.startX, event.clientY - timerDragState.startY) > 8) {
-      clearTimeout(timerDragState.hold);
-      timerDragState = null;
-    }
-    return;
+    if (Math.hypot(event.clientX - timerDragState.startX, event.clientY - timerDragState.startY) <= 6) return;
+    timerDragState.pending = false;
+    timerDragState.bubble.classList.add("dragging");
+    cookingActiveTimers.classList.add("dragging");
+    suppressTimerBubbleClickUntil = Date.now() + 500;
+    if (navigator.vibrate) navigator.vibrate(20);
   }
   event.preventDefault();
   const bounds = timerDockBounds();
@@ -1521,7 +1513,6 @@ cookingActiveTimers.addEventListener("pointermove", function(event){
 
 function finishTimerBubbleDrag(event) {
   if (!timerDragState || timerDragState.pointerId !== event.pointerId) return;
-  if (timerDragState.hold) clearTimeout(timerDragState.hold);
   if (!timerDragState.pending) {
     timerDragState.bubble.classList.remove("dragging");
     cookingActiveTimers.classList.remove("dragging");
@@ -1530,6 +1521,7 @@ function finishTimerBubbleDrag(event) {
     suppressTimerBubbleClickUntil = Date.now() + 300;
   }
   timerDragState = null;
+  renderDetachedCookingTimers();
 }
 cookingActiveTimers.addEventListener("pointerup", finishTimerBubbleDrag);
 cookingActiveTimers.addEventListener("pointercancel", finishTimerBubbleDrag);
