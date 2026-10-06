@@ -56,22 +56,22 @@
     <div class="filters">
       <div class="filter-group" data-group="time">
         <span class="filter-label">Zeit</span>
-        <button class="chip active" data-value="egal">Egal</button>
-        <button class="chip" data-value="schnell">Schnell</button>
-        <button class="chip" data-value="normal">Normal</button>
-        <button class="chip" data-value="aufwendig">Aufwendig</button>
+        <button class="chip active" data-value="egal" type="button">Egal</button>
+        <button class="chip" data-value="schnell" type="button">Schnell</button>
+        <button class="chip" data-value="normal" type="button">Normal</button>
+        <button class="chip" data-value="aufwendig" type="button">Aufwendig</button>
       </div>
       <div class="filter-group" data-group="diet">
         <span class="filter-label">Ernährung</span>
-        <button class="chip active" data-value="egal">Egal</button>
-        <button class="chip" data-value="vegetarisch">Vegetarisch</button>
-        <button class="chip" data-value="vegan">Vegan</button>
+        <button class="chip active" data-value="egal" type="button">Egal</button>
+        <button class="chip" data-value="vegetarisch" type="button">Vegetarisch</button>
+        <button class="chip" data-value="vegan" type="button">Vegan</button>
       </div>
       <div class="filter-group" data-group="type">
         <span class="filter-label">Lust auf</span>
-        <button class="chip active" data-value="egal">Egal</button>
-        <button class="chip" data-value="herzhaft">Herzhaft</button>
-        <button class="chip" data-value="süß">Süß</button>
+        <button class="chip active" data-value="egal" type="button">Egal</button>
+        <button class="chip" data-value="herzhaft" type="button">Herzhaft</button>
+        <button class="chip" data-value="süß" type="button">Süß</button>
       </div>
     </div>
 
@@ -81,10 +81,10 @@
         <div>
           <p class="section-label">Modus</p>
           <div class="filter-group" data-group="ingredientMode">
-            <button class="chip chip-sm active" data-value="egal">Egal</button>
-            <button class="chip chip-sm" data-value="strict">Nur was ich hab</button>
-            <button class="chip chip-sm" data-value="buy2">+ 2 einkaufen</button>
-            <button class="chip chip-sm" data-value="reste">Reste retten</button>
+            <button class="chip chip-sm active" data-value="egal" type="button">Egal</button>
+            <button class="chip chip-sm" data-value="strict" type="button">Nur was ich hab</button>
+            <button class="chip chip-sm" data-value="buy2" type="button">+ 2 einkaufen</button>
+            <button class="chip chip-sm" data-value="reste" type="button">Reste retten</button>
           </div>
         </div>
         <div class="subgroup"><p class="section-label">Grundnahrungsmittel</p><div class="ing-chips" data-cat="grund"></div></div>
@@ -116,7 +116,7 @@
     </div>
 
     <div class="actions">
-      <button class="roll-btn" id="rollBtn" disabled>Gericht auslosen</button>
+      <button class="roll-btn" id="rollBtn" type="button" disabled>Gericht auslosen</button>
       <div class="confirm-row" id="confirmRow"></div>
       <p class="helper" id="helperText">Lade deinen Fortschritt …</p>
     </div>
@@ -171,22 +171,22 @@
             <div class="filters">
               <div class="filter-group week-filter-group" data-group="time">
                 <span class="filter-label">Zeit</span>
-                <button class="chip active" data-value="egal">Egal</button>
-                <button class="chip" data-value="schnell">Schnell</button>
-                <button class="chip" data-value="normal">Normal</button>
-                <button class="chip" data-value="aufwendig">Aufwendig</button>
+                <button class="chip active" data-value="egal" type="button">Egal</button>
+                <button class="chip" data-value="schnell" type="button">Schnell</button>
+                <button class="chip" data-value="normal" type="button">Normal</button>
+                <button class="chip" data-value="aufwendig" type="button">Aufwendig</button>
               </div>
               <div class="filter-group week-filter-group" data-group="diet">
                 <span class="filter-label">Ernährung</span>
-                <button class="chip active" data-value="egal">Egal</button>
-                <button class="chip" data-value="vegetarisch">Vegetarisch</button>
-                <button class="chip" data-value="vegan">Vegan</button>
+                <button class="chip active" data-value="egal" type="button">Egal</button>
+                <button class="chip" data-value="vegetarisch" type="button">Vegetarisch</button>
+                <button class="chip" data-value="vegan" type="button">Vegan</button>
               </div>
               <div class="filter-group week-filter-group" data-group="type">
                 <span class="filter-label">Lust auf</span>
-                <button class="chip active" data-value="egal">Egal</button>
-                <button class="chip" data-value="herzhaft">Herzhaft</button>
-                <button class="chip" data-value="süß">Süß</button>
+                <button class="chip active" data-value="egal" type="button">Egal</button>
+                <button class="chip" data-value="herzhaft" type="button">Herzhaft</button>
+                <button class="chip" data-value="süß" type="button">Süß</button>
               </div>
             </div>
             <p class="pool-count" id="weekPoolCount"></p>
@@ -265,7 +265,7 @@
   </div>
 </div>
 
-<div class="sheet-overlay" id="favoritesOverlay">
+<div class="sheet-overlay" id="favoritesOverlay" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="favoritesTitle" tabindex="-1">
     <div class="sheet-header">
       <h2 class="sheet-title" id="favoritesTitle">Favoriten <span class="cart-count" id="favoritesCount" style="display:none;">0</span></h2>
@@ -278,7 +278,7 @@
   </div>
 </div>
 
-<div class="sheet-overlay" id="cartOverlay">
+<div class="sheet-overlay" id="cartOverlay" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
     <div class="sheet-header">
       <h2 class="sheet-title" id="cartTitle">Warenkorb <span class="cart-count" id="cartCount" style="display:none;">0</span></h2>
@@ -292,7 +292,7 @@
   </div>
 </div>
 
-<div class="sheet-overlay" id="recipeOverlay">
+<div class="sheet-overlay" id="recipeOverlay" aria-hidden="true">
   <div class="sheet recipe-sheet" role="dialog" aria-modal="true" aria-labelledby="recipeSheetTitle" tabindex="-1">
     <div class="recipe-grabber" id="recipeGrabber" aria-hidden="true"></div>
     <div class="recipe-topbar">
@@ -333,7 +333,7 @@
   </div>
 </div>
 
-<div class="cooking-active-timers" id="cookingActiveTimers" aria-live="polite" aria-label="Aktive Koch-Timer"></div>
+<div class="cooking-active-timers" id="cookingActiveTimers" aria-label="Aktive Koch-Timer"></div>
 
 <div class="sheet-overlay" id="cookingOverlay" aria-hidden="true">
   <div class="cooking-mode" role="dialog" aria-modal="true" aria-labelledby="cookingTitle">
@@ -348,7 +348,7 @@
       <span class="cooking-step-number" id="cookingStepNumber"></span>
       <p class="cooking-step-text" id="cookingStepText"></p>
       <div class="cooking-timer" id="cookingTimerBlock">
-        <span class="cooking-timer-display" id="cookingTimerDisplay" aria-live="polite">00:00</span>
+        <span class="cooking-timer-display" id="cookingTimerDisplay" role="timer">00:00</span>
         <span class="cooking-timer-context" id="cookingTimerContext"></span>
         <div class="cooking-timer-actions">
           <button class="cooking-timer-btn" id="cookingTimerToggle" type="button">Timer starten</button>
@@ -363,7 +363,7 @@
   </div>
 </div>
 
-<div class="sheet-overlay" id="menuOverlay">
+<div class="sheet-overlay" id="menuOverlay" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
     <div class="sheet-header">
       <h2 class="sheet-title" id="settingsTitle">Einstellungen</h2>
@@ -411,7 +411,7 @@
 </div>
 
 
-<div class="sheet-overlay" id="accountOverlay">
+<div class="sheet-overlay" id="accountOverlay" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
     <div class="sheet-header">
       <h2 class="sheet-title" id="accountTitle">Konto</h2>
@@ -506,7 +506,7 @@
   </div>
 </div>
 
-<div class="sheet-overlay" id="adminOverlay">
+<div class="sheet-overlay" id="adminOverlay" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
     <div class="sheet-header">
       <h2 class="sheet-title" id="adminTitle">Administration</h2>
@@ -528,7 +528,7 @@
 </div>
 
 <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;">
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
 <script type="module" src="./src/main.js"></script>
 </body>

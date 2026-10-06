@@ -84,6 +84,8 @@ let detachedCookingTimerInterval = null;
 let timerDragState = null;
 let suppressTimerBubbleClickUntil = 0;
 const ACTIVE_TIMERS_STORAGE_KEY = "kochorakel-active-timers-v1";
+const TIMER_DOCK_POSITION_KEY = "kochorakel-timer-dock-position-v1";
+let timerDockPosition = null;
 const prefersReducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
 const reelInner = document.getElementById("reelInner");
@@ -1204,8 +1206,8 @@ function renderRecipeSheet() {
   const steps = dish.steps || fallbackRecipeSteps(dish);
   recipeSteps.innerHTML = steps.map(function(step, index){
     const timerMinutes = dish.stepTimers && dish.stepTimers[index];
-    const duration = timerMinutes ? '<span class="recipe-step-time">⏱ ' + escapeHtml(formatDuration(timerMinutes)) + '</span>' : '<span class="recipe-step-time no-timer">Kein Timer nötig</span>';
-    return "<li>" + escapeHtml(step) + "<br>" + duration + "</li>";
+    const duration = timerMinutes ? '<span class="recipe-step-time">⏱ ' + escapeHtml(formatDuration(timerMinutes)) + '</span>' : '';
+    return "<li>" + escapeHtml(step) + (duration ? "<br>" + duration : "") + "</li>";
   }).join("");
   recipeNote.textContent = "Tipp: " + dish.tip + " Mengen sind Richtwerte; Salz, Pfeffer und Wasser zählen zum Grundvorrat. Allergenangaben aus Produktverpackungen gehen immer vor.";
 
@@ -1255,11 +1257,13 @@ function openAppSheet(overlay, closeButton, trigger) {
   setAppModalState(true);
   lockPageScroll();
   overlay.style.display = "flex";
+  overlay.setAttribute("aria-hidden", "false");
   closeButton.focus({ preventScroll: true });
 }
 
 function closeAppSheet(overlay, fallback, restoreFocus) {
   overlay.style.display = "none";
+  overlay.setAttribute("aria-hidden", "true");
   setAppModalState(false);
   unlockPageScroll();
   const target = sheetReturnFocus.get(overlay) || fallback;
@@ -1303,12 +1307,14 @@ function openRecipe(dish, trigger) {
   document.body.classList.add("recipe-modal-open");
   lockPageScroll();
   recipeOverlay.style.display = "flex";
+  recipeOverlay.setAttribute("aria-hidden", "false");
   recipeClose.focus({ preventScroll: true });
   requestAnimationFrame(function(){ recipeClose.focus({ preventScroll: true }); });
 }
 
 function closeRecipe() {
   recipeOverlay.style.display = "none";
+  recipeOverlay.setAttribute("aria-hidden", "true");
   document.body.classList.remove("recipe-modal-open");
   unlockPageScroll();
   const app = document.querySelector(".app");
@@ -1356,7 +1362,51 @@ function saveDetachedCookingTimers() {
   } catch (error) {}
 }
 
+function loadTimerDockPosition() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TIMER_DOCK_POSITION_KEY) || "null");
+    if (parsed && Number.isFinite(parsed.x) && Number.isFinite(parsed.y)) {
+      timerDockPosition = { x: Math.max(0, Math.min(1, parsed.x)), y: Math.max(0, Math.min(1, parsed.y)) };
+    }
+  } catch (error) {
+    timerDockPosition = null;
+  }
+}
+
+function timerDockBounds() {
+  const rect = cookingActiveTimers.getBoundingClientRect();
+  const viewportWidth = window.innerWidth || 390;
+  const viewportHeight = window.innerHeight || 844;
+  const width = rect.width || Math.min(viewportWidth - 24, Math.max(76, detachedCookingTimers.length * 85));
+  const height = rect.height || 86;
+  const minLeft = 8;
+  const maxLeft = Math.max(minLeft, viewportWidth - width - 8);
+  const minTop = 72;
+  const maxTop = Math.max(minTop, Math.floor(viewportHeight / 3) - height - 8);
+  return { minLeft: minLeft, maxLeft: maxLeft, minTop: minTop, maxTop: maxTop };
+}
+
+function applyTimerDockPosition() {
+  if (!timerDockPosition || !detachedCookingTimers.length) return;
+  const bounds = timerDockBounds();
+  cookingActiveTimers.style.left = (bounds.minLeft + timerDockPosition.x * (bounds.maxLeft - bounds.minLeft)) + "px";
+  cookingActiveTimers.style.top = (bounds.minTop + timerDockPosition.y * (bounds.maxTop - bounds.minTop)) + "px";
+  cookingActiveTimers.style.transform = "none";
+}
+
+function saveTimerDockPosition(left, top) {
+  const bounds = timerDockBounds();
+  timerDockPosition = {
+    x: bounds.maxLeft === bounds.minLeft ? 0 : (left - bounds.minLeft) / (bounds.maxLeft - bounds.minLeft),
+    y: bounds.maxTop === bounds.minTop ? 0 : (top - bounds.minTop) / (bounds.maxTop - bounds.minTop)
+  };
+  timerDockPosition.x = Math.max(0, Math.min(1, timerDockPosition.x));
+  timerDockPosition.y = Math.max(0, Math.min(1, timerDockPosition.y));
+  try { localStorage.setItem(TIMER_DOCK_POSITION_KEY, JSON.stringify(timerDockPosition)); } catch (error) {}
+}
+
 function restoreDetachedCookingTimers() {
+  loadTimerDockPosition();
   try {
     const parsed = JSON.parse(localStorage.getItem(ACTIVE_TIMERS_STORAGE_KEY) || "[]");
     const now = Date.now();
@@ -1399,6 +1449,7 @@ function renderDetachedCookingTimers() {
       '<span class="cooking-active-timer-time">' + formatCookingTimer(remaining) + '</span>' +
       '<button class="cooking-active-timer-cancel" type="button" aria-label="Timer aus ' + escapeHtml(timer.recipeName) + ' beenden">✕</button></div>';
   }).join("");
+  applyTimerDockPosition();
 }
 
 cookingActiveTimers.addEventListener("click", function(event){
@@ -1429,23 +1480,43 @@ cookingActiveTimers.addEventListener("pointerdown", function(event){
   const bubble = event.target.closest(".cooking-active-timer");
   if (!bubble || event.target.closest(".cooking-active-timer-cancel")) return;
   const pointerId = event.pointerId;
+  const dockRect = cookingActiveTimers.getBoundingClientRect();
+  const startX = event.clientX;
+  const startY = event.clientY;
   const hold = setTimeout(function(){
-    timerDragState = { bubble: bubble, pointerId: pointerId };
+    if (!timerDragState || timerDragState.pointerId !== pointerId || !timerDragState.pending) return;
+    timerDragState = {
+      bubble: bubble,
+      pointerId: pointerId,
+      startX: startX,
+      startY: startY,
+      startLeft: dockRect.left,
+      startTop: dockRect.top
+    };
     bubble.classList.add("dragging");
+    cookingActiveTimers.classList.add("dragging");
     bubble.setPointerCapture(pointerId);
     if (navigator.vibrate) navigator.vibrate(25);
   }, 350);
-  timerDragState = { bubble: bubble, pointerId: pointerId, hold: hold, pending: true };
+  timerDragState = { bubble: bubble, pointerId: pointerId, hold: hold, pending: true, startX: startX, startY: startY };
 });
 
 cookingActiveTimers.addEventListener("pointermove", function(event){
-  if (!timerDragState || timerDragState.pointerId !== event.pointerId || timerDragState.pending) return;
+  if (!timerDragState || timerDragState.pointerId !== event.pointerId) return;
+  if (timerDragState.pending) {
+    if (Math.hypot(event.clientX - timerDragState.startX, event.clientY - timerDragState.startY) > 8) {
+      clearTimeout(timerDragState.hold);
+      timerDragState = null;
+    }
+    return;
+  }
   event.preventDefault();
-  const target = document.elementFromPoint(event.clientX, event.clientY);
-  const over = target && target.closest(".cooking-active-timer");
-  if (!over || over === timerDragState.bubble || !cookingActiveTimers.contains(over)) return;
-  const bounds = over.getBoundingClientRect();
-  cookingActiveTimers.insertBefore(timerDragState.bubble, event.clientX < bounds.left + bounds.width / 2 ? over : over.nextSibling);
+  const bounds = timerDockBounds();
+  const left = Math.max(bounds.minLeft, Math.min(bounds.maxLeft, timerDragState.startLeft + event.clientX - timerDragState.startX));
+  const top = Math.max(bounds.minTop, Math.min(bounds.maxTop, timerDragState.startTop + event.clientY - timerDragState.startY));
+  cookingActiveTimers.style.left = left + "px";
+  cookingActiveTimers.style.top = top + "px";
+  cookingActiveTimers.style.transform = "none";
 });
 
 function finishTimerBubbleDrag(event) {
@@ -1453,9 +1524,9 @@ function finishTimerBubbleDrag(event) {
   if (timerDragState.hold) clearTimeout(timerDragState.hold);
   if (!timerDragState.pending) {
     timerDragState.bubble.classList.remove("dragging");
-    const order = Array.from(cookingActiveTimers.querySelectorAll(".cooking-active-timer")).map(function(node){ return node.dataset.timerId; });
-    detachedCookingTimers.sort(function(a, b){ return order.indexOf(a.id) - order.indexOf(b.id); });
-    saveDetachedCookingTimers();
+    cookingActiveTimers.classList.remove("dragging");
+    const rect = cookingActiveTimers.getBoundingClientRect();
+    saveTimerDockPosition(rect.left, rect.top);
     suppressTimerBubbleClickUntil = Date.now() + 300;
   }
   timerDragState = null;
@@ -1542,10 +1613,9 @@ function renderCookingMode(resetTimer) {
   const timerSeconds = cookingStepSeconds();
   cookingStepNumber.textContent = "Schritt " + (cookingStepIndex + 1) + (timerSeconds ? " · " + formatDuration(timerSeconds / 60) : "");
   cookingStepText.textContent = steps[cookingStepIndex];
-  cookingTimerBlock.classList.toggle("no-timer", !timerSeconds);
+  cookingTimerBlock.hidden = !timerSeconds;
   cookingTimerToggle.disabled = !timerSeconds;
   cookingTimerReset.disabled = !timerSeconds;
-  if (!timerSeconds) cookingTimerContext.textContent = "Für diesen Schritt ist kein Timer nötig.";
   cookingPrev.disabled = cookingStepIndex === 0;
   cookingNext.textContent = cookingStepIndex === steps.length - 1 ? "Fertig ✓" : "Weiter →";
   updateCookingTimerDisplay();
@@ -1594,9 +1664,9 @@ function openDetachedCookingTimer(timerId) {
   recipeOverlay.setAttribute("aria-hidden", "true");
   cookingOverlay.style.display = "flex";
   cookingOverlay.setAttribute("aria-hidden", "false");
-  const appRoot = document.querySelector(".app");
-  appRoot.setAttribute("aria-hidden", "true");
-  appRoot.inert = true;
+  document.body.classList.add("recipe-modal-open");
+  lockPageScroll();
+  setAppModalState(true);
   renderCookingMode(false);
   renderDetachedCookingTimers();
   cookingClose.focus({ preventScroll: true });
@@ -1623,7 +1693,7 @@ function closeCookingMode(finished) {
   stopCookingTimer();
   cookingOverlay.style.display = "none";
   cookingOverlay.setAttribute("aria-hidden", "true");
-  recipeOverlay.removeAttribute("aria-hidden");
+  recipeOverlay.setAttribute("aria-hidden", "false");
   cookingDish = null;
   if (recipeStartCooking.offsetParent !== null) recipeStartCooking.focus({ preventScroll: true });
   if (finished) recordCookingCompletion(completedDish);

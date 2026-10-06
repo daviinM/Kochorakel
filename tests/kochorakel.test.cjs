@@ -105,6 +105,8 @@ for (const tier of ["free", "premium"]) {
 
 const ids = Array.from(indexHtml.matchAll(/\bid="([^"]+)"/g), match => match[1]);
 check(new Set(ids).size === ids.length, "keine doppelten HTML-IDs");
+const buttonsWithoutType = Array.from(indexHtml.matchAll(/<button\b([^>]*)>/gi), match => match[1]).filter(attributes => !/\btype\s*=/.test(attributes));
+check(buttonsWithoutType.length === 0, "alle statischen Buttons haben einen eindeutigen Typ");
 const idSet = new Set(ids);
 const startupModule = mainModule.slice(0, mainModule.indexOf("function defaultProfile"));
 const referencedIds = Array.from(startupModule.matchAll(/const\s+\w+\s*=\s*document\.getElementById\("([^"]+)"\)/g), match => match[1]);
@@ -113,7 +115,9 @@ check(!/sb_secret_/i.test(indexHtml + mainModule + recipesModule), "kein Supabas
 check(/dishIndexById/.test(mainModule) && /uniqueDishIds/.test(mainModule), "stabile IDs im Profilmodell");
 check(/normalizeCartSource/.test(mainModule), "alte Warenkorbquellen werden migriert");
 check(/ACTIVE_TIMERS_STORAGE_KEY/.test(mainModule) && /restoreDetachedCookingTimers/.test(mainModule), "Timer bleiben nach Neuladen erhalten");
-check(/openDetachedCookingTimer/.test(mainModule) && /pointerdown/.test(mainModule) && /finishTimerBubbleDrag/.test(mainModule), "Timer-Kugeln öffnen und verschieben");
+check(/openDetachedCookingTimer/.test(mainModule) && /pointerdown/.test(mainModule) && /finishTimerBubbleDrag/.test(mainModule) && /TIMER_DOCK_POSITION_KEY/.test(mainModule), "Timer-Kugeln öffnen, verschieben und Position speichern");
+check(/cookingTimerBlock\.hidden\s*=\s*!timerSeconds/.test(mainModule), "Timerfeld wird bei Schritten ohne Timer ausgeblendet");
+check(!/Kein Timer nötig/.test(mainModule), "kein unnötiger Timerhinweis in Schritten");
 check(/dish\.stepTimers/.test(mainModule) && !/dish\.stepMinutes/.test(mainModule), "Kochmodus nutzt logische Timer");
 check(/Woche wird erstellt/.test(mainModule) && /aria-busy/.test(mainModule), "Wochenplan zeigt Ladezustand");
 check(/recipe-allergens/.test(mainModule + styles), "Allergenhinweis sichtbar");

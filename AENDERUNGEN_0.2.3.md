@@ -4,12 +4,14 @@
 
 - Schrittzeiten werden nicht mehr gleichmäßig aufgeteilt, sondern nur aus den
   tatsächlich genannten Rezeptzeiten übernommen.
-- Schritte ohne sinnvolle Wartezeit zeigen bewusst „Kein Timer nötig“.
+- Bei Schritten ohne sinnvolle Wartezeit wird der Timerbereich vollständig
+  ausgeblendet.
 - Laufende Timer bleiben beim Wechsel zum nächsten Schritt aktiv.
 - Mehrere Timer erscheinen als kleine Kugeln nebeneinander, zeigen Gericht,
   Schritt und Restzeit und öffnen beim Antippen wieder den richtigen Kochschritt.
-- Die Kugeln lassen sich durch langes Drücken neu anordnen und bleiben bei einem
-  Neuladen der App erhalten.
+- Die Timergruppe lässt sich durch langes Drücken im oberen Bildschirmdrittel
+  frei verschieben. Die Position und laufende Timer bleiben bei einem Neuladen
+  der App erhalten.
 
 ## Rezepte und Daten
 
@@ -26,6 +28,12 @@
 
 - Der Wochenplan zeigt während der Auslosung „Woche wird erstellt …“ und blockiert
   Mehrfachklicks.
+- Ein kurzes Scrollen oder Wischen löst nicht versehentlich den Verschiebemodus
+  der Timer aus.
+- Overlays sperren den Hintergrund einheitlich, melden ihren Zustand korrekt an
+  Bedienungshilfen und alle statischen Buttons besitzen einen eindeutigen Typ.
+- Fehlende Zutaten zeigen ihren Auswahlkreis in hellem und dunklem Design wieder
+  mit einem klaren Rahmen.
 - Versionsanzeige und Service-Worker-Cache werden beim Build automatisch aus
   `package.json` abgeglichen.
 - Ein GitHub-Actions-Workflow testet, baut und veröffentlicht die App nach jedem
@@ -33,7 +41,7 @@
 
 ## Qualitätssicherung
 
-- 12.325 automatisierte Prüfungen für Rezepte, Mengen, Filterkombinationen,
+- 12.328 automatisierte Prüfungen für Rezepte, Mengen, Filterkombinationen,
   Ernährungsarten, IDs, Allergene, Timer, HTML-Verknüpfungen und Sicherheit.
 - DOM-Smoke-Test für Anmeldung/Gaststart, Rezepte, Kochmodus, Timer, Favoriten,
   Warenkorb, Fotos und Wochenplan.

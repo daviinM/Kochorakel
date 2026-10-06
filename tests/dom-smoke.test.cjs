@@ -141,6 +141,10 @@ vm.createContext(context);
     const timerDish = dishes.find(dish => dish.stepTimers.some((value, index) => value && index < dish.steps.length - 1));
     openRecipe(timerDish, document.getElementById("tabRezepte"));
     openCookingMode();
+    const noTimerStepIndex = cookingDish.stepTimers.findIndex(value => !value);
+    cookingStepIndex = noTimerStepIndex;
+    renderCookingMode(true);
+    const noTimerStepHidesField = noTimerStepIndex >= 0 && document.getElementById("cookingTimerBlock").hidden === true;
     cookingStepIndex = cookingDish.stepTimers.findIndex((value, index) => value && index < cookingDish.steps.length - 1);
     renderCookingMode(true);
     toggleCookingTimer();
@@ -222,6 +226,7 @@ vm.createContext(context);
       cartDetailsRenderedOnOpen,
       recipeTitle:document.getElementById("recipeSheetTitle").textContent,
       timerContinuesAcrossSteps,
+      noTimerStepHidesField,
       detachedTimerCanBeCancelled,
       finishedTimerRemovedIndependently,
       detachedTimerReturnsToStep,
@@ -235,7 +240,7 @@ vm.createContext(context);
     };
   `, context, { timeout: 5000 });
   const result = context.__smokeResult;
-  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.versionPresent) {
+  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.versionPresent) {
     throw new Error("Smoke-Test fehlgeschlagen: " + JSON.stringify(result));
   }
   console.log(JSON.stringify({ file, status:"ok", ...result }, null, 2));

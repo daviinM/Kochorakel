@@ -8,12 +8,13 @@
 - Rezeptbestand: 324 Gerichte (100 Free, 224 Premium)
 - Rezeptqualität: 324 von 324 Rezepten vollständig ausgearbeitet und in einer Datei zusammengeführt
 - Datenmodell: stabile Rezept-IDs mit automatischer Migration alter Profilnamen
-- Qualitätssicherung: 12.325 Daten-/Codeprüfungen plus DOM-Smoke-Test und Produktions-Build
+- Qualitätssicherung: 12.328 Daten-/Codeprüfungen plus DOM-Smoke-Test und Produktions-Build
 
 ## Ziel dieser Version
 
-Realistische Schritt-Timer, mehrere weiterlaufende Timer-Kugeln, Allergenhinweise,
-stabile Profildaten und ein automatischer GitHub-Pages-Workflow.
+Realistische Schritt-Timer, eine frei verschiebbare Gruppe weiterlaufender
+Timer-Kugeln, Allergenhinweise, stabile Profildaten und ein automatischer
+GitHub-Pages-Workflow.
 
 ## Nächste Schritte
 
