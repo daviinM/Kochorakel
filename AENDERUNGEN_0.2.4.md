@@ -25,7 +25,17 @@
 
 - Die mehrfach vorhandenen Ernährungsfilter wurden von Kochen, Rezepten und
   Wochenplan entfernt.
-- Auf der Startseite führt nur noch eine kompakte Zeile direkt zum Essensprofil.
+- Die drei täglichen Hauptbereiche „Heute“, „Woche“ und „Rezepte“ liegen in
+  einer festen, iPhone-sicheren Navigation am unteren Bildschirmrand.
+- Oben bleiben nur noch Warenkorb und Menü sichtbar.
+- Konto, Favoriten sowie Fortschritt und Erfolge sind als ruhige Listeneinträge
+  im Menü erreichbar.
+- Zeit, Gerichtstyp und Essensprofil liegen in einer kompakten Filterzeile, die
+  nur bei Bedarf geöffnet wird.
+- Die XP-Anzeige ist kleiner und zeigt Level und XP ohne große Fortschrittsfläche.
+- Darstellung und Premium wurden im Menü in einklappbare Bereiche zusammengefasst.
+- Große Karten, Rezeptschritte und Ergebnisflächen sind etwas eckiger und nutzen
+  weniger starke Schatten; kleine Status- und Auswahlchips bleiben abgerundet.
 - Leere Trefferlisten erklären, dass neben den aktuellen Filtern auch das
   Essensprofil geprüft werden sollte.
 - Ein Sicherheitshinweis macht klar, dass die App bei Allergien nicht die Prüfung
@@ -33,8 +43,8 @@
 
 ## Qualitätssicherung
 
-- Automatisierte Prüfungen für vegane und vegetarische Ergebnislisten,
+- 12.337 automatisierte Prüfungen für vegane und vegetarische Ergebnislisten,
   Allergenfilter, vermiedene Zutaten, Wochenplan, Rezeptbibliothek,
-  Profilspeicherung und Cloud-Zusammenführung.
+  Profilspeicherung, Cloud-Zusammenführung und die neue Navigation.
 - Bestehende Timer-, Favoriten-, Warenkorb- und Rezepttests bleiben aktiv.
 - Produktions-Build und GitHub-Actions-Veröffentlichung werden erneut geprüft.

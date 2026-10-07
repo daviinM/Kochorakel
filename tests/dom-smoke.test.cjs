@@ -305,6 +305,14 @@ vm.createContext(context);
     const mergedFoodProfile = mergeProfiles({ dietPreference:"alles", excludedAllergens:["milch"] }, { dietPreference:"vegan", excludedAllergens:["gluten"], avoidedIngredients:[dishes[0].ingredients[0]] });
     const cloudMergeKeepsLocalFoodProfile = mergedFoodProfile.dietPreference === "vegan" && mergedFoodProfile.excludedAllergens[0] === "gluten" && mergedFoodProfile.avoidedIngredients[0] === dishes[0].ingredients[0];
     profile = normalizeProfile(defaultProfile());
+    openMenuOverlay();
+    document.getElementById("menuProgressBtn").dispatch("click");
+    const menuProgressNavigationWorks = document.getElementById("menuOverlay").style.display === "none" && document.getElementById("panelFortschritt").classList.contains("active");
+    switchTab("kochen");
+    openMenuOverlay();
+    document.getElementById("accountBtn").dispatch("click");
+    const menuAccountNavigationWorks = document.getElementById("menuOverlay").style.display === "none" && document.getElementById("accountOverlay").style.display === "flex";
+    closeAccountOverlay();
     renderRecipeLibrary();
     renderWeekTab();
     __smokeResult = {
@@ -349,11 +357,13 @@ vm.createContext(context);
       hiddenAvoidanceSurvivesDietChange,
       foodProfileNormalizationWorks,
       cloudMergeKeepsLocalFoodProfile,
+      menuProgressNavigationWorks,
+      menuAccountNavigationWorks,
       versionPresent:${JSON.stringify(html.includes("Version " + expectedVersion))}
     };
   `, context, { timeout: 5000 });
   const result = context.__smokeResult;
-  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.runningTimerDetachedOnNext || !result.runningTimerRestoredOnBack || !result.pausedTimerStoredOnNext || !result.pausedTimerRestoredOnBack || !result.resumedTimerRuns || !result.repeatedNavigationHasNoDuplicate || !result.delegatedCartChangeWorks || !result.delegatedFavoriteRemoveWorks || !result.cloudMergeKeepsFavoriteRemoval || !result.resultFavoriteRemoveWorks || !result.recipeFavoriteRemoveWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.veganPoolOnlyContainsVeganDishes || !result.weekPoolUsesFoodProfile || !result.veganLibraryOnlyContainsVeganDishes || !result.veganHidesAnimalIngredients || !result.allergenFilterWorks || !result.avoidedIngredientFilterWorks || !result.hiddenAvoidanceSurvivesDietChange || !result.foodProfileNormalizationWorks || !result.cloudMergeKeepsLocalFoodProfile || !result.versionPresent) {
+  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.runningTimerDetachedOnNext || !result.runningTimerRestoredOnBack || !result.pausedTimerStoredOnNext || !result.pausedTimerRestoredOnBack || !result.resumedTimerRuns || !result.repeatedNavigationHasNoDuplicate || !result.delegatedCartChangeWorks || !result.delegatedFavoriteRemoveWorks || !result.cloudMergeKeepsFavoriteRemoval || !result.resultFavoriteRemoveWorks || !result.recipeFavoriteRemoveWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.veganPoolOnlyContainsVeganDishes || !result.weekPoolUsesFoodProfile || !result.veganLibraryOnlyContainsVeganDishes || !result.veganHidesAnimalIngredients || !result.allergenFilterWorks || !result.avoidedIngredientFilterWorks || !result.hiddenAvoidanceSurvivesDietChange || !result.foodProfileNormalizationWorks || !result.cloudMergeKeepsLocalFoodProfile || !result.menuProgressNavigationWorks || !result.menuAccountNavigationWorks || !result.versionPresent) {
     throw new Error("Smoke-Test fehlgeschlagen: " + JSON.stringify(result));
   }
   console.log(JSON.stringify({ file, status:"ok", ...result }, null, 2));

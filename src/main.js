@@ -141,6 +141,7 @@ const recipeLibrarySummaryEl = document.getElementById("recipeLibrarySummary");
 const recipeLibraryGridEl = document.getElementById("recipeLibraryGrid");
 const recipeLibraryEmptyEl = document.getElementById("recipeLibraryEmpty");
 const helperText = document.getElementById("helperText");
+const pageTitleEl = document.getElementById("pageTitle");
 const rollBtn = document.getElementById("rollBtn");
 const poolCountEl = document.getElementById("poolCount");
 const emptyMsgEl = document.getElementById("emptyMsg");
@@ -159,6 +160,8 @@ const xpFillEl = document.getElementById("xpFill");
 const xpStripEl = document.getElementById("xpStrip");
 const xpStripLabelEl = document.getElementById("xpStripLabel");
 const xpStripFillEl = document.getElementById("xpStripFill");
+const xpStripPointsEl = document.getElementById("xpStripPoints");
+const quickFilterSummaryEl = document.getElementById("quickFilterSummary");
 const dexStatsEl = document.getElementById("dexStats");
 const dexGridEl = document.getElementById("dexGrid");
 const dexDetailsEl = document.getElementById("dexDetails");
@@ -197,6 +200,8 @@ const cartClose = document.getElementById("cartClose");
 const menuBtn = document.getElementById("menuBtn");
 const menuOverlay = document.getElementById("menuOverlay");
 const menuClose = document.getElementById("menuClose");
+const menuProgressBtn = document.getElementById("menuProgressBtn");
+const menuAccountStatus = document.getElementById("menuAccountStatus");
 const colorRowEl = document.getElementById("colorRow");
 const iconRowEl = document.getElementById("iconRow");
 const appIconTileEl = document.getElementById("appIconTile");
@@ -882,6 +887,18 @@ function renderXp() {
   xpFillEl.style.width = pct + "%";
   xpStripFillEl.style.width = pct + "%";
   xpLabelEl.textContent = label;
+  xpStripPointsEl.textContent = profile.xp + " XP";
+}
+
+function renderQuickFilterSummary() {
+  if (!quickFilterSummaryEl) return;
+  const labels = [];
+  if (state.time !== "egal") labels.push({ schnell:"Schnell", normal:"Normal", aufwendig:"Aufwendig" }[state.time]);
+  if (state.type !== "egal") labels.push({ herzhaft:"Herzhaft", "süß":"Süß" }[state.type]);
+  if (profile && profile.dietPreference !== "alles") labels.push({ vegetarisch:"Vegetarisch", vegan:"Vegan" }[profile.dietPreference]);
+  const exclusions = profile ? (profile.excludedAllergens || []).length + (profile.avoidedIngredients || []).length : 0;
+  if (exclusions) labels.push(exclusions + " ausgeschlossen");
+  quickFilterSummaryEl.textContent = labels.filter(Boolean).join(" · ") || "Alle Gerichte";
 }
 
 function renderDex(force) {
@@ -1034,6 +1051,7 @@ function getPool(ignoreTier) { return computePool(state, ignoreTier); }
 function getWeekPool(ignoreTier) { return computePool(weekFilterState, ignoreTier); }
 
 function updatePoolCount() {
+  renderQuickFilterSummary();
   const fullPool = getPool(true);
   const pool = tier === "free" ? fullPool.filter(function(dish){ return !dish.premium; }) : fullPool;
   if (pool.length === 0) {
@@ -1385,7 +1403,7 @@ function closeRecipe() {
   recipeReturnFocus = null;
   if (target && document.contains(target) && target.offsetParent !== null) target.focus();
   else if (recipeLink.offsetParent !== null) recipeLink.focus();
-  else favoritesBtn.focus();
+  else cartIconBtn.focus();
 }
 
 function updateRecipePortions(delta) {
@@ -2979,6 +2997,7 @@ function renderFoodProfileControls() {
     return '<button type="button" class="' + (active ? "active" : "") + '" data-profile-allergen="' + escapeHtml(id) + '" aria-pressed="' + (active ? "true" : "false") + '">' + escapeHtml(allergenLabels[id]) + '</button>';
   }).join("");
   foodProfileShortcutValue.textContent = foodProfileSummary();
+  renderQuickFilterSummary();
   renderAvoidedIngredientOptions();
   renderPantryIngredientVisibility();
 }
@@ -3035,6 +3054,7 @@ function renderAccountState() {
 
   if (!signedIn) {
     accountBtn.setAttribute("aria-label", "Konto – Gastmodus");
+    menuAccountStatus.textContent = "Gastprofil · nur auf diesem Gerät";
     renderTierState();
     renderFoodProfileControls();
     return;
@@ -3051,6 +3071,7 @@ function renderAccountState() {
   accountTierBadge.className = "account-badge" + (currentProfileRow.is_premium ? " premium" : "");
   openAdminBtn.classList.toggle("hidden", !isAdmin);
   accountBtn.setAttribute("aria-label", "Konto – " + (currentProfileRow.display_name || currentProfileRow.email));
+  menuAccountStatus.textContent = (currentProfileRow.display_name || currentProfileRow.email || "Angemeldet") + " · " + (currentProfileRow.is_premium ? "Premium" : "Free");
   renderTierState();
   renderFoodProfileControls();
 }
@@ -3348,6 +3369,7 @@ async function initializeAuth() {
 }
 
 function switchTab(tabName) {
+  pageTitleEl.textContent = { kochen:"Was gibt's heute?", woche:"Deine Woche", rezepte:"Rezepte", fortschritt:"Fortschritt" }[tabName] || "Kochorakel";
   document.querySelectorAll(".tab-btn").forEach(function(b){
     const active = b.dataset.tab === tabName;
     b.classList.toggle("active", active);
@@ -3367,7 +3389,12 @@ function switchTab(tabName) {
   if (tabName === "rezepte") renderRecipeLibrary();
   if (tabName === "fortschritt") renderPhotoGallery(true);
 }
-document.querySelectorAll(".tab-btn").forEach(function(btn){ btn.addEventListener("click", function(){ switchTab(btn.dataset.tab); }); });
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    switchTab(btn.dataset.tab);
+    window.scrollTo(0, 0);
+  });
+});
 recipeLibraryGridEl.addEventListener("click", function(event){
   const button = event.target.closest("[data-recipe-id]");
   if (!button || !recipeLibraryGridEl.contains(button)) return;
@@ -3399,7 +3426,7 @@ xpStripEl.addEventListener("keydown", function(event){
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     switchTab("fortschritt");
-    document.getElementById("tabFortschritt").focus();
+    panelFortschrittEl.focus();
   }
 });
 dexDetailsEl.addEventListener("toggle", function(){
@@ -3460,8 +3487,12 @@ recipeAddMissing.addEventListener("click", function(){
   if (currentDish && currentDish.id === currentRecipeDish.id) renderResultIngredients(currentDish);
 });
 
-function openFavoritesOverlay() { renderFavoritesSheet(); openAppSheet(favoritesOverlay, favoritesClose, favoritesBtn); }
-function closeFavoritesOverlay() { closeAppSheet(favoritesOverlay, favoritesBtn); }
+function openFavoritesOverlay() {
+  if (menuOverlay.style.display === "flex") closeAppSheet(menuOverlay, menuBtn, false);
+  renderFavoritesSheet();
+  openAppSheet(favoritesOverlay, favoritesClose, menuBtn);
+}
+function closeFavoritesOverlay() { closeAppSheet(favoritesOverlay, menuBtn); }
 favoritesBtn.addEventListener("click", openFavoritesOverlay);
 favoritesClose.addEventListener("click", closeFavoritesOverlay);
 favoritesOverlay.addEventListener("click", function(e){ if (e.target === favoritesOverlay) closeFavoritesOverlay(); });
@@ -3488,12 +3519,22 @@ menuClose.addEventListener("click", closeMenuOverlay);
 menuOverlay.addEventListener("click", function(e){ if (e.target === menuOverlay) closeMenuOverlay(); });
 menuOverlay.addEventListener("keydown", function(e){ trapAppSheetFocus(e, menuOverlay, closeMenuOverlay); });
 
-function openAccountOverlay() { renderAccountState(); openAppSheet(accountOverlay, accountClose, accountBtn); }
-function closeAccountOverlay() { closeAppSheet(accountOverlay, accountBtn); }
-accountBtn.addEventListener("click", openAccountOverlay);
+function openAccountOverlay(trigger) {
+  if (menuOverlay.style.display === "flex") closeAppSheet(menuOverlay, menuBtn, false);
+  renderAccountState();
+  openAppSheet(accountOverlay, accountClose, trigger || menuBtn);
+}
+function closeAccountOverlay() { closeAppSheet(accountOverlay, menuBtn); }
+accountBtn.addEventListener("click", function(){ openAccountOverlay(menuBtn); });
 foodProfileShortcut.addEventListener("click", function(){
-  openAccountOverlay();
+  openAccountOverlay(foodProfileShortcut);
   requestAnimationFrame(function(){ foodProfileCard.scrollIntoView({ block:"start", behavior: prefersReducedMotion ? "auto" : "smooth" }); });
+});
+menuProgressBtn.addEventListener("click", function(){
+  closeAppSheet(menuOverlay, menuBtn, false);
+  switchTab("fortschritt");
+  panelFortschrittEl.focus({ preventScroll:true });
+  window.scrollTo(0, 0);
 });
 accountClose.addEventListener("click", closeAccountOverlay);
 accountOverlay.addEventListener("click", function(e){ if (e.target === accountOverlay) closeAccountOverlay(); });

@@ -24,54 +24,45 @@
       <span class="eyebrow">Kochorakel</span>
     </div>
     <div class="header-actions">
-      <button class="header-icon-btn" id="favoritesBtn" type="button" aria-label="Favoriten">
-        🤍<span class="header-badge" id="favoritesBadge" style="display:none;">0</span>
-      </button>
       <button class="header-icon-btn" id="cartIconBtn" type="button" aria-label="Warenkorb">
         🛒<span class="header-badge" id="cartIconBadge" style="display:none;">0</span>
-      </button>
-      <button class="header-icon-btn" id="accountBtn" type="button" aria-label="Konto">
-        👤<span class="account-dot" id="accountDot"></span>
       </button>
       <button class="header-icon-btn" id="menuBtn" type="button" aria-label="Menü">☰</button>
     </div>
   </div>
-  <h1>Was gibt's heute?</h1>
-  <p class="subline">Filter setzen, Hebel ziehen, Bauch entscheiden lassen.</p>
-
-  <div class="tabs" role="tablist">
-    <button class="tab-btn active" id="tabKochen" data-tab="kochen" type="button" role="tab" aria-controls="panelKochen" aria-selected="true">🎲 Kochen</button>
-    <button class="tab-btn" id="tabWoche" data-tab="woche" type="button" role="tab" aria-controls="panelWoche" aria-selected="false" tabindex="-1">📅 Woche</button>
-    <button class="tab-btn" id="tabRezepte" data-tab="rezepte" type="button" role="tab" aria-controls="panelRezepte" aria-selected="false" tabindex="-1">📖 Rezepte</button>
-    <button class="tab-btn" id="tabFortschritt" data-tab="fortschritt" type="button" role="tab" aria-controls="panelFortschritt" aria-selected="false" tabindex="-1">🏅 Fortschritt <span class="tab-count" id="tabBadgeCount"></span></button>
-  </div>
+  <h1 id="pageTitle">Was gibt's heute?</h1>
 
   <div class="tab-panel active" id="panelKochen" role="tabpanel" aria-labelledby="tabKochen">
     <div class="xp-strip" id="xpStrip" role="button" tabindex="0" aria-label="Fortschritt öffnen">
       <span class="xp-strip-label" id="xpStripLabel">Lvl 1 · Kochlehrling</span>
       <div class="xp-strip-track"><div class="xp-strip-fill" id="xpStripFill"></div></div>
-      <span class="xp-strip-arrow">Fortschritt ›</span>
+      <span class="xp-strip-points" id="xpStripPoints">0 XP</span>
+      <span class="xp-strip-arrow" aria-hidden="true">›</span>
     </div>
 
-    <div class="filters">
-      <div class="filter-group" data-group="time">
-        <span class="filter-label">Zeit</span>
-        <button class="chip active" data-value="egal" type="button">Egal</button>
-        <button class="chip" data-value="schnell" type="button">Schnell</button>
-        <button class="chip" data-value="normal" type="button">Normal</button>
-        <button class="chip" data-value="aufwendig" type="button">Aufwendig</button>
+    <details class="panel quick-filter-panel">
+      <summary><span>Filter</span><strong id="quickFilterSummary">Alle Gerichte</strong></summary>
+      <div class="panel-body">
+        <div class="filters">
+          <div class="filter-group" data-group="time">
+            <span class="filter-label">Zeit</span>
+            <button class="chip active" data-value="egal" type="button">Egal</button>
+            <button class="chip" data-value="schnell" type="button">Schnell</button>
+            <button class="chip" data-value="normal" type="button">Normal</button>
+            <button class="chip" data-value="aufwendig" type="button">Aufwendig</button>
+          </div>
+          <div class="filter-group" data-group="type">
+            <span class="filter-label">Lust auf</span>
+            <button class="chip active" data-value="egal" type="button">Egal</button>
+            <button class="chip" data-value="herzhaft" type="button">Herzhaft</button>
+            <button class="chip" data-value="süß" type="button">Süß</button>
+          </div>
+        </div>
+        <button class="food-profile-shortcut" id="foodProfileShortcut" type="button">
+          <span>🥗 Essensprofil</span><strong id="foodProfileShortcutValue">Alles</strong><span aria-hidden="true">›</span>
+        </button>
       </div>
-      <div class="filter-group" data-group="type">
-        <span class="filter-label">Lust auf</span>
-        <button class="chip active" data-value="egal" type="button">Egal</button>
-        <button class="chip" data-value="herzhaft" type="button">Herzhaft</button>
-        <button class="chip" data-value="süß" type="button">Süß</button>
-      </div>
-    </div>
-
-    <button class="food-profile-shortcut" id="foodProfileShortcut" type="button">
-      <span>🥗 Essensprofil</span><strong id="foodProfileShortcutValue">Alles</strong><span aria-hidden="true">›</span>
-    </button>
+    </details>
 
     <details class="panel">
       <summary>Weitere Filter &amp; Vorrat <span style="opacity:.55;font-weight:400;text-transform:none;">(optional)</span></summary>
@@ -226,7 +217,7 @@
     </div>
   </div>
 
-  <div class="tab-panel" id="panelFortschritt" role="tabpanel" aria-labelledby="tabFortschritt" aria-hidden="true">
+  <div class="tab-panel" id="panelFortschritt" role="tabpanel" aria-label="Fortschritt und Erfolge" aria-hidden="true" tabindex="-1">
     <div class="card">
       <div class="xp-top">
         <span class="xp-level" id="xpLevel">Lvl 1 · Kochlehrling</span>
@@ -250,6 +241,12 @@
     </div>
     <button class="reset-link" id="resetProgress" type="button">Fortschritt zurücksetzen</button>
   </div>
+
+  <nav class="tabs bottom-nav" role="tablist" aria-label="Hauptnavigation">
+    <button class="tab-btn active" id="tabKochen" data-tab="kochen" type="button" role="tab" aria-controls="panelKochen" aria-selected="true"><span class="tab-icon" aria-hidden="true">🍳</span><span>Heute</span></button>
+    <button class="tab-btn" id="tabWoche" data-tab="woche" type="button" role="tab" aria-controls="panelWoche" aria-selected="false" tabindex="-1"><span class="tab-icon" aria-hidden="true">📅</span><span>Woche</span></button>
+    <button class="tab-btn" id="tabRezepte" data-tab="rezepte" type="button" role="tab" aria-controls="panelRezepte" aria-selected="false" tabindex="-1"><span class="tab-icon" aria-hidden="true">📖</span><span>Rezepte</span></button>
+  </nav>
 </div>
 
 <div class="sheet-overlay" id="favoritesOverlay" aria-hidden="true">
@@ -353,46 +350,70 @@
 <div class="sheet-overlay" id="menuOverlay" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
     <div class="sheet-header">
-      <h2 class="sheet-title" id="settingsTitle">Einstellungen</h2>
+      <h2 class="sheet-title" id="settingsTitle">Menü</h2>
       <button class="sheet-close" id="menuClose" type="button" aria-label="Schließen">✕</button>
     </div>
-    <div class="card">
-      <p class="section-label">Darstellung</p>
-      <div class="tier-toggle" id="themeToggle">
-        <button class="tier-btn active" data-theme-choice="light" type="button">☀️ Hell</button>
-        <button class="tier-btn" data-theme-choice="dark" type="button">🌙 Dunkel</button>
-      </div>
+    <div class="menu-list" aria-label="Persönliche Bereiche">
+      <button class="menu-list-item" id="accountBtn" type="button">
+        <span class="menu-list-icon" aria-hidden="true">👤</span>
+        <span class="menu-list-copy"><strong>Konto &amp; Essensprofil</strong><small id="menuAccountStatus">Gastprofil</small></span>
+        <span class="account-dot" id="accountDot" aria-hidden="true"></span><span class="menu-chevron" aria-hidden="true">›</span>
+      </button>
+      <button class="menu-list-item" id="favoritesBtn" type="button">
+        <span class="menu-list-icon" aria-hidden="true">❤️</span>
+        <span class="menu-list-copy"><strong>Favoriten</strong><small>Gespeicherte Gerichte</small></span>
+        <span class="menu-count" id="favoritesBadge" style="display:none;">0</span><span class="menu-chevron" aria-hidden="true">›</span>
+      </button>
+      <button class="menu-list-item" id="menuProgressBtn" type="button">
+        <span class="menu-list-icon" aria-hidden="true">🏆</span>
+        <span class="menu-list-copy"><strong>Fortschritt &amp; Erfolge</strong><small>Level, Abzeichen und Kochtagebuch</small></span>
+        <span class="menu-count" id="tabBadgeCount"></span><span class="menu-chevron" aria-hidden="true">›</span>
+      </button>
     </div>
-    <div class="card">
-      <p class="section-label">App-Farbe</p>
-      <div class="color-row" id="colorRow">
-        <button class="color-swatch" data-color="blue" style="background:#007AFF;" type="button" aria-label="Blau"></button>
-        <button class="color-swatch" data-color="purple" style="background:#AF52DE;" type="button" aria-label="Lila"></button>
-        <button class="color-swatch" data-color="pink" style="background:#FF375F;" type="button" aria-label="Pink"></button>
-        <button class="color-swatch" data-color="indigo" style="background:#5856D6;" type="button" aria-label="Indigo"></button>
-        <button class="color-swatch" data-color="teal" style="background:#30B0C7;" type="button" aria-label="Türkis"></button>
-        <button class="color-swatch" data-color="yellow" style="background:#FFCC00;" type="button" aria-label="Gelb"></button>
+    <details class="panel menu-settings-panel">
+      <summary>Darstellung</summary>
+      <div class="panel-body">
+        <div>
+          <p class="section-label">Modus</p>
+          <div class="tier-toggle" id="themeToggle">
+            <button class="tier-btn active" data-theme-choice="light" type="button">☀️ Hell</button>
+            <button class="tier-btn" data-theme-choice="dark" type="button">🌙 Dunkel</button>
+          </div>
+        </div>
+        <div>
+          <p class="section-label">App-Farbe</p>
+          <div class="color-row" id="colorRow">
+            <button class="color-swatch" data-color="blue" style="background:#007AFF;" type="button" aria-label="Blau"></button>
+            <button class="color-swatch" data-color="purple" style="background:#AF52DE;" type="button" aria-label="Lila"></button>
+            <button class="color-swatch" data-color="pink" style="background:#FF375F;" type="button" aria-label="Pink"></button>
+            <button class="color-swatch" data-color="indigo" style="background:#5856D6;" type="button" aria-label="Indigo"></button>
+            <button class="color-swatch" data-color="teal" style="background:#30B0C7;" type="button" aria-label="Türkis"></button>
+            <button class="color-swatch" data-color="yellow" style="background:#FFCC00;" type="button" aria-label="Gelb"></button>
+          </div>
+        </div>
+        <div>
+          <p class="section-label">App-Symbol</p>
+          <div class="icon-row" id="iconRow">
+            <button class="icon-swatch" data-icon="🍳" type="button">🍳</button>
+            <button class="icon-swatch" data-icon="🍲" type="button">🍲</button>
+            <button class="icon-swatch" data-icon="🎲" type="button">🎲</button>
+            <button class="icon-swatch" data-icon="🥘" type="button">🥘</button>
+            <button class="icon-swatch" data-icon="🍜" type="button">🍜</button>
+            <button class="icon-swatch" data-icon="🧑‍🍳" type="button">🧑‍🍳</button>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <p class="section-label">Symbol in der App</p>
-      <div class="icon-row" id="iconRow">
-        <button class="icon-swatch" data-icon="🍳" type="button">🍳</button>
-        <button class="icon-swatch" data-icon="🍲" type="button">🍲</button>
-        <button class="icon-swatch" data-icon="🎲" type="button">🎲</button>
-        <button class="icon-swatch" data-icon="🥘" type="button">🥘</button>
-        <button class="icon-swatch" data-icon="🍜" type="button">🍜</button>
-        <button class="icon-swatch" data-icon="🧑‍🍳" type="button">🧑‍🍳</button>
+    </details>
+    <details class="panel menu-settings-panel">
+      <summary>Premium &amp; Abonnement</summary>
+      <div class="panel-body">
+        <div class="tier-toggle" id="tierToggle" role="group" aria-label="Free oder Premium">
+          <button class="tier-btn active" data-tier="free" type="button">Free</button>
+          <button class="tier-btn" data-tier="premium" type="button">Premium</button>
+        </div>
+        <p class="menu-hint" id="subscriptionHint">Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.</p>
       </div>
-    </div>
-    <div class="card">
-      <p class="section-label">Abonnement</p>
-      <div class="tier-toggle" id="tierToggle" role="group" aria-label="Free oder Premium">
-        <button class="tier-btn active" data-tier="free" type="button">Free</button>
-        <button class="tier-btn" data-tier="premium" type="button">Premium</button>
-      </div>
-      <p class="menu-hint" id="subscriptionHint">Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.</p>
-    </div>
+    </details>
     <p class="app-version">Kochorakel · Version 0.2.4</p>
   </div>
 </div>
