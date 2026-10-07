@@ -313,6 +313,32 @@ vm.createContext(context);
     document.getElementById("accountBtn").dispatch("click");
     const menuAccountNavigationWorks = document.getElementById("menuOverlay").style.display === "none" && document.getElementById("accountOverlay").style.display === "flex";
     closeAccountOverlay();
+    switchTab("kochen");
+    const appSurface = document.querySelector(".app");
+    appSurface.dispatch("pointerdown", { clientX:220, clientY:300, pointerId:11, isPrimary:true, button:0 });
+    appSurface.dispatch("pointerup", { clientX:120, clientY:304, pointerId:11 });
+    const swipeLeftMovesToWeek = activeTabName === "woche" && document.getElementById("panelWoche").classList.contains("active");
+    appSurface.dispatch("pointerdown", { clientX:220, clientY:300, pointerId:12, isPrimary:true, button:0 });
+    appSurface.dispatch("pointerup", { clientX:120, clientY:304, pointerId:12 });
+    const secondSwipeLeftMovesToRecipes = activeTabName === "rezepte" && document.getElementById("panelRezepte").classList.contains("active");
+    appSurface.dispatch("pointerdown", { clientX:120, clientY:300, pointerId:13, isPrimary:true, button:0 });
+    appSurface.dispatch("pointerup", { clientX:220, clientY:304, pointerId:13 });
+    const swipeRightMovesBack = activeTabName === "woche";
+    appSurface.dispatch("pointerdown", { clientX:160, clientY:200, pointerId:14, isPrimary:true, button:0 });
+    appSurface.dispatch("pointerup", { clientX:180, clientY:330, pointerId:14 });
+    const verticalScrollDoesNotSwipe = activeTabName === "woche";
+    appSurface.dispatch("pointerdown", { clientX:10, clientY:220, pointerId:15, isPrimary:true, button:0 });
+    appSurface.dispatch("pointerup", { clientX:130, clientY:222, pointerId:15 });
+    const iphoneEdgeGestureIsIgnored = activeTabName === "woche";
+    document.body.classList.add("overlay-scroll-locked");
+    appSurface.dispatch("pointerdown", { clientX:120, clientY:220, pointerId:16, isPrimary:true, button:0 });
+    appSurface.dispatch("pointerup", { clientX:220, clientY:222, pointerId:16 });
+    document.body.classList.remove("overlay-scroll-locked");
+    const overlayBlocksTabSwipe = activeTabName === "woche";
+    switchTab("kochen");
+    document.getElementById("headerProgressBtn").dispatch("click");
+    const headerLevelOpensProgress = activeTabName === "fortschritt" && Number.isFinite(Number.parseFloat(document.getElementById("headerXpRing").style.strokeDashoffset));
+    switchTab("kochen");
     renderRecipeLibrary();
     renderWeekTab();
     __smokeResult = {
@@ -359,11 +385,18 @@ vm.createContext(context);
       cloudMergeKeepsLocalFoodProfile,
       menuProgressNavigationWorks,
       menuAccountNavigationWorks,
+      swipeLeftMovesToWeek,
+      secondSwipeLeftMovesToRecipes,
+      swipeRightMovesBack,
+      verticalScrollDoesNotSwipe,
+      iphoneEdgeGestureIsIgnored,
+      overlayBlocksTabSwipe,
+      headerLevelOpensProgress,
       versionPresent:${JSON.stringify(html.includes("Version " + expectedVersion))}
     };
   `, context, { timeout: 5000 });
   const result = context.__smokeResult;
-  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.runningTimerDetachedOnNext || !result.runningTimerRestoredOnBack || !result.pausedTimerStoredOnNext || !result.pausedTimerRestoredOnBack || !result.resumedTimerRuns || !result.repeatedNavigationHasNoDuplicate || !result.delegatedCartChangeWorks || !result.delegatedFavoriteRemoveWorks || !result.cloudMergeKeepsFavoriteRemoval || !result.resultFavoriteRemoveWorks || !result.recipeFavoriteRemoveWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.veganPoolOnlyContainsVeganDishes || !result.weekPoolUsesFoodProfile || !result.veganLibraryOnlyContainsVeganDishes || !result.veganHidesAnimalIngredients || !result.allergenFilterWorks || !result.avoidedIngredientFilterWorks || !result.hiddenAvoidanceSurvivesDietChange || !result.foodProfileNormalizationWorks || !result.cloudMergeKeepsLocalFoodProfile || !result.menuProgressNavigationWorks || !result.menuAccountNavigationWorks || !result.versionPresent) {
+  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.runningTimerDetachedOnNext || !result.runningTimerRestoredOnBack || !result.pausedTimerStoredOnNext || !result.pausedTimerRestoredOnBack || !result.resumedTimerRuns || !result.repeatedNavigationHasNoDuplicate || !result.delegatedCartChangeWorks || !result.delegatedFavoriteRemoveWorks || !result.cloudMergeKeepsFavoriteRemoval || !result.resultFavoriteRemoveWorks || !result.recipeFavoriteRemoveWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.veganPoolOnlyContainsVeganDishes || !result.weekPoolUsesFoodProfile || !result.veganLibraryOnlyContainsVeganDishes || !result.veganHidesAnimalIngredients || !result.allergenFilterWorks || !result.avoidedIngredientFilterWorks || !result.hiddenAvoidanceSurvivesDietChange || !result.foodProfileNormalizationWorks || !result.cloudMergeKeepsLocalFoodProfile || !result.menuProgressNavigationWorks || !result.menuAccountNavigationWorks || !result.swipeLeftMovesToWeek || !result.secondSwipeLeftMovesToRecipes || !result.swipeRightMovesBack || !result.verticalScrollDoesNotSwipe || !result.iphoneEdgeGestureIsIgnored || !result.overlayBlocksTabSwipe || !result.headerLevelOpensProgress || !result.versionPresent) {
     throw new Error("Smoke-Test fehlgeschlagen: " + JSON.stringify(result));
   }
   console.log(JSON.stringify({ file, status:"ok", ...result }, null, 2));

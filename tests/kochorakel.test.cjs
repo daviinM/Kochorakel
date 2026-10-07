@@ -128,8 +128,13 @@ check(/id="foodProfileCard"/.test(indexHtml) && /id="foodProfileShortcut"/.test(
 check(/class="tabs bottom-nav"/.test(indexHtml) && (indexHtml.match(/class="tab-btn/g) || []).length === 3, "ruhige Navigation mit drei unteren Hauptbereichen");
 check(!/id="tabFortschritt"/.test(indexHtml) && /id="menuProgressBtn"/.test(indexHtml), "Fortschritt ins Menü verschoben");
 check(/id="menuOverlay"[\s\S]*id="accountBtn"[\s\S]*id="favoritesBtn"[\s\S]*id="menuProgressBtn"/.test(indexHtml), "Konto, Favoriten und Fortschritt im Menü");
+check(/id="headerProgressBtn"/.test(indexHtml) && /id="headerXpRing"/.test(indexHtml) && /id="headerLevelValue"/.test(indexHtml), "Level-Kreis mit XP-Ring im Kopfbereich");
+check(!/id="xpStrip"/.test(indexHtml) && /headerXpRing\.style\.strokeDashoffset/.test(mainModule), "alte XP-Leiste entfernt und Ring dynamisch");
+check(/mainTabOrder/.test(mainModule) && /pointerdown/.test(mainModule) && /Math\.abs\(dx\) < 64/.test(mainModule) && /event\.clientX < 24/.test(mainModule), "Swipe-Navigation mit Schwelle und iPhone-Randschutz");
 check(/\.bottom-nav\s*\{[^}]*position:\s*fixed/.test(styles) && /safe-area-inset-bottom/.test(styles), "untere Navigation iPhone-sicher fixiert");
 check(/--radius:\s*10px/.test(styles) && /\.reel-inner\s*\{[^}]*border-radius:\s*9px/.test(styles), "große Kacheln dezenter abgerundet");
+check(/\.roll-btn\s*\{[^}]*width:\s*100%[^}]*border-radius:\s*11px/.test(styles), "Auslose-Button breit und eckiger");
+check(/\.tab-btn\.active\s*\{[^}]*background:\s*transparent/.test(styles) && /\.ui-icon/.test(styles), "ruhige Navigation mit einheitlichen Symbolen");
 check(/safe-area-inset-top/.test(styles) && /safe-area-inset-bottom/.test(styles) && /100dvh/.test(styles), "iPhone-Safe-Areas berücksichtigt");
 check(/overscroll-behavior/.test(styles), "Overlay-Scrollen begrenzt");
 check(/content-visibility:\s*auto/.test(styles), "lange Listen werden verzögert gerendert");

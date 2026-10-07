@@ -27,12 +27,24 @@
   Wochenplan entfernt.
 - Die drei täglichen Hauptbereiche „Heute“, „Woche“ und „Rezepte“ liegen in
   einer festen, iPhone-sicheren Navigation am unteren Bildschirmrand.
-- Oben bleiben nur noch Warenkorb und Menü sichtbar.
+- Oben stehen ein kompakter Level-Kreis mit blauem XP-Fortschrittsring,
+  Warenkorb und Menü.
 - Konto, Favoriten sowie Fortschritt und Erfolge sind als ruhige Listeneinträge
   im Menü erreichbar.
 - Zeit, Gerichtstyp und Essensprofil liegen in einer kompakten Filterzeile, die
   nur bei Bedarf geöffnet wird.
-- Die XP-Anzeige ist kleiner und zeigt Level und XP ohne große Fortschrittsfläche.
+- Ein Tippen auf den Level-Kreis öffnet die ausführliche Fortschritts- und
+  Erfolgsansicht; die alte XP-Leiste auf der Startseite wurde entfernt.
+- Zwischen „Heute“, „Woche“ und „Rezepte“ kann horizontal gewischt werden. Eine
+  klare Bewegungsgrenze schützt vertikales Scrollen, Eingabefelder, Overlays und
+  die iPhone-Zurückgeste am linken Bildschirmrand.
+- Kopfbereich, Menü und Navigation verwenden einheitliche, ruhige Liniensymbole;
+  Rezept-Emojis bleiben zur Wiedererkennung erhalten.
+- Der aktive Navigationspunkt wird nur noch dezent blau markiert. Konto,
+  Favoriten und Fortschritt erhalten im Menü sparsame Funktionsfarben.
+- Der aktuelle Wochentag ist im gültigen Wochenplan dezent hervorgehoben.
+- Der Auslose-Button ist jetzt vollbreit, etwas eckiger und nutzt einen
+  zurückhaltenderen Schatten.
 - Darstellung und Premium wurden im Menü in einklappbare Bereiche zusammengefasst.
 - Große Karten, Rezeptschritte und Ergebnisflächen sind etwas eckiger und nutzen
   weniger starke Schatten; kleine Status- und Auswahlchips bleiben abgerundet.
@@ -43,8 +55,10 @@
 
 ## Qualitätssicherung
 
-- 12.337 automatisierte Prüfungen für vegane und vegetarische Ergebnislisten,
+- 12.342 automatisierte Prüfungen für vegane und vegetarische Ergebnislisten,
   Allergenfilter, vermiedene Zutaten, Wochenplan, Rezeptbibliothek,
-  Profilspeicherung, Cloud-Zusammenführung und die neue Navigation.
+  Profilspeicherung, Cloud-Zusammenführung, Level-Kreis und die neue Navigation.
+- Zusätzliche Interaktionstests prüfen Wischen vorwärts und zurück, vertikales
+  Scrollen, Overlay-Sperren und den Schutz der linken iPhone-Randgeste.
 - Bestehende Timer-, Favoriten-, Warenkorb- und Rezepttests bleiben aktiv.
 - Produktions-Build und GitHub-Actions-Veröffentlichung werden erneut geprüft.

@@ -142,6 +142,7 @@ const recipeLibraryGridEl = document.getElementById("recipeLibraryGrid");
 const recipeLibraryEmptyEl = document.getElementById("recipeLibraryEmpty");
 const helperText = document.getElementById("helperText");
 const pageTitleEl = document.getElementById("pageTitle");
+const appRootEl = document.querySelector(".app");
 const rollBtn = document.getElementById("rollBtn");
 const poolCountEl = document.getElementById("poolCount");
 const emptyMsgEl = document.getElementById("emptyMsg");
@@ -157,10 +158,9 @@ const toastContainerEl = document.getElementById("toastContainer");
 const xpLevelEl = document.getElementById("xpLevel");
 const xpLabelEl = document.getElementById("xpLabel");
 const xpFillEl = document.getElementById("xpFill");
-const xpStripEl = document.getElementById("xpStrip");
-const xpStripLabelEl = document.getElementById("xpStripLabel");
-const xpStripFillEl = document.getElementById("xpStripFill");
-const xpStripPointsEl = document.getElementById("xpStripPoints");
+const headerProgressBtn = document.getElementById("headerProgressBtn");
+const headerXpRing = document.getElementById("headerXpRing");
+const headerLevelValue = document.getElementById("headerLevelValue");
 const quickFilterSummaryEl = document.getElementById("quickFilterSummary");
 const dexStatsEl = document.getElementById("dexStats");
 const dexGridEl = document.getElementById("dexGrid");
@@ -876,7 +876,6 @@ function renderXp() {
   const info = getLevelInfo(profile.xp);
   const levelText = "Lvl " + info.index + " · " + info.current.title;
   xpLevelEl.textContent = levelText;
-  xpStripLabelEl.textContent = levelText;
   let pct, label;
   if (info.next) {
     const span = info.next.min - info.current.min;
@@ -885,9 +884,10 @@ function renderXp() {
     label = profile.xp + " / " + info.next.min + " XP";
   } else { pct = 100; label = profile.xp + " XP · Max-Level"; }
   xpFillEl.style.width = pct + "%";
-  xpStripFillEl.style.width = pct + "%";
   xpLabelEl.textContent = label;
-  xpStripPointsEl.textContent = profile.xp + " XP";
+  headerLevelValue.textContent = info.index;
+  headerXpRing.style.strokeDashoffset = String(100 - pct);
+  headerProgressBtn.setAttribute("aria-label", levelText + ", " + label + " – Fortschritt öffnen");
 }
 
 function renderQuickFilterSummary() {
@@ -2380,6 +2380,8 @@ function weekRowHTML(day, dish) {
   const confirmedCls = confirmed ? " confirmed" : "";
   const lockedCls = isLocked ? " locked" : "";
   const restCls = isRestDay ? " rest-day" : "";
+  const todayByIndex = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][new Date().getDay()];
+  const todayCls = day === todayByIndex && profile.weekKey === isoWeekKey(new Date()) ? " today" : "";
   const detailLine = dish ? '<span class="week-portion-price">⏱ ' + escapeHtml(formatDuration(dish.minutes)) + ' · ≈' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span>' : "";
   const dishLabel = dish
     ? '<a class="week-recipe-link" href="#recipe" data-recipe-id="' + escapeHtml(dish.id) + '">' + dish.emoji + " " + escapeHtml(dish.name) + "</a>"
@@ -2394,7 +2396,7 @@ function weekRowHTML(day, dish) {
   const editHtml = confirmed ? "" :
     '<button type="button" class="week-roll-btn" data-day="' + day + '" aria-label="Gericht neu würfeln"' + (isLocked ? " disabled" : "") + '>🎲</button>' +
     '<button type="button" class="week-clear-btn' + (dishName ? "" : " hidden") + '" data-day="' + day + '" aria-label="Tag leeren">✕</button>';
-  return '<div class="week-row' + premiumTint + confirmedCls + lockedCls + restCls + '" data-day="' + day + '">' +
+  return '<div class="week-row' + premiumTint + confirmedCls + lockedCls + restCls + todayCls + '" data-day="' + day + '">' +
     '<input type="checkbox" class="week-check" data-day="' + day + '" aria-label="' + day + ' als gekocht markieren"' + checkboxDisabled + checkboxChecked + '>' +
     '<span class="week-day-label">' + day + '</span>' +
     '<span class="week-dish-info"><span class="week-dish">' + dishLabel + '</span>' + detailLine + '</span>' +
@@ -3368,7 +3370,21 @@ async function initializeAuth() {
   });
 }
 
-function switchTab(tabName) {
+const mainTabOrder = ["kochen", "woche", "rezepte"];
+let activeTabName = "kochen";
+let swipeGesture = null;
+let suppressAppClickUntil = 0;
+
+function tabDirection(fromTab, toTab) {
+  const fromIndex = mainTabOrder.indexOf(fromTab);
+  const toIndex = mainTabOrder.indexOf(toTab);
+  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return null;
+  return toIndex > fromIndex ? "left" : "right";
+}
+
+function switchTab(tabName, direction) {
+  const previousTab = activeTabName;
+  activeTabName = tabName;
   pageTitleEl.textContent = { kochen:"Was gibt's heute?", woche:"Deine Woche", rezepte:"Rezepte", fortschritt:"Fortschritt" }[tabName] || "Kochorakel";
   document.querySelectorAll(".tab-btn").forEach(function(b){
     const active = b.dataset.tab === tabName;
@@ -3383,18 +3399,61 @@ function switchTab(tabName) {
     ["panelFortschritt", tabName === "fortschritt"]
   ].forEach(function(entry){
     const panel = document.getElementById(entry[0]);
+    panel.classList.remove("tab-enter-left", "tab-enter-right");
     panel.classList.toggle("active", entry[1]);
     panel.setAttribute("aria-hidden", entry[1] ? "false" : "true");
+    if (entry[1] && !prefersReducedMotion) {
+      const resolvedDirection = direction || tabDirection(previousTab, tabName);
+      if (resolvedDirection) {
+        void panel.offsetWidth;
+        panel.classList.add(resolvedDirection === "left" ? "tab-enter-left" : "tab-enter-right");
+      }
+    }
   });
   if (tabName === "rezepte") renderRecipeLibrary();
   if (tabName === "fortschritt") renderPhotoGallery(true);
 }
 document.querySelectorAll(".tab-btn").forEach(function(btn){
   btn.addEventListener("click", function(){
-    switchTab(btn.dataset.tab);
+    switchTab(btn.dataset.tab, tabDirection(activeTabName, btn.dataset.tab));
     window.scrollTo(0, 0);
   });
 });
+
+function swipeBlockedTarget(target) {
+  return !!(target && target.closest && target.closest('input, select, textarea, [contenteditable="true"], .cooking-active-timers'));
+}
+
+if (appRootEl) {
+  appRootEl.addEventListener("pointerdown", function(event){
+    if (event.isPrimary === false || (typeof event.button === "number" && event.button !== 0)) return;
+    if (mainTabOrder.indexOf(activeTabName) < 0 || event.clientX < 24) return;
+    if (document.body.classList.contains("overlay-scroll-locked") || document.body.classList.contains("recipe-modal-open")) return;
+    if (swipeBlockedTarget(event.target)) return;
+    swipeGesture = { x:event.clientX, y:event.clientY, time:Date.now(), pointerId:event.pointerId };
+  });
+  appRootEl.addEventListener("pointerup", function(event){
+    if (!swipeGesture || (swipeGesture.pointerId !== undefined && event.pointerId !== swipeGesture.pointerId)) return;
+    const gesture = swipeGesture;
+    swipeGesture = null;
+    const dx = event.clientX - gesture.x;
+    const dy = event.clientY - gesture.y;
+    if (Date.now() - gesture.time > 1000 || Math.abs(dx) < 64 || Math.abs(dx) <= Math.abs(dy) * 1.25) return;
+    const currentIndex = mainTabOrder.indexOf(activeTabName);
+    const nextIndex = currentIndex + (dx < 0 ? 1 : -1);
+    if (nextIndex < 0 || nextIndex >= mainTabOrder.length) return;
+    suppressAppClickUntil = Date.now() + 350;
+    switchTab(mainTabOrder[nextIndex], dx < 0 ? "left" : "right");
+    window.scrollTo(0, 0);
+  });
+  appRootEl.addEventListener("pointercancel", function(){ swipeGesture = null; });
+  appRootEl.addEventListener("click", function(event){
+    if (Date.now() >= suppressAppClickUntil) return;
+    event.preventDefault();
+    if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+    else event.stopPropagation();
+  }, true);
+}
 recipeLibraryGridEl.addEventListener("click", function(event){
   const button = event.target.closest("[data-recipe-id]");
   if (!button || !recipeLibraryGridEl.contains(button)) return;
@@ -3421,13 +3480,10 @@ recipeSearchClearEl.addEventListener("click", function(){
 });
 recipeLibraryTimeEl.addEventListener("change", function(){ recipeLibraryState.time = recipeLibraryTimeEl.value; renderRecipeLibrary(); });
 recipeLibraryTypeEl.addEventListener("change", function(){ recipeLibraryState.type = recipeLibraryTypeEl.value; renderRecipeLibrary(); });
-xpStripEl.addEventListener("click", function(){ switchTab("fortschritt"); });
-xpStripEl.addEventListener("keydown", function(event){
-  if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    switchTab("fortschritt");
-    panelFortschrittEl.focus();
-  }
+headerProgressBtn.addEventListener("click", function(){
+  switchTab("fortschritt");
+  window.scrollTo(0, 0);
+  panelFortschrittEl.focus();
 });
 dexDetailsEl.addEventListener("toggle", function(){
   if (dexDetailsEl.open && dexRenderDirty) renderDex(true);

@@ -9,8 +9,10 @@ Das persönliche Essensprofil im Konto speichert die Ernährungsweise, Allergien
 Unverträglichkeiten und einzelne vermiedene Zutaten. Diese Regeln gelten
 automatisch beim Auslosen, in der Rezeptbibliothek und im Wochenplan.
 
-Die mobile Hauptnavigation liegt am unteren Bildschirmrand. Konto, Favoriten,
-Fortschritt, Darstellung und Premium befinden sich gesammelt im Menü.
+Die mobile Hauptnavigation liegt am unteren Bildschirmrand; zwischen den drei
+Bereichen kann außerdem horizontal gewischt werden. Der Level-Kreis oben öffnet
+die Fortschrittsansicht. Konto, Favoriten, Darstellung und Premium befinden sich
+gesammelt im Menü.
 
 ## Lokal starten
 

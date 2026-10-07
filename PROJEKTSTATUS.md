@@ -8,15 +8,15 @@
 - Rezeptbestand: 324 Gerichte (100 Free, 224 Premium)
 - Rezeptqualität: 324 von 324 Rezepten vollständig ausgearbeitet und in einer Datei zusammengeführt
 - Datenmodell: stabile Rezept-IDs mit automatischer Migration alter Profilnamen
-- Qualitätssicherung: 12.337 Daten-/Codeprüfungen plus erweiterter DOM-Smoke-Test und Produktions-Build
+- Qualitätssicherung: 12.342 Daten-/Codeprüfungen plus erweiterter DOM-Smoke-Test und Produktions-Build
 
 ## Ziel dieser Version
 
 Ein zentrales Essensprofil im Konto für vegetarische oder vegane Ernährung,
 Allergien, Unverträglichkeiten und einzelne vermiedene Zutaten. Die Auswahl wirkt
 automatisch beim Auslosen, in der Rezeptbibliothek und im Wochenplan. Zusätzlich
-wurde die mobile Oberfläche mit unterer Navigation, kompakteren Filtern und
-ruhigeren, etwas eckigeren Karten neu geordnet.
+wurde die mobile Oberfläche mit unterer Navigation, Swipe-Wechsel, Level-Kreis,
+kompakteren Filtern, ruhigeren Symbolen und etwas eckigeren Karten neu geordnet.
 
 ## Nächste Schritte
 
