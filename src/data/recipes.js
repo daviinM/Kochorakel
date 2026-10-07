@@ -1,4 +1,4 @@
-// Kochorakel 0.2.3 – kanonische Rezeptdaten.
+// Kochorakel 0.2.4 – kanonische Rezeptdaten.
 // Diese Datei enthält alle Rezepte, Mengen, Schritte, Timer und Allergenangaben.
 
 export const ingredientVocab = {

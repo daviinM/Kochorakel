@@ -4,7 +4,7 @@ const vm = require("vm");
 
 const root = path.resolve(__dirname, "..");
 const file = path.join(root, "index.html");
-const expectedVersion = "0.2.3";
+const expectedVersion = "0.2.4";
 const html = fs.readFileSync(file, "utf8");
 const recipesModule = fs.readFileSync(path.join(root, "src/data/recipes.js"), "utf8");
 const mainModule = fs.readFileSync(path.join(root, "src/main.js"), "utf8");
@@ -58,6 +58,7 @@ class ElementStub {
   contains() { return true; }
   closest() { return null; }
   focus() {}
+  scrollIntoView() {}
   setPointerCapture() {}
   getBoundingClientRect() {
     return {
@@ -187,6 +188,34 @@ vm.createContext(context);
     document.getElementById("cookingNext").dispatch("click");
     const cookingFinishRecorded = profile.cookLog.length === cookedBefore + 1 && profile.cookLog[profile.cookLog.length - 1].mode === "recipe";
     closeRecipe();
+    const sequenceDish = dishes.find(dish => dish.stepTimers.some((value, index) => value && index < dish.steps.length - 1));
+    const sequenceTimerIndex = sequenceDish.stepTimers.findIndex((value, index) => value && index < sequenceDish.steps.length - 1);
+    openRecipe(sequenceDish, document.getElementById("tabRezepte"));
+    openCookingMode();
+    cookingStepIndex = sequenceTimerIndex;
+    renderCookingMode(true);
+    toggleCookingTimer();
+    cookingTimerEnd = Date.now() + 45000;
+    cookingTimerRemaining = 45;
+    const sequenceRunningEnd = cookingTimerEnd;
+    document.getElementById("cookingNext").dispatch("click");
+    const runningTimerDetachedOnNext = !cookingTimerRunning && detachedCookingTimers.some(timer => timer.recipeId === sequenceDish.id && timer.stepIndex === sequenceTimerIndex && timer.end === sequenceRunningEnd);
+    document.getElementById("cookingPrev").dispatch("click");
+    const runningTimerRestoredOnBack = cookingTimerRunning && cookingTimerStepIndex === sequenceTimerIndex && cookingTimerEnd === sequenceRunningEnd && !detachedCookingTimers.some(timer => timer.recipeId === sequenceDish.id && timer.stepIndex === sequenceTimerIndex);
+    toggleCookingTimer();
+    const pausedRemainingBeforeNavigation = cookingTimerRemaining;
+    document.getElementById("cookingNext").dispatch("click");
+    const pausedTimerStoredOnNext = pausedCookingTimers.has(cookingTimerStateKey(sequenceDish, sequenceTimerIndex));
+    document.getElementById("cookingPrev").dispatch("click");
+    const pausedTimerRestoredOnBack = !cookingTimerRunning && cookingTimerHasStarted && cookingTimerRemaining === pausedRemainingBeforeNavigation && document.getElementById("cookingTimerToggle").textContent === "Fortsetzen";
+    toggleCookingTimer();
+    const resumedTimerRuns = cookingTimerRunning && cookingTimerHasStarted;
+    document.getElementById("cookingNext").dispatch("click");
+    document.getElementById("cookingPrev").dispatch("click");
+    const repeatedNavigationHasNoDuplicate = cookingTimerRunning && detachedCookingTimers.filter(timer => timer.recipeId === sequenceDish.id && timer.stepIndex === sequenceTimerIndex).length === 0;
+    resetCookingTimer();
+    closeCookingMode(false);
+    closeRecipe();
     addToCart(dishes[0].ingredients.slice(0, 2), { dish:dishes[0], portions:4, source:"smoke", defer:true });
     syncCartToProfile();
     restoreCartFromProfile();
@@ -199,6 +228,27 @@ vm.createContext(context);
     document.getElementById("cartList").dispatch("change", { target:delegatedCheckbox });
     const delegatedCartChangeWorks = cartMap.get(checkedIngredient).checked === true;
     closeCartOverlay();
+    profile.favorites = [dishes[0].id];
+    openFavoritesOverlay();
+    const delegatedFavoriteRemove = document.createElement("button");
+    delegatedFavoriteRemove.dataset.name = dishes[0].id;
+    delegatedFavoriteRemove.classList.add("fav-remove");
+    delegatedFavoriteRemove.closest = function(selector){ return selector === ".fav-name, .fav-remove" ? this : null; };
+    document.getElementById("favoritesList").dispatch("click", { target:delegatedFavoriteRemove });
+    const delegatedFavoriteRemoveWorks = profile.favorites.length === 0 && document.getElementById("favoritesList").innerHTML === "";
+    closeFavoritesOverlay();
+    const mergedAfterFavoriteRemoval = mergeProfiles({ favorites:[dishes[0].id], dishesSeen:[dishes[1].id] }, { favorites:[], dishesSeen:[dishes[2].id] });
+    const cloudMergeKeepsFavoriteRemoval = mergedAfterFavoriteRemoval.favorites.length === 0 && mergedAfterFavoriteRemoval.dishesSeen.includes(dishes[1].id) && mergedAfterFavoriteRemoval.dishesSeen.includes(dishes[2].id);
+    currentDish = dishes[0];
+    profile.favorites = [dishes[0].id];
+    renderFavoriteBtn(currentDish);
+    document.getElementById("favoriteBtn").dispatch("click");
+    const resultFavoriteRemoveWorks = profile.favorites.length === 0 && document.getElementById("favoriteBtn").getAttribute("aria-pressed") === "false";
+    profile.favorites = [dishes[0].id];
+    openRecipe(dishes[0], document.getElementById("favoriteBtn"));
+    document.getElementById("recipeFavoriteBtn").dispatch("click");
+    const recipeFavoriteRemoveWorks = profile.favorites.length === 0 && document.getElementById("recipeFavoriteBtn").getAttribute("aria-pressed") === "false";
+    closeRecipe();
     profile.favorites = [dishes[0].id];
     renderFavoritesSheet();
     const delegatedFavorite = document.createElement("button");
@@ -229,6 +279,32 @@ vm.createContext(context);
     const delegatedWeekActionWorks = profile.weekPlan.Mo === null;
     const migratedLegacyProfile = normalizeProfile({ favorites:[dishes[0].name], dishesSeen:[dishes[1].name], weekPlan:{ Mo:dishes[2].name }, recentPicks:[dishes[3].name] });
     const legacyProfileUsesStableIds = migratedLegacyProfile.favorites[0] === dishes[0].id && migratedLegacyProfile.dishesSeen[0] === dishes[1].id && migratedLegacyProfile.weekPlan.Mo === dishes[2].id && migratedLegacyProfile.recentPicks[0] === dishes[3].id;
+    profile.dietPreference = "vegan";
+    profile.excludedAllergens = [];
+    profile.avoidedIngredients = [];
+    const veganPoolOnlyContainsVeganDishes = getPool(true).length > 0 && getPool(true).every(dish => dish.diet === "vegan");
+    const weekPoolUsesFoodProfile = getWeekPool(true).length > 0 && getWeekPool(true).every(dish => dish.diet === "vegan");
+    const veganLibraryOnlyContainsVeganDishes = getRecipeLibraryPool().length > 0 && getRecipeLibraryPool().every(dish => dish.diet === "vegan");
+    const hiddenAnimalIngredient = Object.keys(ingredientVocab).find(id => animalProductIngredients.has(id));
+    const veganHidesAnimalIngredients = hiddenAnimalIngredient && !ingredientAllowedByDiet(hiddenAnimalIngredient, profile.dietPreference);
+    const allergenDish = dishes.find(dish => dish.allergens.length > 0);
+    profile.dietPreference = "alles";
+    profile.excludedAllergens = [allergenDish.allergens[0]];
+    profile.avoidedIngredients = [];
+    const allergenFilterWorks = !getPool(true).includes(allergenDish) && getPool(true).every(dish => !dish.allergens.includes(allergenDish.allergens[0]));
+    const avoidedIngredientDish = dishes.find(dish => !dish.allergens.includes(allergenDish.allergens[0]));
+    profile.excludedAllergens = [];
+    profile.avoidedIngredients = [avoidedIngredientDish.ingredients[0]];
+    const avoidedIngredientFilterWorks = !getPool(true).includes(avoidedIngredientDish) && getPool(true).every(dish => !dish.ingredients.includes(avoidedIngredientDish.ingredients[0]));
+    const preservedAvoidance = avoidedIngredientDish.ingredients[0];
+    profile.dietPreference = "vegan";
+    applyFoodProfileChange("Test");
+    const hiddenAvoidanceSurvivesDietChange = profile.avoidedIngredients.includes(preservedAvoidance);
+    const normalizedFoodProfile = normalizeProfile({ dietPreference:"vegetarisch", excludedAllergens:["gluten","ungueltig"], avoidedIngredients:[dishes[0].ingredients[0],"ungueltig"] });
+    const foodProfileNormalizationWorks = normalizedFoodProfile.dietPreference === "vegetarisch" && normalizedFoodProfile.excludedAllergens.length === 1 && normalizedFoodProfile.avoidedIngredients.length === 1;
+    const mergedFoodProfile = mergeProfiles({ dietPreference:"alles", excludedAllergens:["milch"] }, { dietPreference:"vegan", excludedAllergens:["gluten"], avoidedIngredients:[dishes[0].ingredients[0]] });
+    const cloudMergeKeepsLocalFoodProfile = mergedFoodProfile.dietPreference === "vegan" && mergedFoodProfile.excludedAllergens[0] === "gluten" && mergedFoodProfile.avoidedIngredients[0] === dishes[0].ingredients[0];
+    profile = normalizeProfile(defaultProfile());
     renderRecipeLibrary();
     renderWeekTab();
     __smokeResult = {
@@ -249,16 +325,35 @@ vm.createContext(context);
       timerDockPositionPersisted,
       detachedTimerReturnsToStep,
       cookingFinishRecorded,
+      runningTimerDetachedOnNext,
+      runningTimerRestoredOnBack,
+      pausedTimerStoredOnNext,
+      pausedTimerRestoredOnBack,
+      resumedTimerRuns,
+      repeatedNavigationHasNoDuplicate,
       delegatedCartChangeWorks,
+      delegatedFavoriteRemoveWorks,
+      cloudMergeKeepsFavoriteRemoval,
+      resultFavoriteRemoveWorks,
+      recipeFavoriteRemoveWorks,
       delegatedFavoriteOpenWorks,
       delegatedGalleryDeleteWorks,
       delegatedWeekActionWorks,
       legacyProfileUsesStableIds,
+      veganPoolOnlyContainsVeganDishes,
+      weekPoolUsesFoodProfile,
+      veganLibraryOnlyContainsVeganDishes,
+      veganHidesAnimalIngredients,
+      allergenFilterWorks,
+      avoidedIngredientFilterWorks,
+      hiddenAvoidanceSurvivesDietChange,
+      foodProfileNormalizationWorks,
+      cloudMergeKeepsLocalFoodProfile,
       versionPresent:${JSON.stringify(html.includes("Version " + expectedVersion))}
     };
   `, context, { timeout: 5000 });
   const result = context.__smokeResult;
-  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.delegatedCartChangeWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.versionPresent) {
+  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.runningTimerDetachedOnNext || !result.runningTimerRestoredOnBack || !result.pausedTimerStoredOnNext || !result.pausedTimerRestoredOnBack || !result.resumedTimerRuns || !result.repeatedNavigationHasNoDuplicate || !result.delegatedCartChangeWorks || !result.delegatedFavoriteRemoveWorks || !result.cloudMergeKeepsFavoriteRemoval || !result.resultFavoriteRemoveWorks || !result.recipeFavoriteRemoveWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.veganPoolOnlyContainsVeganDishes || !result.weekPoolUsesFoodProfile || !result.veganLibraryOnlyContainsVeganDishes || !result.veganHidesAnimalIngredients || !result.allergenFilterWorks || !result.avoidedIngredientFilterWorks || !result.hiddenAvoidanceSurvivesDietChange || !result.foodProfileNormalizationWorks || !result.cloudMergeKeepsLocalFoodProfile || !result.versionPresent) {
     throw new Error("Smoke-Test fehlgeschlagen: " + JSON.stringify(result));
   }
   console.log(JSON.stringify({ file, status:"ok", ...result }, null, 2));

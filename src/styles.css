@@ -60,7 +60,7 @@ h1 { font-weight: 800; letter-spacing: -0.02em; font-size: clamp(30px, 7vw, 40px
 .recipe-search { width: 100%; min-height: 46px; border: 1px solid var(--line); border-radius: 13px; padding: 10px 42px 10px 14px; background: var(--card-bg); color: var(--ink); font-size: 15px; outline: none; }
 .recipe-search:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-bg); }
 .recipe-search-clear { position: absolute; top: 50%; right: 7px; width: 32px; height: 32px; transform: translateY(-50%); border: 0; border-radius: 50%; background: var(--fill-track); color: var(--ink-secondary); cursor: pointer; }
-.recipe-library-selects { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.recipe-library-selects { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
 .recipe-library-select { width: 100%; min-width: 0; min-height: 42px; border: 1px solid var(--line); border-radius: 11px; padding: 8px 9px; background: var(--card-bg); color: var(--ink); font-size: 12.5px; font-weight: 650; }
 .recipe-library-summary { margin: 0; color: var(--ink-secondary); font-size: 12.5px; }
 .recipe-library-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 11px; }
@@ -93,6 +93,8 @@ h1 { font-weight: 800; letter-spacing: -0.02em; font-size: clamp(30px, 7vw, 40px
 .xp-fill { height: 100%; width: 0%; background: var(--blue); border-radius: 999px; transition: width .3s ease; }
 
 .filters { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.food-profile-shortcut { width:100%; min-height:44px; display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:8px; margin:-4px 0 14px; padding:9px 12px; border:1px solid var(--line); border-radius:12px; background:var(--card-bg); color:var(--ink-secondary); font-size:12px; cursor:pointer; box-shadow:var(--shadow); }
+.food-profile-shortcut strong { min-width:0; overflow:hidden; color:var(--blue); text-align:right; font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
 .filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
 .filter-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-secondary); width: 92px; flex-shrink: 0; }
 .chip { font-size: 13.5px; font-weight: 500; padding: 6px 13px; border-radius: 999px; border: none; background: var(--fill-track); color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
@@ -499,6 +501,19 @@ body.overlay-scroll-locked { position: fixed; left: 0; right: 0; width: 100%; ov
 .account-badge.premium { background:var(--orange-bg); color:var(--orange); }
 .sync-state { min-height:16px; margin:8px 0 0; color:var(--ink-tertiary); font-size:11.5px; }
 .account-actions { display:grid; gap:8px; margin-top:12px; }
+.food-profile-card { scroll-margin-top:16px; }
+.food-profile-intro { margin:-2px 0 16px; color:var(--ink-secondary); font-size:12.5px; line-height:1.45; }
+.food-profile-group + .food-profile-group { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+.food-profile-label { display:block; margin-bottom:8px; color:var(--ink); font-size:13px; font-weight:750; }
+.food-profile-help { margin:-3px 0 9px; color:var(--ink-tertiary); font-size:11.5px; line-height:1.4; }
+.profile-choice-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; padding:3px; border-radius:11px; background:var(--fill-track); }
+.profile-choice-row button { min-width:0; border:0; border-radius:8px; padding:9px 5px; background:transparent; color:var(--ink-secondary); font-size:11.5px; font-weight:700; cursor:pointer; }
+.profile-choice-row button.active { background:var(--card-bg); color:var(--blue); box-shadow:0 1px 3px rgba(0,0,0,.11); }
+.profile-chip-list { display:flex; flex-wrap:wrap; gap:7px; }
+.profile-chip-list button { border:0; border-radius:999px; padding:7px 10px; background:var(--fill-track); color:var(--ink-secondary); font-size:11.5px; font-weight:650; cursor:pointer; }
+.profile-chip-list button.active { background:var(--blue); color:#fff; }
+.profile-chip-list.ingredient-options { max-height:220px; margin-top:9px; padding:2px 2px 8px; overflow-y:auto; overscroll-behavior:contain; }
+.food-profile-warning { margin:17px 0 0; padding:10px 11px; border-radius:10px; background:var(--orange-bg); color:var(--ink-secondary); font-size:10.5px; line-height:1.45; }
 .admin-list { display:flex; flex-direction:column; gap:10px; }
 .admin-user { border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--card-bg); }
 .admin-user-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:10px; }

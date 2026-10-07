@@ -30,9 +30,9 @@ try {
   check(false, "JavaScript-Syntax: " + error.message);
 }
 
-check(pkg.version === "0.2.3", "Paketversion 0.2.3");
-check(indexHtml.includes("Kochorakel · Version 0.2.3"), "sichtbare Version 0.2.3");
-check(serviceWorker.includes('kochorakel-v0.2.3'), "Cache-Version 0.2.3");
+check(pkg.version === "0.2.4", "Paketversion 0.2.4");
+check(indexHtml.includes("Kochorakel · Version 0.2.4"), "sichtbare Version 0.2.4");
+check(serviceWorker.includes('kochorakel-v0.2.4'), "Cache-Version 0.2.4");
 check(/prebuild/.test(JSON.stringify(pkg.scripts)) && /sync-version/.test(JSON.stringify(pkg.scripts)), "Versionsabgleich vor dem Build");
 check(/<script type="module" src="\.\/src\/main\.js"><\/script>/.test(indexHtml), "Vite-Einstieg vorhanden");
 check(/import \{ dishes, ingredientVocab \} from "\.\/data\/recipes\.js";/.test(mainModule), "einzige Rezeptquelle eingebunden");
@@ -116,11 +116,15 @@ check(/dishIndexById/.test(mainModule) && /uniqueDishIds/.test(mainModule), "sta
 check(/normalizeCartSource/.test(mainModule), "alte Warenkorbquellen werden migriert");
 check(/ACTIVE_TIMERS_STORAGE_KEY/.test(mainModule) && /restoreDetachedCookingTimers/.test(mainModule), "Timer bleiben nach Neuladen erhalten");
 check(/openDetachedCookingTimer/.test(mainModule) && /pointerdown/.test(mainModule) && /finishTimerBubbleDrag/.test(mainModule) && /TIMER_DOCK_POSITION_KEY/.test(mainModule), "Timer-Kugeln öffnen, verschieben und Position speichern");
+check(/pausedCookingTimers/.test(mainModule) && /restoreCookingTimerForStep/.test(mainModule) && /leaveCookingStep/.test(mainModule), "pausierte und laufende Timer überstehen Schrittwechsel");
 check(/cookingTimerBlock\.hidden\s*=\s*!timerSeconds/.test(mainModule), "Timerfeld wird bei Schritten ohne Timer ausgeblendet");
 check(!/Kein Timer nötig/.test(mainModule), "kein unnötiger Timerhinweis in Schritten");
 check(/dish\.stepTimers/.test(mainModule) && !/dish\.stepMinutes/.test(mainModule), "Kochmodus nutzt logische Timer");
 check(/Woche wird erstellt/.test(mainModule) && /aria-busy/.test(mainModule), "Wochenplan zeigt Ladezustand");
 check(/recipe-allergens/.test(mainModule + styles), "Allergenhinweis sichtbar");
+check(/dietPreference/.test(mainModule) && /excludedAllergens/.test(mainModule) && /avoidedIngredients/.test(mainModule), "Essensprofil wird im Profil gespeichert");
+check(/dishMatchesFoodProfile/.test(mainModule) && /getRecipeLibraryPool/.test(mainModule) && /getWeekPool/.test(mainModule), "Essensprofil gilt für Auslosen, Rezepte und Wochenplan");
+check(/id="foodProfileCard"/.test(indexHtml) && /id="foodProfileShortcut"/.test(indexHtml), "Essensprofil im Konto erreichbar");
 check(/safe-area-inset-top/.test(styles) && /safe-area-inset-bottom/.test(styles) && /100dvh/.test(styles), "iPhone-Safe-Areas berücksichtigt");
 check(/overscroll-behavior/.test(styles), "Overlay-Scrollen begrenzt");
 check(/content-visibility:\s*auto/.test(styles), "lange Listen werden verzögert gerendert");

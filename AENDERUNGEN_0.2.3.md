@@ -6,7 +6,11 @@
   tatsächlich genannten Rezeptzeiten übernommen.
 - Bei Schritten ohne sinnvolle Wartezeit wird der Timerbereich vollständig
   ausgeblendet.
-- Laufende Timer bleiben beim Wechsel zum nächsten Schritt aktiv.
+- Laufende Timer bleiben beim Wechsel zum nächsten Schritt aktiv und werden beim
+  Zurückkehren automatisch wieder in den passenden Schritt übernommen.
+- Pausierte Timer behalten bei Vor- und Zurückwechseln ihre Restzeit, bleiben
+  pausiert und lassen sich anschließend mit „Fortsetzen“ weiterlaufen.
+- Wiederholtes Vor- und Zurückwechseln erzeugt keine doppelten Timer mehr.
 - Mehrere Timer erscheinen als kleine Kugeln nebeneinander, zeigen Gericht,
   Schritt und Restzeit und öffnen beim Antippen wieder den richtigen Kochschritt.
 - Die Timergruppe lässt sich durch direktes Ziehen im oberen Bildschirmdrittel
@@ -34,6 +38,8 @@
   Bedienungshilfen und alle statischen Buttons besitzen einen eindeutigen Typ.
 - Fehlende Zutaten zeigen ihren Auswahlkreis in hellem und dunklem Design wieder
   mit einem klaren Rahmen.
+- Favoriten lassen sich in Ergebnis, Rezeptansicht und Favoritenliste entfernen.
+  Ein älterer Cloud-Stand stellt entfernte Favoriten nicht mehr wieder her.
 - Versionsanzeige und Service-Worker-Cache werden beim Build automatisch aus
   `package.json` abgeglichen.
 - Ein GitHub-Actions-Workflow testet, baut und veröffentlicht die App nach jedem
@@ -41,8 +47,8 @@
 
 ## Qualitätssicherung
 
-- 12.328 automatisierte Prüfungen für Rezepte, Mengen, Filterkombinationen,
+- 12.329 automatisierte Prüfungen für Rezepte, Mengen, Filterkombinationen,
   Ernährungsarten, IDs, Allergene, Timer, HTML-Verknüpfungen und Sicherheit.
-- DOM-Smoke-Test für Anmeldung/Gaststart, Rezepte, Kochmodus, Timer, Favoriten,
-  Warenkorb, Fotos und Wochenplan.
+- DOM-Smoke-Test für Anmeldung/Gaststart, Rezepte, Kochmodus, Timerfolgen mit
+  Pause/Vor/Zurück, Favoriten, Cloud-Zusammenführung, Warenkorb, Fotos und Wochenplan.
 - Produktions-Build erfolgreich erstellt.

@@ -61,12 +61,6 @@
         <button class="chip" data-value="normal" type="button">Normal</button>
         <button class="chip" data-value="aufwendig" type="button">Aufwendig</button>
       </div>
-      <div class="filter-group" data-group="diet">
-        <span class="filter-label">Ernährung</span>
-        <button class="chip active" data-value="egal" type="button">Egal</button>
-        <button class="chip" data-value="vegetarisch" type="button">Vegetarisch</button>
-        <button class="chip" data-value="vegan" type="button">Vegan</button>
-      </div>
       <div class="filter-group" data-group="type">
         <span class="filter-label">Lust auf</span>
         <button class="chip active" data-value="egal" type="button">Egal</button>
@@ -74,6 +68,10 @@
         <button class="chip" data-value="süß" type="button">Süß</button>
       </div>
     </div>
+
+    <button class="food-profile-shortcut" id="foodProfileShortcut" type="button">
+      <span>🥗 Essensprofil</span><strong id="foodProfileShortcutValue">Alles</strong><span aria-hidden="true">›</span>
+    </button>
 
     <details class="panel">
       <summary>Weitere Filter &amp; Vorrat <span style="opacity:.55;font-weight:400;text-transform:none;">(optional)</span></summary>
@@ -129,11 +127,6 @@
         <button class="recipe-search-clear" id="recipeSearchClear" type="button" aria-label="Suche leeren">✕</button>
       </div>
       <div class="recipe-library-selects">
-        <select class="recipe-library-select" id="recipeLibraryDiet" aria-label="Ernährungsweise filtern">
-          <option value="egal">Alle Ernährungsarten</option>
-          <option value="vegetarisch">Vegetarisch</option>
-          <option value="vegan">Vegan</option>
-        </select>
         <select class="recipe-library-select" id="recipeLibraryTime" aria-label="Zeitaufwand filtern">
           <option value="egal">Jeder Zeitaufwand</option>
           <option value="schnell">Schnell</option>
@@ -175,12 +168,6 @@
                 <button class="chip" data-value="schnell" type="button">Schnell</button>
                 <button class="chip" data-value="normal" type="button">Normal</button>
                 <button class="chip" data-value="aufwendig" type="button">Aufwendig</button>
-              </div>
-              <div class="filter-group week-filter-group" data-group="diet">
-                <span class="filter-label">Ernährung</span>
-                <button class="chip active" data-value="egal" type="button">Egal</button>
-                <button class="chip" data-value="vegetarisch" type="button">Vegetarisch</button>
-                <button class="chip" data-value="vegan" type="button">Vegan</button>
               </div>
               <div class="filter-group week-filter-group" data-group="type">
                 <span class="filter-label">Lust auf</span>
@@ -406,7 +393,7 @@
       </div>
       <p class="menu-hint" id="subscriptionHint">Im Gastmodus kannst du Premium lokal ausprobieren. Bei Konten wird der Status sicher aus der Datenbank geladen.</p>
     </div>
-    <p class="app-version">Kochorakel · Version 0.2.3</p>
+    <p class="app-version">Kochorakel · Version 0.2.4</p>
   </div>
 </div>
 
@@ -487,6 +474,31 @@
         <button class="auth-secondary hidden" id="openAdminBtn" type="button">Adminbereich öffnen</button>
         <button class="auth-danger" id="signOutBtn" type="button">Abmelden</button>
       </div>
+    </div>
+
+    <div class="card food-profile-card" id="foodProfileCard">
+      <p class="section-label">Essensprofil</p>
+      <p class="food-profile-intro">Gilt automatisch beim Auslosen, in der Rezeptliste und im Wochenplan.</p>
+      <div class="food-profile-group">
+        <span class="food-profile-label">Ernährungsweise</span>
+        <div class="profile-choice-row" id="profileDietChoices" role="group" aria-label="Ernährungsweise">
+          <button type="button" data-profile-diet="alles">Alles</button>
+          <button type="button" data-profile-diet="vegetarisch">Vegetarisch</button>
+          <button type="button" data-profile-diet="vegan">Vegan</button>
+        </div>
+      </div>
+      <div class="food-profile-group">
+        <span class="food-profile-label">Allergien und Unverträglichkeiten</span>
+        <p class="food-profile-help">Ausgewählte Allergene werden vollständig aus den Vorschlägen ausgeschlossen.</p>
+        <div class="profile-chip-list compact" id="profileAllergenOptions"></div>
+      </div>
+      <div class="food-profile-group">
+        <label class="food-profile-label" for="profileAvoidSearch">Zutaten vermeiden</label>
+        <input class="auth-input" id="profileAvoidSearch" type="search" autocomplete="off" placeholder="Zutat suchen …">
+        <p class="food-profile-help" id="profileAvoidSummary">Keine Zutaten ausgeschlossen.</p>
+        <div class="profile-chip-list ingredient-options" id="profileAvoidOptions"></div>
+      </div>
+      <p class="food-profile-warning">Hinweis: Angaben in der App ersetzen nicht die Prüfung der Produktverpackung und möglicher Spuren.</p>
     </div>
 
     <div id="passwordRecoveryBox" class="card hidden">

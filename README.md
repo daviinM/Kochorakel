@@ -1,9 +1,13 @@
-# Kochorakel 0.2.3
+# Kochorakel 0.2.4
 
 Technische Testversion mit 324 vollständig ausgearbeiteten Rezepten. Jedes Rezept
 enthält Mengen für vier Portionen, Arbeits-, Gar- und gegebenenfalls Ruhezeiten,
 vier bis acht konkrete Schritte, passende Schritt-Timer, Allergenhinweise und
 einen Praxistipp.
+
+Das persönliche Essensprofil im Konto speichert die Ernährungsweise, Allergien,
+Unverträglichkeiten und einzelne vermiedene Zutaten. Diese Regeln gelten
+automatisch beim Auslosen, in der Rezeptbibliothek und im Wochenplan.
 
 ## Lokal starten
 
