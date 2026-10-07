@@ -96,6 +96,7 @@ const prefersReducedMotion = !!(window.matchMedia && window.matchMedia("(prefers
 const reelInner = document.getElementById("reelInner");
 const reelEmoji = document.getElementById("reelEmoji");
 const reelName = document.getElementById("reelName");
+const reelPrompt = document.getElementById("reelPrompt");
 const reelTags = document.getElementById("reelTags");
 const portionPriceEl = document.getElementById("portionPrice");
 const ingredientLineEl = document.getElementById("ingredientLine");
@@ -142,6 +143,7 @@ const recipeLibraryGridEl = document.getElementById("recipeLibraryGrid");
 const recipeLibraryEmptyEl = document.getElementById("recipeLibraryEmpty");
 const helperText = document.getElementById("helperText");
 const pageTitleEl = document.getElementById("pageTitle");
+const pageContextEl = document.getElementById("pageContext");
 const appRootEl = document.querySelector(".app");
 const rollBtn = document.getElementById("rollBtn");
 const poolCountEl = document.getElementById("poolCount");
@@ -158,6 +160,9 @@ const toastContainerEl = document.getElementById("toastContainer");
 const xpLevelEl = document.getElementById("xpLevel");
 const xpLabelEl = document.getElementById("xpLabel");
 const xpFillEl = document.getElementById("xpFill");
+const xpRemainingEl = document.getElementById("xpRemaining");
+const progressOrbEl = document.getElementById("progressOrb");
+const progressLevelNumberEl = document.getElementById("progressLevelNumber");
 const headerProgressBtn = document.getElementById("headerProgressBtn");
 const headerXpRing = document.getElementById("headerXpRing");
 const headerLevelValue = document.getElementById("headerLevelValue");
@@ -206,6 +211,8 @@ const colorRowEl = document.getElementById("colorRow");
 const iconRowEl = document.getElementById("iconRow");
 const appIconTileEl = document.getElementById("appIconTile");
 const themeToggleEl = document.getElementById("themeToggle");
+const hapticToggleEl = document.getElementById("hapticToggle");
+const hapticHintEl = document.getElementById("hapticHint");
 const tierToggleEl = document.getElementById("tierToggle");
 const subscriptionHintEl = document.getElementById("subscriptionHint");
 const accountBtn = document.getElementById("accountBtn");
@@ -276,7 +283,7 @@ function normalizeCartSource(source) {
 }
 
 function defaultProfile() {
-  return { xp: 0, dishesSeen: [], cookLog: [], recentPicks: [], cartCompletions: 0, cartItems: [], pantryItems: [], rewardedCartChecks: [], rewardedCartCompletions: [], rewardedCookEvents: [], badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekLockedDays: [], weekConfirmed: {}, weekConfirmations: {}, weekKey: isoWeekKey(new Date()), weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", favorites: [], dietPreference: "alles", excludedAllergens: [], avoidedIngredients: [], localTier: "free" };
+  return { xp: 0, dishesSeen: [], cookLog: [], recentPicks: [], cartCompletions: 0, cartItems: [], pantryItems: [], rewardedCartChecks: [], rewardedCartCompletions: [], rewardedCookEvents: [], badgesUnlocked: [], photos: [], weekPlan: {}, weekSelectedDays: [], weekLockedDays: [], weekConfirmed: {}, weekConfirmations: {}, weekKey: isoWeekKey(new Date()), weekBudget: null, peopleCount: 4, accentColor: "blue", appIcon: "🍳", theme: "light", hapticsEnabled: true, favorites: [], dietPreference: "alles", excludedAllergens: [], avoidedIngredients: [], localTier: "free" };
 }
 function normalizeProfile(p) {
   const d = defaultProfile();
@@ -344,6 +351,7 @@ function normalizeProfile(p) {
     accentColor: Object.prototype.hasOwnProperty.call(accentColors, p.accentColor) ? p.accentColor : d.accentColor,
     appIcon: ["🍳","🍲","🎲","🥘","🍜","🧑‍🍳"].indexOf(p.appIcon) !== -1 ? p.appIcon : d.appIcon,
     theme: p.theme === "dark" ? "dark" : d.theme,
+    hapticsEnabled: p.hapticsEnabled !== false,
     favorites: uniqueDishIds(p.favorites),
     dietPreference: ["alles","vegetarisch","vegan"].indexOf(p.dietPreference) !== -1 ? p.dietPreference : d.dietPreference,
     excludedAllergens: safeStringList(p.excludedAllergens, Object.keys(allergenLabels).length).filter(function(id){ return Object.prototype.hasOwnProperty.call(allergenLabels, id); }),
@@ -439,6 +447,50 @@ function applyTheme(choice) {
   themeToggleEl.querySelectorAll(".tier-btn").forEach(function(btn){ btn.classList.toggle("active", btn.dataset.themeChoice === themeChoice); });
 }
 
+function triggerHaptic(pattern) {
+  if (!profile || profile.hapticsEnabled === false || typeof navigator.vibrate !== "function") return false;
+  return navigator.vibrate(pattern);
+}
+
+function renderHapticSetting() {
+  if (!hapticToggleEl || !profile) return;
+  const supported = typeof navigator.vibrate === "function";
+  hapticToggleEl.disabled = !supported;
+  hapticToggleEl.setAttribute("aria-disabled", supported ? "false" : "true");
+  hapticHintEl.textContent = supported ? "Kurze Impulse auf unterstützten Geräten" : "Auf diesem Gerät nicht verfügbar";
+  hapticToggleEl.setAttribute("aria-pressed", profile.hapticsEnabled === false ? "false" : "true");
+}
+
+function greetingText() {
+  const hour = new Date().getHours();
+  if (hour < 11) return "Guten Morgen";
+  if (hour < 18) return "Guten Tag";
+  return "Guten Abend";
+}
+
+function renderPageContext(tabName) {
+  if (!pageContextEl) return;
+  const tab = tabName || "kochen";
+  if (!profile) {
+    pageContextEl.textContent = "Kochorakel wird vorbereitet …";
+    return;
+  }
+  if (tab === "kochen") {
+    const pool = getPool(false);
+    const displayName = currentProfileRow && currentProfileRow.display_name ? currentProfileRow.display_name.trim().split(/\s+/)[0] : "";
+    pageContextEl.textContent = (displayName ? greetingText() + ", " + displayName + " · " : "Bereit für etwas Gutes? · ") + pool.length + " passende Rezepte";
+  } else if (tab === "woche") {
+    const planned = weekDays.filter(function(day){ return profile.weekPlan[day]; }).length;
+    pageContextEl.textContent = planned ? planned + " Tage geplant · Tippe auf ein Gericht für das Rezept" : "Plane deine Gerichte und deinen Einkauf gemeinsam";
+  } else if (tab === "rezepte") {
+    pageContextEl.textContent = getRecipeLibraryPool().length + " Rezepte passend zu deinem Essensprofil";
+  } else if (tab === "fortschritt") {
+    pageContextEl.textContent = profile.xp + " XP · " + distinctCookedNames().size + " verschiedene Gerichte gekocht";
+  } else {
+    pageContextEl.textContent = "";
+  }
+}
+
 function updateFavoritesBadge() {
   const foodRules = currentFoodProfileRules();
   const n = (profile.favorites || []).filter(function(ref){ return dishMatchesFoodProfile(dishByRef(ref), foodRules); }).length;
@@ -461,6 +513,7 @@ function toggleFavorite(ref) {
   const idx = profile.favorites.indexOf(dish.id);
   if (idx === -1) { profile.favorites.push(dish.id); showToast("❤️ Zu Favoriten hinzugefügt"); }
   else { profile.favorites.splice(idx, 1); showToast("Favorit entfernt"); }
+  triggerHaptic(idx === -1 ? 18 : 10);
   saveProfile();
   updateFavoritesBadge();
   if (currentDish && currentDish.id === dish.id) renderFavoriteBtn(currentDish);
@@ -519,6 +572,7 @@ function renderRecipeLibrary() {
       '<span class="recipe-library-meta">' + escapeHtml(formatDuration(dish.minutes)) + ' · ca. ' + formatEuro(dishPricePerPortion(dish)) + '/Portion</span></button>';
   }).join("");
   recipeLibraryGridEl.dataset.ready = "true";
+  if (panelRezepteEl.classList.contains("active")) renderPageContext("rezepte");
 }
 
 function refreshRecipeLibrary() {
@@ -882,9 +936,13 @@ function renderXp() {
     const progressed = profile.xp - info.current.min;
     pct = Math.max(0, Math.min(100, (progressed / span) * 100));
     label = profile.xp + " / " + info.next.min + " XP";
+    xpRemainingEl.textContent = "Noch " + Math.max(0, info.next.min - profile.xp) + " XP bis " + info.next.title;
   } else { pct = 100; label = profile.xp + " XP · Max-Level"; }
+  if (!info.next) xpRemainingEl.textContent = "Maximales Level erreicht";
   xpFillEl.style.width = pct + "%";
   xpLabelEl.textContent = label;
+  progressOrbEl.style.setProperty("--progress", pct + "%");
+  progressLevelNumberEl.textContent = info.index;
   headerLevelValue.textContent = info.index;
   headerXpRing.style.strokeDashoffset = String(100 - pct);
   headerProgressBtn.setAttribute("aria-label", levelText + ", " + label + " – Fortschritt öffnen");
@@ -1018,6 +1076,7 @@ function afterProgressUpdate() {
   renderDex();
   renderBadges(badgeProgress);
   renderPhotoGallery();
+  if (panelFortschrittEl.classList.contains("active")) renderPageContext("fortschritt");
   saveProfile();
 }
 
@@ -1075,6 +1134,7 @@ function updatePoolCount() {
     poolCountEl.innerHTML = html;
     rollBtn.disabled = !profileLoaded;
   }
+  if (document.getElementById("panelKochen").classList.contains("active")) renderPageContext("kochen");
   return pool;
 }
 
@@ -1576,7 +1636,7 @@ cookingActiveTimers.addEventListener("pointermove", function(event){
     timerDragState.bubble.classList.add("dragging");
     cookingActiveTimers.classList.add("dragging");
     suppressTimerBubbleClickUntil = Date.now() + 500;
-    if (navigator.vibrate) navigator.vibrate(20);
+    triggerHaptic(20);
   }
   event.preventDefault();
   const bounds = timerDockBounds();
@@ -1608,7 +1668,7 @@ function updateDetachedCookingTimers() {
   if (finished.length) {
     detachedCookingTimers = detachedCookingTimers.filter(function(timer){ return timer.end > now; });
     finished.forEach(function(timer){ showToast("⏱️ Timer aus Schritt " + (timer.stepIndex + 1) + " ist fertig"); });
-    if (navigator.vibrate) navigator.vibrate([180, 100, 180]);
+    triggerHaptic([180, 100, 180]);
   }
   if (!detachedCookingTimers.length) stopDetachedCookingTimerLoop();
   saveDetachedCookingTimers();
@@ -1713,7 +1773,7 @@ function updateCookingTimerDisplay() {
     cookingTimerDisplay.textContent = "00:00";
     cookingTimerToggle.textContent = "Neu starten";
     if (cookingTimerContext) cookingTimerContext.textContent = "Timer aus Schritt " + (cookingTimerStepIndex + 1) + " ist fertig";
-    if (navigator.vibrate) navigator.vibrate([180, 100, 180]);
+    triggerHaptic([180, 100, 180]);
     showToast("⏱️ Schritt-Timer ist fertig");
   }
 }
@@ -2175,7 +2235,9 @@ function tick(dish) {
   reelInner.style.transform = "rotateX(-90deg)";
   void reelInner.offsetWidth;
   reelEmoji.textContent = dish.emoji;
+  reelEmoji.classList.remove("idle");
   reelName.textContent = dish.name;
+  reelPrompt.style.display = "none";
   renderTags(dish);
   reelInner.style.transition = "transform 100ms ease-out";
   reelInner.style.transform = "rotateX(0deg)";
@@ -2207,6 +2269,7 @@ function finish(dish) {
   spinning = false;
   lastPick = dish;
   currentDish = dish;
+  triggerHaptic([18, 35, 24]);
   confirmedForCurrentResult = false;
   helperText.textContent = "Nicht überzeugt? Einfach nochmal klicken.";
   recipeLink.href = "#recipe";
@@ -2237,6 +2300,7 @@ function spin() {
   if (spinning) return;
   const pool = updatePoolCount();
   if (pool.length === 0 || !profileLoaded) return;
+  triggerHaptic(12);
   spinning = true;
   rollBtn.disabled = true;
   recipeLink.style.display = "none";
@@ -2702,6 +2766,7 @@ function renderWeekRows() {
     }).join("");
   }
   updateAddWeekButton();
+  if (document.getElementById("panelWoche").classList.contains("active")) renderPageContext("woche");
 }
 
 weekDayRowsEl.addEventListener("click", function(event){
@@ -2771,6 +2836,7 @@ function renderWeekTab() {
     renderBudgetSummary();
     renderPeopleCount();
   }
+  if (document.getElementById("panelWoche").classList.contains("active")) renderPageContext("woche");
 }
 
 document.querySelectorAll("#weekDayChips .chip").forEach(function(btn){
@@ -3008,8 +3074,11 @@ function clearIncompatibleCurrentDish() {
   if (!currentDish || dishMatchesFoodProfile(currentDish)) return false;
   currentDish = null;
   confirmedForCurrentResult = false;
-  reelEmoji.textContent = "❓";
-  reelName.textContent = "???";
+  reelEmoji.textContent = "🎲";
+  reelEmoji.classList.add("idle");
+  reelName.textContent = "Noch unentschlossen?";
+  reelPrompt.textContent = "Lass das Kochorakel für dich entscheiden.";
+  reelPrompt.style.display = "block";
   reelTags.innerHTML = "";
   portionPriceEl.textContent = "";
   ingredientLineEl.innerHTML = "";
@@ -3096,6 +3165,7 @@ function applyProfileToUi() {
   budgetInputEl.value = typeof profile.weekBudget === "number" ? profile.weekBudget : "";
   applyAccentColor(profile.accentColor || "blue");
   applyTheme(profile.theme || "light");
+  renderHapticSetting();
   appIconTileEl.textContent = profile.appIcon || "🍳";
   iconRowEl.querySelectorAll(".icon-swatch").forEach(function(button){
     button.classList.toggle("selected", button.dataset.icon === (profile.appIcon || "🍳"));
@@ -3111,6 +3181,8 @@ function applyProfileToUi() {
   refreshRecipeLibrary();
   renderTierState();
   renderAccountState();
+  renderPageContext("kochen");
+  document.body.classList.remove("app-loading");
 }
 
 async function activateSession(session) {
@@ -3261,6 +3333,7 @@ async function updateDisplayName(event) {
   }
   currentProfileRow.display_name = name.slice(0, 50);
   renderAccountState();
+  renderPageContext("kochen");
   showToast("Profil gespeichert");
 }
 
@@ -3412,6 +3485,7 @@ function switchTab(tabName, direction) {
   });
   if (tabName === "rezepte") renderRecipeLibrary();
   if (tabName === "fortschritt") renderPhotoGallery(true);
+  renderPageContext(tabName);
 }
 document.querySelectorAll(".tab-btn").forEach(function(btn){
   btn.addEventListener("click", function(){
@@ -3665,6 +3739,12 @@ themeToggleEl.querySelectorAll(".tier-btn").forEach(function(btn){
     applyTheme(btn.dataset.themeChoice);
   });
 });
+hapticToggleEl.addEventListener("click", function(){
+  profile.hapticsEnabled = profile.hapticsEnabled === false;
+  renderHapticSetting();
+  if (profile.hapticsEnabled) triggerHaptic(18);
+  saveProfile();
+});
 
 cartClearBtn.addEventListener("click", function(){ cartMap.clear(); cartWasComplete = false; syncCartToProfile(); renderCart(); saveProfile(); });
 cartRemoveCheckedBtn.addEventListener("click", function(){
@@ -3686,6 +3766,7 @@ resetProgressBtn.addEventListener("click", async function(){
     accentColor: profile.accentColor,
     appIcon: profile.appIcon,
     theme: profile.theme,
+    hapticsEnabled: profile.hapticsEnabled,
     dietPreference: profile.dietPreference,
     excludedAllergens: profile.excludedAllergens,
     avoidedIngredients: profile.avoidedIngredients,

@@ -53,12 +53,39 @@
 - Ein Sicherheitshinweis macht klar, dass die App bei Allergien nicht die Prüfung
   von Produktverpackungen und möglichen Spuren ersetzt.
 
+## Design-Feinschliff
+
+- Unter der Seitenüberschrift steht jetzt ein kurzer, persönlicher Kontext mit
+  Begrüßung, passenden Rezepten oder dem jeweiligen Bereichsstatus.
+- Das leere Ergebnisfeld zeigt einen freundlichen Würfelzustand statt Fragezeichen
+  und erklärt direkt, was der Auslose-Button macht.
+- Ergebnisfeld, große Karten und Navigation verwenden abgestimmte, weichere
+  Rundungen. Der Auslose-Button liegt mit 14 Pixeln zwischen kantig und pillenförmig.
+- Die dunkle Ergebnisfläche hat einen sehr dezenten Akzentverlauf und eine ruhige
+  Einfassung, ohne zusätzliche starke Farben einzuführen.
+- Rezeptkarten besitzen eine klarere Gliederung mit eigener Symbolfläche, Name,
+  Merkmalen, Zeit und Preis.
+- Der Wochenplan zeigt Wochentage in Kreisen. Heute, erledigt, geschützt und
+  Premium werden zurückhaltend, aber eindeutig unterschieden.
+- Die Fortschrittsseite enthält eine große Levelanzeige, XP-Ring, Rest-XP und das
+  nächste Level.
+- Rezept-, Warenkorb-, Konto- und Menü-Overlays nutzen einheitlichere, fixierte
+  Kopfleisten.
+- Beim Laden erscheinen ruhige Platzhalter, statt dass Startbereiche kurz leer
+  bleiben.
+- Haptische Rückmeldung lässt sich in der Darstellung aktivieren. Die Option wird
+  auf Geräten ohne Vibrations-API als nicht verfügbar gekennzeichnet.
+- Dark Mode, Schatten, Ränder und Druckanimationen wurden an die neue Designsprache
+  angepasst.
+
 ## Qualitätssicherung
 
-- 12.342 automatisierte Prüfungen für vegane und vegetarische Ergebnislisten,
+- 12.347 automatisierte Prüfungen für vegane und vegetarische Ergebnislisten,
   Allergenfilter, vermiedene Zutaten, Wochenplan, Rezeptbibliothek,
   Profilspeicherung, Cloud-Zusammenführung, Level-Kreis und die neue Navigation.
 - Zusätzliche Interaktionstests prüfen Wischen vorwärts und zurück, vertikales
   Scrollen, Overlay-Sperren und den Schutz der linken iPhone-Randgeste.
+- Weitere Tests prüfen Kontextzeile, detaillierte XP-Anzeige und die gespeicherte
+  Haptik-Einstellung.
 - Bestehende Timer-, Favoriten-, Warenkorb- und Rezepttests bleiben aktiv.
 - Produktions-Build und GitHub-Actions-Veröffentlichung werden erneut geprüft.

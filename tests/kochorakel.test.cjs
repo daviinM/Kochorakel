@@ -132,9 +132,14 @@ check(/id="headerProgressBtn"/.test(indexHtml) && /id="headerXpRing"/.test(index
 check(!/id="xpStrip"/.test(indexHtml) && /headerXpRing\.style\.strokeDashoffset/.test(mainModule), "alte XP-Leiste entfernt und Ring dynamisch");
 check(/mainTabOrder/.test(mainModule) && /pointerdown/.test(mainModule) && /Math\.abs\(dx\) < 64/.test(mainModule) && /event\.clientX < 24/.test(mainModule), "Swipe-Navigation mit Schwelle und iPhone-Randschutz");
 check(/\.bottom-nav\s*\{[^}]*position:\s*fixed/.test(styles) && /safe-area-inset-bottom/.test(styles), "untere Navigation iPhone-sicher fixiert");
-check(/--radius:\s*10px/.test(styles) && /\.reel-inner\s*\{[^}]*border-radius:\s*9px/.test(styles), "große Kacheln dezenter abgerundet");
-check(/\.roll-btn\s*\{[^}]*width:\s*100%[^}]*border-radius:\s*11px/.test(styles), "Auslose-Button breit und eckiger");
+check(/--radius:\s*15px/.test(styles) && /\.reel-inner\s*\{[^}]*border-radius:\s*16px/.test(styles), "große Kacheln weich und einheitlich abgerundet");
+check(/\.roll-btn\s*\{[^}]*width:\s*100%[^}]*border-radius:\s*14px/.test(styles), "Auslose-Button ausgewogen abgerundet");
 check(/\.tab-btn\.active\s*\{[^}]*background:\s*transparent/.test(styles) && /\.ui-icon/.test(styles), "ruhige Navigation mit einheitlichen Symbolen");
+check(/id="pageContext"/.test(indexHtml) && /Noch unentschlossen\?/.test(indexHtml) && /id="reelPrompt"/.test(indexHtml), "freundliche Startseite und verständlicher Leerzustand");
+check(/id="progressOrb"/.test(indexHtml) && /id="xpRemaining"/.test(indexHtml), "ausführliche Level- und XP-Anzeige");
+check(/id="hapticToggle"/.test(indexHtml) && /hapticsEnabled/.test(mainModule) && /triggerHaptic/.test(mainModule), "optionale haptische Rückmeldung gespeichert");
+check(/body\.app-loading/.test(styles) && /skeletonPulse/.test(styles), "ruhiger Ladezustand vorhanden");
+check(/\.week-day-label\s*\{[^}]*border-radius:\s*50%/.test(styles) && /\.week-row\.confirmed/.test(styles), "Wochenplan mit Tageskreisen und Erledigt-Zustand");
 check(/safe-area-inset-top/.test(styles) && /safe-area-inset-bottom/.test(styles) && /100dvh/.test(styles), "iPhone-Safe-Areas berücksichtigt");
 check(/overscroll-behavior/.test(styles), "Overlay-Scrollen begrenzt");
 check(/content-visibility:\s*auto/.test(styles), "lange Listen werden verzögert gerendert");

@@ -16,7 +16,7 @@
 <title>Kochorakel – Was gibt's heute?</title>
 <link rel="stylesheet" href="./src/styles.css">
 </head>
-<body>
+<body class="app-loading">
 <div class="app">
   <div class="top-row">
     <div class="brand">
@@ -39,6 +39,7 @@
     </div>
   </div>
   <h1 id="pageTitle">Was gibt's heute?</h1>
+  <p class="page-context" id="pageContext">Kochorakel wird vorbereitet …</p>
 
   <div class="tab-panel active" id="panelKochen" role="tabpanel" aria-labelledby="tabKochen">
     <details class="panel quick-filter-panel">
@@ -94,8 +95,9 @@
       <div class="reel-card">
         <button type="button" class="favorite-btn" id="favoriteBtn" aria-label="Zu Favoriten hinzufügen" aria-pressed="false" style="display:none;">🤍</button>
         <div class="reel-inner" id="reelInner">
-          <span class="reel-emoji" id="reelEmoji">❓</span>
-          <p class="reel-name" id="reelName">???</p>
+          <span class="reel-emoji idle" id="reelEmoji">🎲</span>
+          <p class="reel-name" id="reelName">Noch unentschlossen?</p>
+          <p class="reel-prompt" id="reelPrompt">Lass das Kochorakel für dich entscheiden.</p>
           <div class="reel-tags" id="reelTags"></div>
           <div class="portion-price" id="portionPrice"></div>
           <div class="ingredient-line" id="ingredientLine"></div>
@@ -219,12 +221,16 @@
   </div>
 
   <div class="tab-panel" id="panelFortschritt" role="tabpanel" aria-label="Fortschritt und Erfolge" aria-hidden="true" tabindex="-1">
-    <div class="card">
-      <div class="xp-top">
-        <span class="xp-level" id="xpLevel">Lvl 1 · Kochlehrling</span>
-        <span class="xp-label" id="xpLabel">0 XP</span>
+    <div class="card progress-hero">
+      <div class="progress-orb" id="progressOrb" aria-hidden="true"><span id="progressLevelNumber">1</span></div>
+      <div class="progress-hero-copy">
+        <div class="xp-top">
+          <span class="xp-level" id="xpLevel">Lvl 1 · Kochlehrling</span>
+          <span class="xp-label" id="xpLabel">0 XP</span>
+        </div>
+        <p class="xp-remaining" id="xpRemaining">Noch 50 XP bis zum nächsten Level</p>
+        <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
       </div>
-      <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
     </div>
     <div class="card">
       <p class="section-label">Abzeichen</p>
@@ -281,8 +287,11 @@
   <div class="sheet recipe-sheet" role="dialog" aria-modal="true" aria-labelledby="recipeSheetTitle" tabindex="-1">
     <div class="recipe-grabber" id="recipeGrabber" aria-hidden="true"></div>
     <div class="recipe-topbar">
-      <button class="recipe-icon-btn recipe-favorite-btn" id="recipeFavoriteBtn" type="button" aria-label="Zu Favoriten hinzufügen" aria-pressed="false">♡</button>
-      <button class="recipe-icon-btn recipe-close-btn" id="recipeClose" type="button" aria-label="Rezept schließen">✕</button>
+      <span class="recipe-topbar-label">Rezept</span>
+      <div class="recipe-topbar-actions">
+        <button class="recipe-icon-btn recipe-favorite-btn" id="recipeFavoriteBtn" type="button" aria-label="Zu Favoriten hinzufügen" aria-pressed="false">♡</button>
+        <button class="recipe-icon-btn recipe-close-btn" id="recipeClose" type="button" aria-label="Rezept schließen">✕</button>
+      </div>
     </div>
     <div class="recipe-hero">
       <div class="recipe-hero-main">
@@ -403,6 +412,10 @@
             <button class="icon-swatch" data-icon="🧑‍🍳" type="button">🧑‍🍳</button>
           </div>
         </div>
+        <button class="settings-switch" id="hapticToggle" type="button" aria-pressed="true">
+          <span><strong>Haptische Rückmeldung</strong><small id="hapticHint">Kurze Impulse auf unterstützten Geräten</small></span>
+          <span class="switch-track" aria-hidden="true"><span></span></span>
+        </button>
       </div>
     </details>
     <details class="panel menu-settings-panel">

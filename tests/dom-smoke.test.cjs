@@ -27,6 +27,7 @@ class ElementStub {
   constructor(id) {
     this.id = id || "";
     this.style = {};
+    this.style.setProperty = function(name, value){ this[name] = value; };
     this.dataset = {};
     this.classList = new ClassList();
     this.attributes = new Map();
@@ -339,6 +340,12 @@ vm.createContext(context);
     document.getElementById("headerProgressBtn").dispatch("click");
     const headerLevelOpensProgress = activeTabName === "fortschritt" && Number.isFinite(Number.parseFloat(document.getElementById("headerXpRing").style.strokeDashoffset));
     switchTab("kochen");
+    const contextualHeaderRendered = /passende Rezepte/.test(document.getElementById("pageContext").textContent);
+    const detailedProgressRendered = Number.isFinite(Number.parseFloat(document.getElementById("progressOrb").style["--progress"])) && /XP/.test(document.getElementById("xpRemaining").textContent);
+    const hapticsBeforeToggle = profile.hapticsEnabled;
+    document.getElementById("hapticToggle").dispatch("click");
+    const hapticSettingCanBeDisabled = hapticsBeforeToggle === true && profile.hapticsEnabled === false && document.getElementById("hapticToggle").getAttribute("aria-pressed") === "false";
+    document.getElementById("hapticToggle").dispatch("click");
     renderRecipeLibrary();
     renderWeekTab();
     __smokeResult = {
@@ -392,11 +399,14 @@ vm.createContext(context);
       iphoneEdgeGestureIsIgnored,
       overlayBlocksTabSwipe,
       headerLevelOpensProgress,
+      contextualHeaderRendered,
+      detailedProgressRendered,
+      hapticSettingCanBeDisabled,
       versionPresent:${JSON.stringify(html.includes("Version " + expectedVersion))}
     };
   `, context, { timeout: 5000 });
   const result = context.__smokeResult;
-  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.runningTimerDetachedOnNext || !result.runningTimerRestoredOnBack || !result.pausedTimerStoredOnNext || !result.pausedTimerRestoredOnBack || !result.resumedTimerRuns || !result.repeatedNavigationHasNoDuplicate || !result.delegatedCartChangeWorks || !result.delegatedFavoriteRemoveWorks || !result.cloudMergeKeepsFavoriteRemoval || !result.resultFavoriteRemoveWorks || !result.recipeFavoriteRemoveWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.veganPoolOnlyContainsVeganDishes || !result.weekPoolUsesFoodProfile || !result.veganLibraryOnlyContainsVeganDishes || !result.veganHidesAnimalIngredients || !result.allergenFilterWorks || !result.avoidedIngredientFilterWorks || !result.hiddenAvoidanceSurvivesDietChange || !result.foodProfileNormalizationWorks || !result.cloudMergeKeepsLocalFoodProfile || !result.menuProgressNavigationWorks || !result.menuAccountNavigationWorks || !result.swipeLeftMovesToWeek || !result.secondSwipeLeftMovesToRecipes || !result.swipeRightMovesBack || !result.verticalScrollDoesNotSwipe || !result.iphoneEdgeGestureIsIgnored || !result.overlayBlocksTabSwipe || !result.headerLevelOpensProgress || !result.versionPresent) {
+  if (!result.profileLoaded || result.dishCount !== 324 || result.cartCount !== 2 || !result.recipeLibraryDeferredAtStart || !result.recipeLibraryRenderedOnDemand || !result.galleryDeferredAtStart || !result.cartDetailsDeferredWhileClosed || !result.cartDetailsRenderedOnOpen || !result.timerContinuesAcrossSteps || !result.noTimerStepHidesField || !result.detachedTimerCanBeCancelled || !result.finishedTimerRemovedIndependently || !result.timerDockCanBeDragged || !result.timerDockPositionPersisted || !result.detachedTimerReturnsToStep || !result.cookingFinishRecorded || !result.runningTimerDetachedOnNext || !result.runningTimerRestoredOnBack || !result.pausedTimerStoredOnNext || !result.pausedTimerRestoredOnBack || !result.resumedTimerRuns || !result.repeatedNavigationHasNoDuplicate || !result.delegatedCartChangeWorks || !result.delegatedFavoriteRemoveWorks || !result.cloudMergeKeepsFavoriteRemoval || !result.resultFavoriteRemoveWorks || !result.recipeFavoriteRemoveWorks || !result.delegatedFavoriteOpenWorks || !result.delegatedGalleryDeleteWorks || !result.delegatedWeekActionWorks || !result.legacyProfileUsesStableIds || !result.veganPoolOnlyContainsVeganDishes || !result.weekPoolUsesFoodProfile || !result.veganLibraryOnlyContainsVeganDishes || !result.veganHidesAnimalIngredients || !result.allergenFilterWorks || !result.avoidedIngredientFilterWorks || !result.hiddenAvoidanceSurvivesDietChange || !result.foodProfileNormalizationWorks || !result.cloudMergeKeepsLocalFoodProfile || !result.menuProgressNavigationWorks || !result.menuAccountNavigationWorks || !result.swipeLeftMovesToWeek || !result.secondSwipeLeftMovesToRecipes || !result.swipeRightMovesBack || !result.verticalScrollDoesNotSwipe || !result.iphoneEdgeGestureIsIgnored || !result.overlayBlocksTabSwipe || !result.headerLevelOpensProgress || !result.contextualHeaderRendered || !result.detailedProgressRendered || !result.hapticSettingCanBeDisabled || !result.versionPresent) {
     throw new Error("Smoke-Test fehlgeschlagen: " + JSON.stringify(result));
   }
   console.log(JSON.stringify({ file, status:"ok", ...result }, null, 2));

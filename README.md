@@ -14,6 +14,11 @@ Bereichen kann außerdem horizontal gewischt werden. Der Level-Kreis oben öffne
 die Fortschrittsansicht. Konto, Favoriten, Darstellung und Premium befinden sich
 gesammelt im Menü.
 
+Die Startseite verwendet eine kurze Kontextzeile und einen erklärenden
+Würfel-Leerzustand. Rezeptkarten, Wochenplan, Fortschritt und Overlays folgen
+derselben ruhigen Designsprache. Haptische Impulse stehen nur auf Geräten zur
+Verfügung, deren Browser die Vibrations-API unterstützt.
+
 ## Lokal starten
 
 Voraussetzung: Node.js 20.19 oder neuer.
