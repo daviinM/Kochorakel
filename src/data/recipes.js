@@ -1,5 +1,7 @@
-// Kochorakel 0.2.4 – kanonische Rezeptdaten.
+// Kochorakel 0.2.5 – kanonische Rezeptdaten.
 // Diese Datei enthält alle Rezepte, Mengen, Schritte, Timer und Allergenangaben.
+
+import { additionalRecipes025 } from "./recipes-0.2.5.js";
 
 export const ingredientVocab = {
   "nudeln": {
@@ -1116,7 +1118,7 @@ export const ingredientVocab = {
   }
 };
 
-export const dishes = [
+const baseDishes = [
   {
     "id": "ko-0001",
     "name": "Spaghetti Aglio e Olio",
@@ -25367,3 +25369,5 @@ export const dishes = [
     "tip": "Die Äpfel nicht zu dünn schneiden, damit sie beim Karamellisieren ihre Form behalten."
   }
 ];
+
+export const dishes = [...baseDishes, ...additionalRecipes025];

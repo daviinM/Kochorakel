@@ -6,6 +6,7 @@ const root = path.resolve(__dirname, "..");
 const indexHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const styles = fs.readFileSync(path.join(root, "src/styles.css"), "utf8");
 const recipesModule = fs.readFileSync(path.join(root, "src/data/recipes.js"), "utf8");
+const additionalRecipesModule = fs.readFileSync(path.join(root, "src/data/recipes-0.2.5.js"), "utf8");
 const mainModule = fs.readFileSync(path.join(root, "src/main.js"), "utf8");
 const serviceWorker = fs.readFileSync(path.join(root, "public/service-worker.js"), "utf8");
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
@@ -19,33 +20,43 @@ function check(condition, message) {
 
 const dataContext = {};
 vm.createContext(dataContext);
-vm.runInContext(recipesModule.replace(/^export\s+/gm, ""), dataContext, { timeout: 5000 });
+const recipeDataForVm = additionalRecipesModule.replace(/^export\s+/gm, "") + "\n" + recipesModule.replace(/^import .*$/gm, "").replace(/^export\s+/gm, "");
+vm.runInContext(recipeDataForVm, dataContext, { timeout: 5000 });
 vm.runInContext("__data = { dishes, ingredientVocab };", dataContext);
 const { dishes, ingredientVocab } = dataContext.__data;
 
 try {
-  new vm.Script(recipesModule.replace(/^export\s+/gm, "") + "\n" + mainModule.replace(/^import .*$/gm, ""));
+  new vm.Script(recipeDataForVm + "\n" + mainModule.replace(/^import .*$/gm, ""));
   check(true, "JavaScript syntaktisch gültig");
 } catch (error) {
   check(false, "JavaScript-Syntax: " + error.message);
 }
 
-check(pkg.version === "0.2.4", "Paketversion 0.2.4");
-check(indexHtml.includes("Kochorakel · Version 0.2.4"), "sichtbare Version 0.2.4");
-check(serviceWorker.includes('kochorakel-v0.2.4'), "Cache-Version 0.2.4");
+check(pkg.version === "0.2.5", "Paketversion 0.2.5");
+check(indexHtml.includes("Kochorakel · Version 0.2.5"), "sichtbare Version 0.2.5");
+check(serviceWorker.includes('kochorakel-v0.2.5'), "Cache-Version 0.2.5");
 check(/prebuild/.test(JSON.stringify(pkg.scripts)) && /sync-version/.test(JSON.stringify(pkg.scripts)), "Versionsabgleich vor dem Build");
 check(/<script type="module" src="\.\/src\/main\.js"><\/script>/.test(indexHtml), "Vite-Einstieg vorhanden");
 check(/import \{ dishes, ingredientVocab \} from "\.\/data\/recipes\.js";/.test(mainModule), "einzige Rezeptquelle eingebunden");
 const legacyRecipeFiles = ["new-recipes-0.2.1.js", "curated-recipes-0.2.2.js"].map(name => fs.readFileSync(path.join(root, "src/data", name), "utf8"));
 check(legacyRecipeFiles.every(text => text.length < 250 && /= \[\];/.test(text)), "alte Rezeptdateien zu leeren Kompatibilitätsdateien reduziert");
 
-check(dishes.length === 324, "324 Gerichte vorhanden");
+check(dishes.length === 424, "424 Gerichte vorhanden");
 check(Object.keys(ingredientVocab).length === 139, "139 Zutaten vorhanden");
 check(dishes.filter(d => !d.premium).length === 100, "100 Free-Gerichte");
-check(dishes.filter(d => d.premium).length === 224, "224 Premium-Gerichte");
+check(dishes.filter(d => d.premium).length === 324, "324 Premium-Gerichte");
 check(new Set(dishes.map(d => d.id)).size === dishes.length, "Rezept-IDs eindeutig");
 check(new Set(dishes.map(d => d.name)).size === dishes.length, "Rezeptnamen eindeutig");
 check(dishes.some(d => d.steps.length !== 5), "variable, logisch gegliederte Schrittzahlen");
+
+const recipes025 = dishes.slice(324);
+const normalizedNames = dishes.map(dish => dish.name.toLocaleLowerCase("de-DE").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, ""));
+check(recipes025.length === 100, "genau 100 neue Rezepte in 0.2.5");
+check(recipes025.every((dish, index) => dish.id === `ko-${String(325 + index).padStart(4, "0")}`), "neue Rezept-IDs lückenlos");
+check(recipes025.every(dish => dish.premium && dish.steps.length >= 5 && dish.stepTimers.some(Boolean)), "neue Rezepte ausführlich und kochmodustauglich");
+check(new Set(normalizedNames).size === normalizedNames.length, "keine Rezeptnamen-Dubletten trotz Schreibvarianten");
+const oldIngredientFingerprints = new Set(dishes.slice(0, 324).map(dish => [...dish.ingredients].sort().join("|")));
+check(recipes025.every(dish => !oldIngredientFingerprints.has([...dish.ingredients].sort().join("|"))), "keine neuen Rezept-Dubletten mit identischer Zutatenliste");
 
 const allowedTimes = new Set(["schnell", "normal", "aufwendig"]);
 const allowedDiets = new Set(["alles", "vegetarisch", "vegan"]);

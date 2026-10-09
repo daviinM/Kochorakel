@@ -2,11 +2,11 @@
 
 ## Aktueller Stand
 
-- Version: 0.2.4
+- Version: 0.2.5
 - Status: Essensprofil / Testversion
 - Basis: vollständig geprüfte Version 0.2.3
-- Rezeptbestand: 324 Gerichte (100 Free, 224 Premium)
-- Rezeptqualität: 324 von 324 Rezepten vollständig ausgearbeitet und in einer Datei zusammengeführt
+- Rezeptbestand: 424 Gerichte (100 Free, 324 Premium)
+- Rezeptqualität: 424 von 424 Rezepten vollständig ausgearbeitet und validiert
 - Datenmodell: stabile Rezept-IDs mit automatischer Migration alter Profilnamen
 - Qualitätssicherung: 12.347 Daten-/Codeprüfungen plus erweiterter DOM-Smoke-Test und Produktions-Build
 
